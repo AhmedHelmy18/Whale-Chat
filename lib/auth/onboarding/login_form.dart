@@ -1,14 +1,14 @@
 import 'package:chat_app/theme.dart';
 import 'package:flutter/material.dart';
 
-class SignupForm extends StatefulWidget {
-  const SignupForm({super.key});
+class LoginForm extends StatefulWidget {
+  const LoginForm({super.key});
 
   @override
-  State<SignupForm> createState() => _SignupFormState();
+  State<LoginForm> createState() => _LoginFormState();
 }
 
-class _SignupFormState extends State<SignupForm> {
+class _LoginFormState extends State<LoginForm> {
   bool obscureText = true;
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
@@ -17,18 +17,6 @@ class _SignupFormState extends State<SignupForm> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        TextField(
-          textInputAction: TextInputAction.next,
-          keyboardType: TextInputType.text,
-          decoration: InputDecoration(
-            prefixIcon: Icon(Icons.person),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            labelText: 'Name',
-          ),
-        ),
-        const SizedBox(height: 8),
         TextField(
           controller: emailController,
           keyboardType: TextInputType.text,
@@ -65,7 +53,15 @@ class _SignupFormState extends State<SignupForm> {
             labelText: 'Password',
           ),
         ),
-        const SizedBox(height: 5),
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton(
+            onPressed: () {},
+            child: Text(
+              'Forgot Password?',
+            ),
+          ),
+        ),
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
@@ -77,7 +73,7 @@ class _SignupFormState extends State<SignupForm> {
             ),
             onPressed: () {},
             child: Text(
-              'Sign Up',
+              'Log in',
               style: TextStyle(color: colorScheme.onPrimary),
             ),
           ),
@@ -113,7 +109,7 @@ class _SignupFormState extends State<SignupForm> {
               ),
             ),
             onPressed: () {},
-            child: Text('Log in'),
+            child: Text('Sign up'),
           ),
         ),
       ],

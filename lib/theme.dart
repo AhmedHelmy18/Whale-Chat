@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 var colorScheme = ColorScheme.fromSeed(
-  seedColor: Colors.blue,
+  seedColor: Color(0xff1c58b6),
   brightness: Brightness.light,
   surface: Colors.white,
 );
