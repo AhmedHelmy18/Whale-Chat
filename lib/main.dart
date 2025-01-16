@@ -1,3 +1,5 @@
+import 'package:chat_app/auth/pages/sign_up_page.dart';
+import 'package:chat_app/theme.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -11,9 +13,9 @@ class ChatApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Text("Chat App"),
-    );
+    return MaterialApp(
+        theme: ThemeData(colorScheme: colorScheme, useMaterial3: true),
+        debugShowCheckedModeBanner: false,
+        home: SignUpPage());
   }
 }
