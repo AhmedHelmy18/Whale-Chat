@@ -28,7 +28,7 @@ class _SignupFormState extends State<SignupForm> {
             labelText: 'Name',
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         TextField(
           controller: emailController,
           keyboardType: TextInputType.text,
@@ -41,7 +41,7 @@ class _SignupFormState extends State<SignupForm> {
             labelText: 'Email',
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         TextField(
           controller: passwordController,
           keyboardType: TextInputType.text,
@@ -65,7 +65,7 @@ class _SignupFormState extends State<SignupForm> {
             labelText: 'Password',
           ),
         ),
-        const SizedBox(height: 5),
+        const SizedBox(height: 8),
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
