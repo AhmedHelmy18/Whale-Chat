@@ -15,7 +15,7 @@ class LoginPage extends StatelessWidget {
         child: Stack(
           children: [
             Container(
-              height: screenHeight / 2 - 50,
+              height: screenHeight / 2,
               width: screenWidth,
               decoration: const BoxDecoration(
                 image: DecorationImage(
@@ -42,7 +42,7 @@ class LoginPage extends StatelessWidget {
               ),
             ),
             Container(
-              height: screenHeight - 100,
+              height: screenHeight - 50,
               width: screenWidth,
               decoration: const BoxDecoration(
                 image: DecorationImage(
@@ -51,12 +51,19 @@ class LoginPage extends StatelessWidget {
                 ),
               ),
             ),
-            Padding(
-              padding: EdgeInsets.symmetric(
-                vertical: screenHeight / 2 - 30,
-                horizontal: 20.0,
+            Positioned.fill(
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    top: screenHeight / 2,
+                    left: 20.0,
+                    right: 20.0,
+                    bottom: 10,
+                  ),
+                  child: LoginForm(),
+                ),
               ),
-              child: LoginForm(),
             ),
           ],
         ),

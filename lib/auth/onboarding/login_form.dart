@@ -16,6 +16,7 @@ class _LoginFormState extends State<LoginForm> {
   @override
   Widget build(BuildContext context) {
     return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         TextField(
           controller: emailController,
@@ -29,7 +30,7 @@ class _LoginFormState extends State<LoginForm> {
             labelText: 'Email',
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 15),
         TextField(
           controller: passwordController,
           keyboardType: TextInputType.text,
