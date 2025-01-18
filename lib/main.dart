@@ -1,5 +1,4 @@
-import 'package:chat_app/auth/pages/login_page.dart';
-import 'package:chat_app/auth/pages/sign_up_page.dart';
+import 'package:chat_app/auth/pages/onboarding_page.dart';
 import 'package:chat_app/theme.dart';
 import 'package:flutter/material.dart';
 
@@ -17,7 +16,7 @@ class ChatApp extends StatelessWidget {
     return MaterialApp(
         theme: ThemeData(colorScheme: colorScheme, useMaterial3: true),
         debugShowCheckedModeBanner: false,
-      home: LoginPage(),
+      home: OnboardingPage(),
     );
   }
 }

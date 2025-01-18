@@ -11,6 +11,19 @@ class LoginPage extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          icon: Icon(
+            Icons.arrow_back_ios_new,
+            color: colorScheme.onPrimary,
+          ),
+        ),
+        backgroundColor: Colors.transparent,
+      ),
       body: SingleChildScrollView(
         child: Stack(
           children: [
