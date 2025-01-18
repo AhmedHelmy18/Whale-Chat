@@ -50,12 +50,19 @@ class SignUpPage extends StatelessWidget {
                 ),
               ),
             ),
-            Padding(
-              padding: EdgeInsets.symmetric(
-                vertical: screenHeight / 2 - 30,
-                horizontal: 20.0,
+            SizedBox(
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    top: screenHeight / 2 - 30,
+                    left: 20.0,
+                    right: 20.0,
+                    bottom: 10,
+                  ),
+                  child: SignupForm(),
+                ),
               ),
-              child: SignupForm(),
             ),
           ],
         ),

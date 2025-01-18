@@ -51,7 +51,7 @@ class LoginPage extends StatelessWidget {
                 ),
               ),
             ),
-            Positioned.fill(
+            SizedBox(
               child: Align(
                 alignment: Alignment.bottomCenter,
                 child: Padding(
