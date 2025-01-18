@@ -5,4 +5,5 @@ var colorScheme = ColorScheme.fromSeed(
   brightness: Brightness.light,
   surface: Colors.white,
   primary: Color(0xff1c58b6),
+  error : Color(0xff710404),
 );

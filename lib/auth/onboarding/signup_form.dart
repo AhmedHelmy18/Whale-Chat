@@ -1,5 +1,7 @@
 import 'package:chat_app/auth/pages/login_page.dart';
-import 'package:chat_app/theme.dart';
+import 'package:chat_app/constraints/error_box.dart';
+import 'package:chat_app/constraints/theme.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class SignupForm extends StatefulWidget {
@@ -10,16 +12,20 @@ class SignupForm extends StatefulWidget {
 }
 
 class _SignupFormState extends State<SignupForm> {
+  String error = '';
   bool obscureText = true;
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  TextEditingController nameController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
+        (error.isNotEmpty) ? ErrorBox(content: error) : const SizedBox(),
         TextField(
+          controller: nameController,
           textInputAction: TextInputAction.next,
           keyboardType: TextInputType.text,
           decoration: InputDecoration(
@@ -77,7 +83,37 @@ class _SignupFormState extends State<SignupForm> {
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            onPressed: () {},
+            onPressed: () async {
+              if (emailController.text.isEmpty ||
+                  passwordController.text.isEmpty ||
+                  nameController.text.isEmpty) {
+                setState(() {
+                  error = 'Please enter Name and Email and Password.';
+                });
+              } else {
+                try {
+                  final credential = await FirebaseAuth.instance
+                      .createUserWithEmailAndPassword(
+                    email: emailController.text,
+                    password: passwordController.text,
+                  );
+                } on FirebaseAuthException catch (e) {
+                  if (e.code == 'weak-password') {
+                    setState(() {
+                      error = 'The password provided is too weak.';
+                    });
+                  } else if (e.code == 'email-already-in-use') {
+                    setState(() {
+                      error = 'The account already exists for that email.';
+                    });
+                  }
+                } catch (e) {
+                  setState(() {
+                    error = e.toString();
+                  });
+                }
+              }
+            },
             child: Text(
               'Sign Up',
               style: TextStyle(color: colorScheme.onPrimary),

@@ -1,5 +1,7 @@
 import 'package:chat_app/auth/pages/sign_up_page.dart';
-import 'package:chat_app/theme.dart';
+import 'package:chat_app/constraints/error_box.dart';
+import 'package:chat_app/constraints/theme.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class LoginForm extends StatefulWidget {
@@ -10,6 +12,7 @@ class LoginForm extends StatefulWidget {
 }
 
 class _LoginFormState extends State<LoginForm> {
+  String error = '';
   bool obscureText = true;
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
@@ -19,6 +22,7 @@ class _LoginFormState extends State<LoginForm> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
+        (error.isNotEmpty) ? ErrorBox(content: error) : const SizedBox(),
         TextField(
           controller: emailController,
           keyboardType: TextInputType.text,
@@ -73,7 +77,33 @@ class _LoginFormState extends State<LoginForm> {
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            onPressed: () {},
+            onPressed: () async {
+              if (emailController.text.isEmpty ||
+                  passwordController.text.isEmpty) {
+                setState(() {
+                  error = 'please enter valid email or password';
+                });
+              } else {
+                try {
+                  final credential =
+                      await FirebaseAuth.instance.signInWithEmailAndPassword(
+                    email: emailController.text,
+                    password: passwordController.text,
+                  );
+
+                } on FirebaseAuthException catch (e) {
+                  if (e.code == 'user-not-found') {
+                    setState(() {
+                      error = 'No user found for that email.';
+                    });
+                  } else if (e.code == 'wrong-password') {
+                    setState(() {
+                      error = 'Wrong password provided for that user.';
+                    });
+                  }
+                }
+              }
+            },
             child: Text(
               'Log in',
               style: TextStyle(color: colorScheme.onPrimary),

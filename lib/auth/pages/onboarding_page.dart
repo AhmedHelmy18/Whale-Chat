@@ -1,6 +1,6 @@
 import 'package:chat_app/auth/pages/login_page.dart';
 import 'package:chat_app/auth/pages/sign_up_page.dart';
-import 'package:chat_app/theme.dart';
+import 'package:chat_app/constraints/theme.dart';
 import 'package:flutter/material.dart';
 
 class OnboardingPage extends StatelessWidget {
