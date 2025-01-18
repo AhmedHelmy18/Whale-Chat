@@ -1,3 +1,4 @@
+import 'package:chat_app/auth/pages/login_page.dart';
 import 'package:chat_app/theme.dart';
 import 'package:flutter/material.dart';
 
@@ -113,7 +114,14 @@ class _SignupFormState extends State<SignupForm> {
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => LoginPage(),
+                ),
+              );
+            },
             child: Text('Log in'),
           ),
         ),
