@@ -1,3 +1,4 @@
+import 'package:chat_app/auth/pages/forget_password.dart';
 import 'package:chat_app/auth/pages/sign_up_page.dart';
 import 'package:chat_app/constraints/error_box.dart';
 import 'package:chat_app/constraints/theme.dart';
@@ -63,7 +64,14 @@ class _LoginFormState extends State<LoginForm> {
         Align(
           alignment: Alignment.centerRight,
           child: TextButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ForgetPassword(),
+                ),
+              );
+            },
             child: Text(
               'Forgot Password?',
             ),
