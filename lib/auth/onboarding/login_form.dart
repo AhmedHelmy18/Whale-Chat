@@ -1,6 +1,7 @@
 import 'package:chat_app/auth/pages/sign_up_page.dart';
 import 'package:chat_app/constraints/error_box.dart';
 import 'package:chat_app/constraints/theme.dart';
+import 'package:chat_app/widgets/home_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -90,7 +91,12 @@ class _LoginFormState extends State<LoginForm> {
                     email: emailController.text,
                     password: passwordController.text,
                   );
-
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const HomePage(),
+                    ),
+                  );
                 } on FirebaseAuthException catch (e) {
                   if (e.code == 'user-not-found') {
                     setState(() {

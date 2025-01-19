@@ -1,6 +1,8 @@
 import 'package:chat_app/auth/pages/login_page.dart';
 import 'package:chat_app/constraints/error_box.dart';
 import 'package:chat_app/constraints/theme.dart';
+import 'package:chat_app/widgets/home_page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -96,6 +98,19 @@ class _SignupFormState extends State<SignupForm> {
                       .createUserWithEmailAndPassword(
                     email: emailController.text,
                     password: passwordController.text,
+                  );
+                  FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(credential.user?.uid)
+                      .set({
+                    'name': nameController.text,
+                  });
+                  await credential.user?.sendEmailVerification();
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => HomePage(),
+                    ),
                   );
                 } on FirebaseAuthException catch (e) {
                   if (e.code == 'weak-password') {
