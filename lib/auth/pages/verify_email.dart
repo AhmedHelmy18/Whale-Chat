@@ -26,8 +26,11 @@ class VerifyEmail extends StatelessWidget {
               vertical: 80.0,
             ),
             child: Text(
-              'Your email is verified',
-              style: TextStyle(fontSize: 30, fontWeight: FontWeight.w500),
+              'An email has been sent to you.',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           Container(
