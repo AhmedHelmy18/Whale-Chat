@@ -1,5 +1,6 @@
 import 'package:chat_app/auth/pages/onboarding_page.dart';
 import 'package:chat_app/constraints/theme.dart';
+import 'package:chat_app/profile_image/add_image.dart';
 import 'package:chat_app/widgets/home_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -42,7 +43,8 @@ class _ChatAppState extends State<ChatApp> {
     return MaterialApp(
       theme: ThemeData(colorScheme: colorScheme, useMaterial3: true),
       debugShowCheckedModeBanner: false,
-      home: isLoggedIn ? const HomePage() : const OnboardingPage(),
+      home: HomePage()
+      // isLoggedIn ? const HomePage() : const OnboardingPage(),
     );
   }
 }
