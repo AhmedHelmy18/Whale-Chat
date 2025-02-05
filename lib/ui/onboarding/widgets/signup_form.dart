@@ -1,23 +1,24 @@
-import 'package:chat_app/auth/pages/forget_password.dart';
-import 'package:chat_app/auth/pages/sign_up_page.dart';
-import 'package:chat_app/constraints/error_box.dart';
-import 'package:chat_app/constraints/theme.dart';
-import 'package:chat_app/widgets/home_page.dart';
+import 'package:chat_app/ui/onboarding/pages/login_page.dart';
+import 'package:chat_app/ui/onboarding/common/error_box.dart';
+import 'package:chat_app/constants/theme.dart';
+import 'package:chat_app/ui/app/pages/home_page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class LoginForm extends StatefulWidget {
-  const LoginForm({super.key});
+class SignupForm extends StatefulWidget {
+  const SignupForm({super.key});
 
   @override
-  State<LoginForm> createState() => _LoginFormState();
+  State<SignupForm> createState() => _SignupFormState();
 }
 
-class _LoginFormState extends State<LoginForm> {
+class _SignupFormState extends State<SignupForm> {
   String error = '';
   bool obscureText = true;
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  TextEditingController nameController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +26,19 @@ class _LoginFormState extends State<LoginForm> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         (error.isNotEmpty) ? ErrorBox(content: error) : const SizedBox(),
+        TextField(
+          controller: nameController,
+          textInputAction: TextInputAction.next,
+          keyboardType: TextInputType.text,
+          decoration: InputDecoration(
+            prefixIcon: Icon(Icons.person),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            labelText: 'Name',
+          ),
+        ),
+        const SizedBox(height: 10),
         TextField(
           controller: emailController,
           keyboardType: TextInputType.text,
@@ -37,7 +51,7 @@ class _LoginFormState extends State<LoginForm> {
             labelText: 'Email',
           ),
         ),
-        const SizedBox(height: 15),
+        const SizedBox(height: 10),
         TextField(
           controller: passwordController,
           keyboardType: TextInputType.text,
@@ -61,22 +75,7 @@ class _LoginFormState extends State<LoginForm> {
             labelText: 'Password',
           ),
         ),
-        Align(
-          alignment: Alignment.centerRight,
-          child: TextButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const ForgetPassword(),
-                ),
-              );
-            },
-            child: Text(
-              'Forgot Password?',
-            ),
-          ),
-        ),
+        const SizedBox(height: 8),
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
@@ -88,38 +87,50 @@ class _LoginFormState extends State<LoginForm> {
             ),
             onPressed: () async {
               if (emailController.text.isEmpty ||
-                  passwordController.text.isEmpty) {
+                  passwordController.text.isEmpty ||
+                  nameController.text.isEmpty) {
                 setState(() {
-                  error = 'please enter valid email or password';
+                  error = 'Please enter Name and Email and Password.';
                 });
               } else {
                 try {
-                  final credential =
-                      await FirebaseAuth.instance.signInWithEmailAndPassword(
+                  final credential = await FirebaseAuth.instance
+                      .createUserWithEmailAndPassword(
                     email: emailController.text,
                     password: passwordController.text,
                   );
+                  FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(credential.user?.uid)
+                      .set({
+                    'name': nameController.text,
+                  });
+                  await credential.user?.sendEmailVerification();
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const HomePage(),
+                      builder: (context) => HomePage(),
                     ),
                   );
                 } on FirebaseAuthException catch (e) {
-                  if (e.code == 'user-not-found') {
+                  if (e.code == 'weak-password') {
                     setState(() {
-                      error = 'No user found for that email.';
+                      error = 'The password provided is too weak.';
                     });
-                  } else if (e.code == 'wrong-password') {
+                  } else if (e.code == 'email-already-in-use') {
                     setState(() {
-                      error = 'Wrong password provided for that user.';
+                      error = 'The account already exists for that email.';
                     });
                   }
+                } catch (e) {
+                  setState(() {
+                    error = e.toString();
+                  });
                 }
               }
             },
             child: Text(
-              'Log in',
+              'Sign Up',
               style: TextStyle(color: colorScheme.onPrimary),
             ),
           ),
@@ -158,11 +169,11 @@ class _LoginFormState extends State<LoginForm> {
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => SignUpPage(),
+                  builder: (context) => LoginPage(),
                 ),
               );
             },
-            child: Text('Sign up'),
+            child: Text('Log in'),
           ),
         ),
       ],

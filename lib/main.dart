@@ -1,7 +1,5 @@
-import 'package:chat_app/auth/pages/onboarding_page.dart';
-import 'package:chat_app/constraints/theme.dart';
-import 'package:chat_app/profile_image/add_image.dart';
-import 'package:chat_app/widgets/home_page.dart';
+import 'package:chat_app/constants/theme.dart';
+import 'package:chat_app/ui/app/pages/home_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
