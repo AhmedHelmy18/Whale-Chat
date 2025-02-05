@@ -1,4 +1,5 @@
 import 'package:chat_app/constants/theme.dart';
+import 'package:chat_app/ui/app/widgets/chat_user_container.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatelessWidget {
@@ -26,53 +27,17 @@ class HomePage extends StatelessWidget {
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.only(top: 10.0, right: 10.0, left: 10.0),
-        child: GestureDetector(
-          onTap: () {},
-          child: Container(
-            height: 100,
-            decoration: BoxDecoration(),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset(
-                  'assets/images/download.jpeg',
-                  height: 80,
-                ),
-                SizedBox(
-                  width: 15,
-                ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'User Name',
-                        style: TextStyle(
-                          fontSize: 24,
-                        ),
-                      ),
-                      SizedBox(
-                        height: 5,
-                      ),
-                      Text(
-                        'vsjdbnavjndhewvihguhaenvdavnrwnvi',
-                        style: TextStyle(
-                          fontSize: 18,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                        softWrap: false,
-                      ),
-                    ],
-                  ),
-                ),
-                Text('3m ago')
-              ],
-            ),
-          ),
+        padding: const EdgeInsets.only(
+          top: 20.0,
+          right: 20.0,
+          left: 20.0,
+          bottom: 10,
+        ),
+        child: ListView.builder(
+          itemBuilder: (BuildContext context, int index) {
+            return ChatUserContainer();
+          },
+          itemCount: 10,
         ),
       ),
     );
