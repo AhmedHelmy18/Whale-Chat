@@ -1,4 +1,5 @@
 import 'package:chat_app/constants/theme.dart';
+import 'package:chat_app/ui/app/widgets/message_body.dart';
 import 'package:flutter/material.dart';
 
 class Chat extends StatelessWidget {
@@ -25,8 +26,8 @@ class Chat extends StatelessWidget {
             ClipOval(
               child: Image.asset(
                 'assets/images/download.jpeg',
-                height: 50, // Adjusted height
-                width: 50, // Set width for consistency
+                height: 50,
+                width: 50,
                 fit: BoxFit.cover,
               ),
             ),
@@ -38,7 +39,7 @@ class Chat extends StatelessWidget {
                 Text(
                   'User Name',
                   style: TextStyle(
-                    fontSize: 24, // Slightly reduced font size
+                    fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
@@ -58,16 +59,7 @@ class Chat extends StatelessWidget {
           ],
         ),
       ),
-      body: Row(
-        children: [
-          Container(
-            height: 100,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          )
-        ],
-      ),
+      body: MessageBody(),
     );
   }
 }
