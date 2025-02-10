@@ -1,4 +1,5 @@
 import 'package:chat_app/constants/theme.dart';
+import 'package:chat_app/ui/app/models/message.dart';
 import 'package:flutter/material.dart';
 
 class MessageBody extends StatefulWidget {
@@ -9,15 +10,20 @@ class MessageBody extends StatefulWidget {
 }
 
 class _MessageBodyState extends State<MessageBody> {
-
   final TextEditingController _messageController = TextEditingController();
-  List<String> messages = []; // Stores sent messages
+  List<Message> messages = [];
 
   void sendMessage() {
     if (_messageController.text.trim().isNotEmpty) {
       setState(() {
-        messages.add(_messageController.text.trim());
+        messages.add(Message(text: _messageController.text.trim(), isMe: true));
         _messageController.clear();
+
+        Future.delayed(Duration(seconds: 1), () {
+          setState(() {
+            messages.add(Message(text: 'This is a reply!', isMe: false));
+          });
+        });
       });
     }
   }
@@ -34,85 +40,50 @@ class _MessageBodyState extends State<MessageBody> {
             shrinkWrap: true,
             physics: const BouncingScrollPhysics(),
             itemBuilder: (context, index) {
-              return Column(
-                children: [
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: IntrinsicWidth(
-                      child: Container(
-                        constraints: BoxConstraints(
-                          maxWidth: width * 0.65,
-                          minWidth: 50,
-                        ),
-                        margin: EdgeInsets.only(top: 10, bottom: 10, right: 10),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 15,
-                        ),
-                        decoration: BoxDecoration(
-                          color: colorScheme.primary,
-                          shape: BoxShape.rectangle,
-                          borderRadius: BorderRadius.only(
-                            bottomRight: Radius.circular(20),
-                            topLeft: Radius.circular(20),
-                            bottomLeft: Radius.circular(20),
-                          ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              messages[index],
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w400,
-                                color: colorScheme.surface,
-                              ),
-                            ),
-                          ],
-                        ),
+              final message = messages[index];
+              return Align(
+                alignment:
+                    message.isMe ? Alignment.centerRight : Alignment.centerLeft,
+                child: IntrinsicWidth(
+                  child: Container(
+                    constraints: BoxConstraints(
+                      maxWidth: width * 0.65,
+                      minWidth: 50,
+                    ),
+                    margin: EdgeInsets.only(
+                      top: 10,
+                      bottom: 10,
+                      right: message.isMe ? 10 : 0,
+                      left: message.isMe ? 0 : 10,
+                    ),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 15,
+                    ),
+                    decoration: BoxDecoration(
+                      color: message.isMe
+                          ? colorScheme.primary
+                          : colorScheme.secondary,
+                      shape: BoxShape.rectangle,
+                      borderRadius: BorderRadius.only(
+                        bottomRight: Radius.circular(20),
+                        topLeft: Radius.circular(20),
+                        bottomLeft:
+                            message.isMe ? Radius.circular(20) : Radius.zero,
+                        topRight:
+                            message.isMe ? Radius.zero : Radius.circular(20),
+                      ),
+                    ),
+                    child: Text(
+                      message.text,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w400,
+                        color: colorScheme.surface,
                       ),
                     ),
                   ),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: IntrinsicWidth(
-                      child: Container(
-                        constraints: BoxConstraints(
-                          maxWidth: width * 0.65,
-                          minWidth: 50,
-                        ),
-                        margin: EdgeInsets.only(top: 10, bottom: 10, left: 10),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 15,
-                        ),
-                        decoration: BoxDecoration(
-                          color: colorScheme.secondary,
-                          shape: BoxShape.rectangle,
-                          borderRadius: BorderRadius.only(
-                            bottomRight: Radius.circular(20),
-                            topRight: Radius.circular(20),
-                            bottomLeft: Radius.circular(20),
-                          ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              messages[index],
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w400,
-                                color: colorScheme.surface,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               );
             },
           ),
