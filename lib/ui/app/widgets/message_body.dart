@@ -9,7 +9,19 @@ class MessageBody extends StatefulWidget {
 }
 
 class _MessageBodyState extends State<MessageBody> {
-   String message = '';
+
+  final TextEditingController _messageController = TextEditingController();
+  List<String> messages = []; // Stores sent messages
+
+  void sendMessage() {
+    if (_messageController.text.trim().isNotEmpty) {
+      setState(() {
+        messages.add(_messageController.text.trim());
+        _messageController.clear();
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
@@ -18,7 +30,7 @@ class _MessageBodyState extends State<MessageBody> {
       children: [
         Expanded(
           child: ListView.builder(
-            itemCount: 10,
+            itemCount: messages.length,
             shrinkWrap: true,
             physics: const BouncingScrollPhysics(),
             itemBuilder: (context, index) {
@@ -32,11 +44,7 @@ class _MessageBodyState extends State<MessageBody> {
                           maxWidth: width * 0.65,
                           minWidth: 50,
                         ),
-                        margin: EdgeInsets.only(
-                          top: 10,
-                          bottom: 10,
-                          right: 10
-                        ),
+                        margin: EdgeInsets.only(top: 10, bottom: 10, right: 10),
                         padding: EdgeInsets.symmetric(
                           horizontal: 20,
                           vertical: 15,
@@ -54,7 +62,7 @@ class _MessageBodyState extends State<MessageBody> {
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Text(
-                              'Hegazy good man',
+                              messages[index],
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w400,
@@ -74,11 +82,7 @@ class _MessageBodyState extends State<MessageBody> {
                           maxWidth: width * 0.65,
                           minWidth: 50,
                         ),
-                        margin: EdgeInsets.only(
-                            top: 10,
-                            bottom: 10,
-                            left: 10
-                        ),
+                        margin: EdgeInsets.only(top: 10, bottom: 10, left: 10),
                         padding: EdgeInsets.symmetric(
                           horizontal: 20,
                           vertical: 15,
@@ -96,7 +100,7 @@ class _MessageBodyState extends State<MessageBody> {
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Text(
-                              'Hegazy good man',
+                              messages[index],
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w400,
@@ -141,13 +145,15 @@ class _MessageBodyState extends State<MessageBody> {
                     borderRadius: BorderRadius.circular(30),
                   ),
                   child: TextFormField(
-                    onSaved: (value) {
-                      message = value!;
-                    },
-                    onFieldSubmitted: (value) {},
+                    controller: _messageController,
                     maxLines: 1,
                     textInputAction: TextInputAction.done,
                     decoration: InputDecoration(
+                      constraints: BoxConstraints(
+                        maxWidth: 50,
+                        minHeight: 50,
+                        maxHeight: height / 4,
+                      ),
                       hintText: 'Message',
                       border: InputBorder.none,
                       hintStyle: TextStyle(
@@ -172,9 +178,7 @@ class _MessageBodyState extends State<MessageBody> {
                     Icons.send,
                     color: colorScheme.surface,
                   ),
-                  onPressed: () {
-
-                  },
+                  onPressed: sendMessage,
                 ),
               ),
             ],
