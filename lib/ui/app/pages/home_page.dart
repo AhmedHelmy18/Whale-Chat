@@ -1,5 +1,6 @@
 import 'package:chat_app/constants/theme.dart';
 import 'package:chat_app/ui/app/widgets/chat_user_container.dart';
+import 'package:chat_app/ui/app/widgets/search.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatelessWidget {
@@ -17,7 +18,14 @@ class HomePage extends StatelessWidget {
         ),
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const Search(),
+                ),
+              );
+            },
             icon: Icon(
               Icons.search_outlined,
               size: 30,

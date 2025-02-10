@@ -1,9 +1,15 @@
 import 'package:chat_app/constants/theme.dart';
 import 'package:flutter/material.dart';
 
-class MessageBody extends StatelessWidget {
+class MessageBody extends StatefulWidget {
   const MessageBody({super.key});
 
+  @override
+  State<MessageBody> createState() => _MessageBodyState();
+}
+
+class _MessageBodyState extends State<MessageBody> {
+   String message = '';
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
@@ -134,7 +140,11 @@ class MessageBody extends StatelessWidget {
                     ],
                     borderRadius: BorderRadius.circular(30),
                   ),
-                  child: TextField(
+                  child: TextFormField(
+                    onSaved: (value) {
+                      message = value!;
+                    },
+                    onFieldSubmitted: (value) {},
                     maxLines: 1,
                     textInputAction: TextInputAction.done,
                     decoration: InputDecoration(
@@ -162,7 +172,9 @@ class MessageBody extends StatelessWidget {
                     Icons.send,
                     color: colorScheme.surface,
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+
+                  },
                 ),
               ),
             ],
