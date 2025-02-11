@@ -1,24 +1,23 @@
-import 'package:chat_app/auth/pages/login_page.dart';
-import 'package:chat_app/constraints/error_box.dart';
-import 'package:chat_app/constraints/theme.dart';
-import 'package:chat_app/widgets/home_page.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:chat_app/ui/onboarding/pages/forget_password.dart';
+import 'package:chat_app/ui/onboarding/pages/sign_up_page.dart';
+import 'package:chat_app/ui/onboarding/common//error_box.dart';
+import 'package:chat_app/constants/theme.dart';
+import 'package:chat_app/ui/app/pages/home_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class SignupForm extends StatefulWidget {
-  const SignupForm({super.key});
+class LoginForm extends StatefulWidget {
+  const LoginForm({super.key});
 
   @override
-  State<SignupForm> createState() => _SignupFormState();
+  State<LoginForm> createState() => _LoginFormState();
 }
 
-class _SignupFormState extends State<SignupForm> {
+class _LoginFormState extends State<LoginForm> {
   String error = '';
   bool obscureText = true;
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
-  TextEditingController nameController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -26,19 +25,6 @@ class _SignupFormState extends State<SignupForm> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         (error.isNotEmpty) ? ErrorBox(content: error) : const SizedBox(),
-        TextField(
-          controller: nameController,
-          textInputAction: TextInputAction.next,
-          keyboardType: TextInputType.text,
-          decoration: InputDecoration(
-            prefixIcon: Icon(Icons.person),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            labelText: 'Name',
-          ),
-        ),
-        const SizedBox(height: 10),
         TextField(
           controller: emailController,
           keyboardType: TextInputType.text,
@@ -51,7 +37,7 @@ class _SignupFormState extends State<SignupForm> {
             labelText: 'Email',
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 15),
         TextField(
           controller: passwordController,
           keyboardType: TextInputType.text,
@@ -75,7 +61,22 @@ class _SignupFormState extends State<SignupForm> {
             labelText: 'Password',
           ),
         ),
-        const SizedBox(height: 8),
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ForgetPassword(),
+                ),
+              );
+            },
+            child: Text(
+              'Forgot Password?',
+            ),
+          ),
+        ),
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
@@ -87,50 +88,38 @@ class _SignupFormState extends State<SignupForm> {
             ),
             onPressed: () async {
               if (emailController.text.isEmpty ||
-                  passwordController.text.isEmpty ||
-                  nameController.text.isEmpty) {
+                  passwordController.text.isEmpty) {
                 setState(() {
-                  error = 'Please enter Name and Email and Password.';
+                  error = 'please enter valid email or password';
                 });
               } else {
                 try {
-                  final credential = await FirebaseAuth.instance
-                      .createUserWithEmailAndPassword(
+                  final credential =
+                      await FirebaseAuth.instance.signInWithEmailAndPassword(
                     email: emailController.text,
                     password: passwordController.text,
                   );
-                  FirebaseFirestore.instance
-                      .collection('users')
-                      .doc(credential.user?.uid)
-                      .set({
-                    'name': nameController.text,
-                  });
-                  await credential.user?.sendEmailVerification();
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => HomePage(),
+                      builder: (context) => const HomePage(),
                     ),
                   );
                 } on FirebaseAuthException catch (e) {
-                  if (e.code == 'weak-password') {
+                  if (e.code == 'user-not-found') {
                     setState(() {
-                      error = 'The password provided is too weak.';
+                      error = 'No user found for that email.';
                     });
-                  } else if (e.code == 'email-already-in-use') {
+                  } else if (e.code == 'wrong-password') {
                     setState(() {
-                      error = 'The account already exists for that email.';
+                      error = 'Wrong password provided for that user.';
                     });
                   }
-                } catch (e) {
-                  setState(() {
-                    error = e.toString();
-                  });
                 }
               }
             },
             child: Text(
-              'Sign Up',
+              'Log in',
               style: TextStyle(color: colorScheme.onPrimary),
             ),
           ),
@@ -169,11 +158,11 @@ class _SignupFormState extends State<SignupForm> {
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => LoginPage(),
+                  builder: (context) => SignUpPage(),
                 ),
               );
             },
-            child: Text('Log in'),
+            child: Text('Sign up'),
           ),
         ),
       ],

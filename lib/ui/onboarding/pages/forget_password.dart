@@ -1,5 +1,5 @@
-import 'package:chat_app/auth/pages/verify_email.dart';
-import 'package:chat_app/constraints/theme.dart';
+import 'package:chat_app/ui/onboarding/pages/verify_email.dart';
+import 'package:chat_app/constants//theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 

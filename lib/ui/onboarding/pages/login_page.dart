@@ -1,5 +1,5 @@
-import 'package:chat_app/auth/onboarding/login_form.dart';
-import 'package:chat_app/constraints/theme.dart';
+import 'package:chat_app/ui/onboarding/widgets/login_form.dart';
+import 'package:chat_app/constants/theme.dart';
 import 'package:flutter/material.dart';
 
 class LoginPage extends StatelessWidget {
