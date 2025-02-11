@@ -32,6 +32,7 @@ class _MessageBodyState extends State<MessageBody> {
 
   @override
   void initState() {
+    super.initState();
     FirebaseFirestore.instance
         .collection('conversations')
         .doc('Tj0bgkutWrJOnAeCQMJ9')
@@ -39,20 +40,23 @@ class _MessageBodyState extends State<MessageBody> {
         .orderBy('time', descending: true) // Sort by latest messages first
         .snapshots()
         .listen((QuerySnapshot snapshot) {
+      List<Message> updatedMessages = [];
+
       for (var doc in snapshot.docs) {
-        log("Message: ${doc['text']}");
-        setState(() {
-          messages.add(
-            Message(
-              text: doc['text'],
-              isMe: doc['sender'] == FirebaseAuth.instance.currentUser!.uid,
-              time: doc['time'],
-            ),
-          );
-        });
+        updatedMessages.add(
+          Message(
+            text: doc['text'],
+            isMe: doc['sender'] == FirebaseAuth.instance.currentUser!.uid,
+            time: doc['time'],
+          ),
+        );
       }
+
+      setState(() {
+        messages =
+            updatedMessages; // Replace messages list instead of adding to it
+      });
     });
-    super.initState();
   }
 
   @override
