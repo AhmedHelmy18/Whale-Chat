@@ -1,5 +1,9 @@
+import 'dart:developer';
+
 import 'package:chat_app/constants/theme.dart';
 import 'package:chat_app/ui/app/models/message.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class MessageBody extends StatefulWidget {
@@ -14,18 +18,41 @@ class _MessageBodyState extends State<MessageBody> {
   List<Message> messages = [];
 
   void sendMessage() {
-    if (_messageController.text.trim().isNotEmpty) {
-      setState(() {
-        messages.add(Message(text: _messageController.text.trim(), isMe: true));
-        _messageController.clear();
+    FirebaseFirestore.instance
+        .collection('conversations')
+        .doc('Tj0bgkutWrJOnAeCQMJ9')
+        .collection('messages')
+        .add({
+      'text': _messageController.text,
+      'sender': FirebaseAuth.instance.currentUser!.uid,
+      'time': FieldValue.serverTimestamp(),
+    });
+    _messageController.clear();
+  }
 
-        Future.delayed(Duration(seconds: 1), () {
-          setState(() {
-            messages.add(Message(text: 'This is a reply!', isMe: false));
-          });
+  @override
+  void initState() {
+    FirebaseFirestore.instance
+        .collection('conversations')
+        .doc('Tj0bgkutWrJOnAeCQMJ9')
+        .collection('messages')
+        .orderBy('time', descending: true) // Sort by latest messages first
+        .snapshots()
+        .listen((QuerySnapshot snapshot) {
+      for (var doc in snapshot.docs) {
+        log("Message: ${doc['text']}");
+        setState(() {
+          messages.add(
+            Message(
+              text: doc['text'],
+              isMe: doc['sender'] == FirebaseAuth.instance.currentUser!.uid,
+              time: doc['time'],
+            ),
+          );
         });
-      });
-    }
+      }
+    });
+    super.initState();
   }
 
   @override
