@@ -8,7 +8,7 @@ class ChatUserContainer extends StatelessWidget {
     return GestureDetector(
       onTap: () {},
       child: Container(
-        height: 110,
+        height: 100,
         decoration: BoxDecoration(),
         child: Column(
           children: [
@@ -18,7 +18,7 @@ class ChatUserContainer extends StatelessWidget {
               children: [
                 Image.asset(
                   'assets/images/download.jpeg',
-                  height: 80,
+                  height: 75,
                 ),
                 SizedBox(
                   width: 15,
@@ -31,7 +31,8 @@ class ChatUserContainer extends StatelessWidget {
                       Text(
                         'User Name',
                         style: TextStyle(
-                          fontSize: 24,
+                          fontSize: 23,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                       Text(
@@ -46,11 +47,13 @@ class ChatUserContainer extends StatelessWidget {
                     ],
                   ),
                 ),
-                Text('3m ago'),
+                Text(
+                  '3m ago',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ],
-            ),
-            SizedBox(
-              height: 20,
             ),
           ],
         ),

@@ -1,4 +1,5 @@
 import 'package:chat_app/constants/theme.dart';
+import 'package:chat_app/ui/app/pages/add_friend.dart';
 import 'package:chat_app/ui/app/widgets/chat_user_container.dart';
 import 'package:chat_app/ui/app/widgets/search.dart';
 import 'package:flutter/material.dart';
@@ -46,6 +47,21 @@ class HomePage extends StatelessWidget {
             return ChatUserContainer();
           },
           itemCount: 10,
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: colorScheme.primary,
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AddFriend(),
+            ),
+          );
+        },
+        child: Icon(
+          Icons.add,
+          color: colorScheme.surface,
         ),
       ),
     );

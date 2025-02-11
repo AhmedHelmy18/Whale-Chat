@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:chat_app/constants/theme.dart';
 import 'package:chat_app/ui/app/models/message.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
