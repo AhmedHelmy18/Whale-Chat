@@ -15,6 +15,7 @@ class MessageBody extends StatefulWidget {
 
 class _MessageBodyState extends State<MessageBody> {
   final TextEditingController _messageController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
   List<Message> messages = [];
 
   void sendMessage() {
@@ -37,7 +38,7 @@ class _MessageBodyState extends State<MessageBody> {
         .collection('conversations')
         .doc('Tj0bgkutWrJOnAeCQMJ9')
         .collection('messages')
-        .orderBy('time', descending: true) // Sort by latest messages first
+        .orderBy('time', descending: false)
         .snapshots()
         .listen((QuerySnapshot snapshot) {
       List<Message> updatedMessages = [];
@@ -47,15 +48,22 @@ class _MessageBodyState extends State<MessageBody> {
           Message(
             text: doc['text'],
             isMe: doc['sender'] == FirebaseAuth.instance.currentUser!.uid,
-            time: doc['time'],
+            // time: doc['time'],
           ),
         );
       }
-
       setState(() {
         messages =
-            updatedMessages; // Replace messages list instead of adding to it
+            updatedMessages;
       });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: Duration(milliseconds: 300), // Smooth scroll
+          curve: Curves.easeOut,
+        );
+      });
+
     });
   }
 
@@ -67,6 +75,7 @@ class _MessageBodyState extends State<MessageBody> {
       children: [
         Expanded(
           child: ListView.builder(
+            controller: _scrollController,
             itemCount: messages.length,
             shrinkWrap: true,
             physics: const BouncingScrollPhysics(),
