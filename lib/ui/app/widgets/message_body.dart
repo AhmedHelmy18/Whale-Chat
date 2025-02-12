@@ -26,8 +26,35 @@ class _MessageBodyState extends State<MessageBody> {
       'text': _messageController.text,
       'sender': FirebaseAuth.instance.currentUser!.uid,
       'time': FieldValue.serverTimestamp(),
+      'status': 'sent',
     });
     _messageController.clear();
+  }
+
+  void markMessagesAsSeen() {
+    FirebaseFirestore.instance
+        .collection('conversations')
+        .doc('G7TWiVqwRnZX3CP2xK87')
+        .collection('Messages')
+        .where('status', isEqualTo: 'delivered')
+        .where('sender', isNotEqualTo: FirebaseAuth.instance.currentUser!.uid)
+        .get()
+        .then((snapshot) {
+      for (var doc in snapshot.docs) {
+        doc.reference.update({'status': 'seen'});
+      }
+    });
+  }
+
+  Icon getMessageStatusIcon(String status) {
+    if (status == 'sent') {
+      return Icon(Icons.check, color: Colors.grey, size: 16);
+    } else if (status == 'delivered') {
+      return Icon(Icons.done_all, color: Colors.grey, size: 16);
+    } else if (status == 'seen') {
+      return Icon(Icons.done_all, color: Colors.blue, size: 16);
+    }
+    return Icon(Icons.check, color: Colors.grey, size: 16);
   }
 
   @override
@@ -43,17 +70,18 @@ class _MessageBodyState extends State<MessageBody> {
       List<Message> updatedMessages = [];
 
       for (var doc in snapshot.docs) {
-        updatedMessages.add(
-          Message(
-            text: doc['text'],
-            isMe: doc['sender'] == FirebaseAuth.instance.currentUser!.uid,
-            time: doc['time'] ?? Timestamp.now(),
-          ),
-        );
+        updatedMessages
+            .add(Message.fromFirestore(doc.data() as Map<String, dynamic>));
+
+        if (doc['status'] == 'sent' &&
+            doc['sender'] != FirebaseAuth.instance.currentUser!.uid) {
+          doc.reference.update({'status': 'delivered'});
+        }
       }
       setState(() {
         messages = updatedMessages;
       });
+
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,
@@ -62,6 +90,7 @@ class _MessageBodyState extends State<MessageBody> {
         );
       });
     });
+    markMessagesAsSeen();
   }
 
   @override
@@ -156,13 +185,19 @@ class _MessageBodyState extends State<MessageBody> {
                               alignment: message.isMe
                                   ? Alignment.bottomRight
                                   : Alignment.bottomLeft,
-                              child: Text(
-                                formatTimestamp(message.time),
-                                style: TextStyle(
-                                  color: colorScheme.surface,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w500,
-                                ),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    formatTimestamp(message.time),
+                                    style: TextStyle(
+                                      color: colorScheme.surface,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  SizedBox(width: 5),
+                                  getMessageStatusIcon(message.status),
+                                ],
                               ),
                             ),
                           ],
