@@ -43,7 +43,7 @@ class _ChatAppState extends State<ChatApp> {
     return MaterialApp(
       theme: ThemeData(colorScheme: colorScheme, useMaterial3: true),
       debugShowCheckedModeBanner: false,
-      home: isLoggedIn ? const HomePage() : const OnboardingPage(),
+      home: isLoggedIn ? const Chat() : const OnboardingPage(),
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:chat_app/constants/format_time.dart';
 import 'package:chat_app/constants/theme.dart';
 import 'package:chat_app/ui/app/models/message.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -19,8 +20,8 @@ class _MessageBodyState extends State<MessageBody> {
   void sendMessage() {
     FirebaseFirestore.instance
         .collection('conversations')
-        .doc('Tj0bgkutWrJOnAeCQMJ9')
-        .collection('messages')
+        .doc('G7TWiVqwRnZX3CP2xK87')
+        .collection('Messages')
         .add({
       'text': _messageController.text,
       'sender': FirebaseAuth.instance.currentUser!.uid,
@@ -34,8 +35,8 @@ class _MessageBodyState extends State<MessageBody> {
     super.initState();
     FirebaseFirestore.instance
         .collection('conversations')
-        .doc('Tj0bgkutWrJOnAeCQMJ9')
-        .collection('messages')
+        .doc('G7TWiVqwRnZX3CP2xK87')
+        .collection('Messages')
         .orderBy('time', descending: false)
         .snapshots()
         .listen((QuerySnapshot snapshot) {
@@ -46,22 +47,20 @@ class _MessageBodyState extends State<MessageBody> {
           Message(
             text: doc['text'],
             isMe: doc['sender'] == FirebaseAuth.instance.currentUser!.uid,
-            // time: doc['time'],
+            time: doc['time'] ?? Timestamp.now(),
           ),
         );
       }
       setState(() {
-        messages =
-            updatedMessages;
+        messages = updatedMessages;
       });
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,
-          duration: Duration(milliseconds: 300), // Smooth scroll
+          duration: Duration(milliseconds: 300),
           curve: Curves.easeOut,
         );
       });
-
     });
   }
 
@@ -79,49 +78,99 @@ class _MessageBodyState extends State<MessageBody> {
             physics: const BouncingScrollPhysics(),
             itemBuilder: (context, index) {
               final message = messages[index];
-              return Align(
-                alignment:
-                    message.isMe ? Alignment.centerRight : Alignment.centerLeft,
-                child: IntrinsicWidth(
-                  child: Container(
-                    constraints: BoxConstraints(
-                      maxWidth: width * 0.65,
-                      minWidth: 50,
-                    ),
-                    margin: EdgeInsets.only(
-                      top: 10,
-                      bottom: 10,
-                      right: message.isMe ? 10 : 0,
-                      left: message.isMe ? 0 : 10,
-                    ),
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 15,
-                    ),
-                    decoration: BoxDecoration(
-                      color: message.isMe
-                          ? colorScheme.primary
-                          : colorScheme.secondary,
-                      shape: BoxShape.rectangle,
-                      borderRadius: BorderRadius.only(
-                        bottomRight: Radius.circular(20),
-                        topLeft: Radius.circular(20),
-                        bottomLeft:
-                            message.isMe ? Radius.circular(20) : Radius.zero,
-                        topRight:
-                            message.isMe ? Radius.zero : Radius.circular(20),
+              return Column(
+                children: [
+                  if (index == 0)
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        top: 8.0,
+                      ),
+                      child: Container(
+                        constraints: BoxConstraints(
+                          maxHeight: 40,
+                          minWidth: 50,
+                          maxWidth: 80,
+                        ),
+                        decoration: BoxDecoration(
+                          color: colorScheme.secondary,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Center(
+                          child: Text(
+                            formatDate(messages[index].time),
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: colorScheme.surface,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
-                    child: Text(
-                      message.text,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w400,
-                        color: colorScheme.surface,
+                  Align(
+                    alignment: message.isMe
+                        ? Alignment.centerRight
+                        : Alignment.centerLeft,
+                    child: IntrinsicWidth(
+                      child: Container(
+                        constraints: BoxConstraints(
+                          maxWidth: width * 0.65,
+                          minWidth: 50,
+                        ),
+                        margin: EdgeInsets.only(
+                          top: 10,
+                          right: message.isMe ? 10 : 0,
+                          left: message.isMe ? 0 : 10,
+                        ),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: message.isMe
+                              ? colorScheme.primary
+                              : colorScheme.secondary,
+                          shape: BoxShape.rectangle,
+                          borderRadius: BorderRadius.only(
+                            bottomRight: Radius.circular(20),
+                            topLeft: Radius.circular(20),
+                            bottomLeft: message.isMe
+                                ? Radius.circular(20)
+                                : Radius.zero,
+                            topRight: message.isMe
+                                ? Radius.zero
+                                : Radius.circular(20),
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            Text(
+                              message.text,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w400,
+                                color: colorScheme.surface,
+                              ),
+                            ),
+                            Align(
+                              alignment: message.isMe
+                                  ? Alignment.bottomRight
+                                  : Alignment.bottomLeft,
+                              child: Text(
+                                formatTimestamp(message.time),
+                                style: TextStyle(
+                                  color: colorScheme.surface,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
+                ],
               );
             },
           ),
