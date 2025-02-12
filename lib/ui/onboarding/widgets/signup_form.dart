@@ -106,11 +106,12 @@ class _SignupFormState extends State<SignupForm> {
                     'name': nameController.text,
                   });
                   await credential.user?.sendEmailVerification();
-                  Navigator.pushReplacement(
+                  Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(
                       builder: (context) => HomePage(),
                     ),
+                      (route) => false,
                   );
                 } on FirebaseAuthException catch (e) {
                   if (e.code == 'weak-password') {

@@ -12,9 +12,11 @@ class Chat extends StatelessWidget {
         toolbarHeight: 100,
         backgroundColor: colorScheme.primary,
         leading: SizedBox(
-          width: 60, // Define a width for leading
+          width: 60,
           child: IconButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.pop(context);
+            },
             icon: Icon(
               Icons.arrow_back_ios,
               color: colorScheme.surface,

@@ -9,8 +9,8 @@ class AddFriendContainer extends StatelessWidget {
     return Container(
       margin: EdgeInsets.only(
         top: 5,
-        left: 8,
-        right: 8,
+        left: 10,
+        right: 10,
       ),
       height: 80,
       decoration: BoxDecoration(),

@@ -92,7 +92,9 @@ class OnboardingPage extends StatelessWidget {
                     ),
                     child: Text(
                       'Sign Up',
-                      style: TextStyle(color: colorScheme.onPrimary),
+                      style: TextStyle(
+                        color: colorScheme.onPrimary,
+                      ),
                     ),
                   ),
                 )

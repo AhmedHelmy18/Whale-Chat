@@ -15,7 +15,10 @@ class HomePage extends StatelessWidget {
         backgroundColor: colorScheme.primary,
         title: Text(
           'Chats',
-          style: TextStyle(fontSize: 30, color: colorScheme.surface),
+          style: TextStyle(
+            fontSize: 30,
+            color: colorScheme.surface,
+          ),
         ),
         actions: [
           IconButton(
@@ -37,7 +40,7 @@ class HomePage extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.only(
-          top: 20.0,
+          top: 15.0,
           right: 20.0,
           left: 20.0,
           bottom: 10,

@@ -1,3 +1,4 @@
+import 'package:chat_app/ui/app/pages/chat.dart';
 import 'package:flutter/material.dart';
 
 class ChatUserContainer extends StatelessWidget {
@@ -6,9 +7,16 @@ class ChatUserContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {},
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => Chat(),
+          ),
+        );
+      },
       child: Container(
-        height: 100,
+        height: 90,
         decoration: BoxDecoration(),
         child: Column(
           children: [
@@ -18,10 +26,10 @@ class ChatUserContainer extends StatelessWidget {
               children: [
                 Image.asset(
                   'assets/images/download.jpeg',
-                  height: 75,
+                  height: 70,
                 ),
                 SizedBox(
-                  width: 15,
+                  width: 13,
                 ),
                 Expanded(
                   child: Column(
@@ -31,14 +39,14 @@ class ChatUserContainer extends StatelessWidget {
                       Text(
                         'User Name',
                         style: TextStyle(
-                          fontSize: 23,
+                          fontSize: 22,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                       Text(
                         'vsjdbnavjndhewvihguhaenvdavnrwnvi',
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 17,
                         ),
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
@@ -50,6 +58,7 @@ class ChatUserContainer extends StatelessWidget {
                 Text(
                   '3m ago',
                   style: TextStyle(
+                    fontSize: 15,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
