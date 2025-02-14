@@ -3,7 +3,16 @@ import 'package:chat_app/ui/app/widgets/message_body.dart';
 import 'package:flutter/material.dart';
 
 class Chat extends StatelessWidget {
-  const Chat({super.key});
+  const Chat({
+    super.key,
+    required this.userId,
+    required this.userName,
+    required this.conversationId,
+  });
+
+  final String userId;
+  final String userName;
+  final String conversationId;
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +48,7 @@ class Chat extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  'User Name',
+                  userName,
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -61,7 +70,10 @@ class Chat extends StatelessWidget {
           ],
         ),
       ),
-      body: MessageBody(),
+      body: MessageBody(
+        conversationId: conversationId,
+        userId: userId,
+      ),
     );
   }
 }

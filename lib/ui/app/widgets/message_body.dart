@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:chat_app/constants/format_time.dart';
 import 'package:chat_app/constants/theme.dart';
 import 'package:chat_app/ui/app/models/message.dart';
@@ -6,7 +8,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class MessageBody extends StatefulWidget {
-  const MessageBody({super.key});
+  const MessageBody({
+    super.key,
+    required this.conversationId,
+    required this.userId,
+  });
+
+  final String conversationId;
+  final String userId;
 
   @override
   State<MessageBody> createState() => _MessageBodyState();
@@ -16,34 +25,74 @@ class _MessageBodyState extends State<MessageBody> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   List<Message> messages = [];
+  StreamSubscription? _messageSubscription;
 
-  void sendMessage() {
+  void sendMessage() async {
+    if (_messageController.text.trim().isEmpty) return;
+
     FirebaseFirestore.instance
         .collection('conversations')
-        .doc('G7TWiVqwRnZX3CP2xK87')
-        .collection('Messages')
+        .doc(widget.conversationId)
+        .collection('messages')
         .add({
-      'text': _messageController.text,
+      'text': _messageController.text.trim(),
       'sender': FirebaseAuth.instance.currentUser!.uid,
       'time': FieldValue.serverTimestamp(),
       'status': 'sent',
     });
+    var historyConversation = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .get();
+
+    List<String> lastMessages = [widget.conversationId];
+    for (var conversationId
+        in historyConversation.data()?['last conversation']) {
+      if (conversationId != widget.conversationId) {
+        lastMessages.add(conversationId);
+      }
+    }
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .update({
+      'last conversation': [
+        widget.conversationId,
+        ...historyConversation.data()?['last conversation']
+      ],
+    });
     _messageController.clear();
+
+    historyConversation = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .get();
+
+    lastMessages = [widget.conversationId];
+    for (var conversationId
+        in historyConversation.data()?['last conversation']) {
+      if (conversationId != widget.conversationId) {
+        lastMessages.add(conversationId);
+      }
+    }
+    FirebaseFirestore.instance.collection('users').doc(widget.userId).update({
+      'last conversation': lastMessages,
+    });
   }
 
-  void markMessagesAsSeen() {
-    FirebaseFirestore.instance
+  void markMessagesAsSeen() async {
+    var snapshot = await FirebaseFirestore.instance
         .collection('conversations')
-        .doc('G7TWiVqwRnZX3CP2xK87')
-        .collection('Messages')
+        .doc(widget.conversationId)
+        .collection('messages')
         .where('status', isEqualTo: 'delivered')
         .where('sender', isNotEqualTo: FirebaseAuth.instance.currentUser!.uid)
-        .get()
-        .then((snapshot) {
-      for (var doc in snapshot.docs) {
-        doc.reference.update({'status': 'seen'});
-      }
-    });
+        .get();
+    WriteBatch batch = FirebaseFirestore.instance.batch();
+    for (var doc in snapshot.docs) {
+      batch.update(doc.reference, {'status': 'seen'});
+    }
+    await batch.commit();
   }
 
   Icon getMessageStatusIcon(String status) {
@@ -57,16 +106,32 @@ class _MessageBodyState extends State<MessageBody> {
     return Icon(Icons.check, color: Colors.grey, size: 16);
   }
 
+  void _scrollToBottom() {
+    Future.delayed(Duration(milliseconds: 100), () {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  @override
   @override
   void initState() {
     super.initState();
-    FirebaseFirestore.instance
+
+    _messageSubscription = FirebaseFirestore.instance
         .collection('conversations')
-        .doc('G7TWiVqwRnZX3CP2xK87')
-        .collection('Messages')
+        .doc(widget.conversationId)
+        .collection('messages')
         .orderBy('time', descending: false)
         .snapshots()
         .listen((QuerySnapshot snapshot) {
+      if (!mounted) return; // ✅ Prevent state updates if widget is removed
+
       List<Message> updatedMessages = [];
 
       for (var doc in snapshot.docs) {
@@ -78,19 +143,23 @@ class _MessageBodyState extends State<MessageBody> {
           doc.reference.update({'status': 'delivered'});
         }
       }
+
       setState(() {
         messages = updatedMessages;
       });
 
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      });
+      _scrollToBottom();
     });
+
     markMessagesAsSeen();
+  }
+
+  @override
+  void dispose() {
+    _messageSubscription?.cancel(); // ✅ Stop listening when widget is removed
+    _messageController.dispose();
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -107,9 +176,12 @@ class _MessageBodyState extends State<MessageBody> {
             physics: const BouncingScrollPhysics(),
             itemBuilder: (context, index) {
               final message = messages[index];
+              final String formattedDate = formatDate(message.time);
+              final bool showDateHeader = index == 0 ||
+                  formatDate(messages[index - 1].time) != formattedDate;
               return Column(
                 children: [
-                  if (index == 0)
+                  if (showDateHeader)
                     Padding(
                       padding: const EdgeInsets.only(
                         top: 8.0,
@@ -118,7 +190,7 @@ class _MessageBodyState extends State<MessageBody> {
                         constraints: BoxConstraints(
                           maxHeight: 40,
                           minWidth: 50,
-                          maxWidth: 80,
+                          maxWidth: 100,
                         ),
                         decoration: BoxDecoration(
                           color: colorScheme.secondary,
@@ -126,7 +198,7 @@ class _MessageBodyState extends State<MessageBody> {
                         ),
                         child: Center(
                           child: Text(
-                            formatDate(messages[index].time),
+                            formattedDate,
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
