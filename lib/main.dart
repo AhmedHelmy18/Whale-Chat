@@ -1,6 +1,6 @@
 import 'package:chat_app/constants/theme.dart';
-import 'package:chat_app/ui/app/pages/chat.dart';
-import 'package:chat_app/ui/app/pages/home_page.dart';
+
+import 'package:chat_app/ui/app/pages/screen.dart';
 import 'package:chat_app/ui/onboarding/pages/onboarding_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 
 import 'firebase_options.dart';
 
-void main() async{
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -43,7 +43,7 @@ class _ChatAppState extends State<ChatApp> {
     return MaterialApp(
       theme: ThemeData(colorScheme: colorScheme, useMaterial3: true),
       debugShowCheckedModeBanner: false,
-      home: isLoggedIn ? const HomePage() : const OnboardingPage(),
+      home: isLoggedIn ? const Screen() : const OnboardingPage(),
     );
   }
 }

@@ -23,7 +23,6 @@ class ChatService {
       'sender': FirebaseAuth.instance.currentUser!.uid,
       'time': FieldValue.serverTimestamp(),
       'status': 'sent',
-
     });
     var historyConversation = await FirebaseFirestore.instance
         .collection('users')
@@ -60,6 +59,7 @@ class ChatService {
     messageController.clear();
   }
 
+  // mark messages as seen
   Future<void> markMessagesAsSeen() async {
     var snapshot = await FirebaseFirestore.instance
         .collection('conversations')
@@ -75,7 +75,7 @@ class ChatService {
     await batch.commit();
   }
 
-  //
+  // show if see the message or not
   Icon getMessageStatusIcon(String status) {
     if (status == 'sent') {
       return Icon(Icons.check, color: Colors.grey, size: 16);
