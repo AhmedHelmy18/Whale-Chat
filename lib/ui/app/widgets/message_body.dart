@@ -1,8 +1,8 @@
 import 'dart:async';
-
 import 'package:chat_app/constants/format_time.dart';
 import 'package:chat_app/constants/theme.dart';
 import 'package:chat_app/ui/app/models/message.dart';
+import 'package:chat_app/ui/app/services/message_services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -27,136 +27,53 @@ class _MessageBodyState extends State<MessageBody> {
   List<Message> messages = [];
   StreamSubscription? _messageSubscription;
 
-  void sendMessage() async {
-    if (_messageController.text.trim().isEmpty) return;
+  late final ChatService chatService;
 
-    FirebaseFirestore.instance
-        .collection('conversations')
-        .doc(widget.conversationId)
-        .collection('messages')
-        .add({
-      'text': _messageController.text.trim(),
-      'sender': FirebaseAuth.instance.currentUser!.uid,
-      'time': FieldValue.serverTimestamp(),
-      'status': 'sent',
-    });
-    var historyConversation = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(FirebaseAuth.instance.currentUser!.uid)
-        .get();
-
-    List<String> lastMessages = [widget.conversationId];
-    for (var conversationId
-        in historyConversation.data()?['last conversation']) {
-      if (conversationId != widget.conversationId) {
-        lastMessages.add(conversationId);
-      }
-    }
-    FirebaseFirestore.instance
-        .collection('users')
-        .doc(FirebaseAuth.instance.currentUser!.uid)
-        .update({
-      'last conversation': [
-        widget.conversationId,
-        ...historyConversation.data()?['last conversation']
-      ],
-    });
-    _messageController.clear();
-
-    historyConversation = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(FirebaseAuth.instance.currentUser!.uid)
-        .get();
-
-    lastMessages = [widget.conversationId];
-    for (var conversationId
-        in historyConversation.data()?['last conversation']) {
-      if (conversationId != widget.conversationId) {
-        lastMessages.add(conversationId);
-      }
-    }
-    FirebaseFirestore.instance.collection('users').doc(widget.userId).update({
-      'last conversation': lastMessages,
-    });
-  }
-
-  void markMessagesAsSeen() async {
-    var snapshot = await FirebaseFirestore.instance
-        .collection('conversations')
-        .doc(widget.conversationId)
-        .collection('messages')
-        .where('status', isEqualTo: 'delivered')
-        .where('sender', isNotEqualTo: FirebaseAuth.instance.currentUser!.uid)
-        .get();
-    WriteBatch batch = FirebaseFirestore.instance.batch();
-    for (var doc in snapshot.docs) {
-      batch.update(doc.reference, {'status': 'seen'});
-    }
-    await batch.commit();
-  }
-
-  Icon getMessageStatusIcon(String status) {
-    if (status == 'sent') {
-      return Icon(Icons.check, color: Colors.grey, size: 16);
-    } else if (status == 'delivered') {
-      return Icon(Icons.done_all, color: Colors.grey, size: 16);
-    } else if (status == 'seen') {
-      return Icon(Icons.done_all, color: Colors.blue, size: 16);
-    }
-    return Icon(Icons.check, color: Colors.grey, size: 16);
-  }
-
-  void _scrollToBottom() {
-    Future.delayed(Duration(milliseconds: 100), () {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
-    });
-  }
-
-  @override
   @override
   void initState() {
     super.initState();
 
+    chatService = ChatService(
+      conversationId: widget.conversationId,
+      userId: widget.userId,
+    );
     _messageSubscription = FirebaseFirestore.instance
         .collection('conversations')
         .doc(widget.conversationId)
         .collection('messages')
         .orderBy('time', descending: false)
         .snapshots()
-        .listen((QuerySnapshot snapshot) {
-      if (!mounted) return; // ✅ Prevent state updates if widget is removed
+        .listen(
+      (QuerySnapshot snapshot) {
+        if (!mounted) return;
 
-      List<Message> updatedMessages = [];
+        List<Message> updatedMessages = [];
 
-      for (var doc in snapshot.docs) {
-        updatedMessages
-            .add(Message.fromFirestore(doc.data() as Map<String, dynamic>));
+        for (var doc in snapshot.docs) {
+          updatedMessages
+              .add(Message.fromFirestore(doc.data() as Map<String, dynamic>));
 
-        if (doc['status'] == 'sent' &&
-            doc['sender'] != FirebaseAuth.instance.currentUser!.uid) {
-          doc.reference.update({'status': 'delivered'});
+          if (doc['status'] == 'sent' &&
+              doc['sender'] != FirebaseAuth.instance.currentUser!.uid) {
+            doc.reference.update(
+              {'status': 'delivered'},
+            );
+          }
         }
-      }
-
-      setState(() {
-        messages = updatedMessages;
-      });
-
-      _scrollToBottom();
-    });
-
-    markMessagesAsSeen();
+        setState(
+          () {
+            messages = updatedMessages;
+          },
+        );
+        chatService.scrollToBottom(_scrollController);
+      },
+    );
+    chatService.markMessagesAsSeen();
   }
 
   @override
   void dispose() {
-    _messageSubscription?.cancel(); // ✅ Stop listening when widget is removed
+    _messageSubscription?.cancel();
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -187,11 +104,8 @@ class _MessageBodyState extends State<MessageBody> {
                         top: 8.0,
                       ),
                       child: Container(
-                        constraints: BoxConstraints(
-                          maxHeight: 40,
-                          minWidth: 50,
-                          maxWidth: 100,
-                        ),
+                        width: 150,
+                        height: 40,
                         decoration: BoxDecoration(
                           color: colorScheme.secondary,
                           borderRadius: BorderRadius.circular(20),
@@ -248,8 +162,8 @@ class _MessageBodyState extends State<MessageBody> {
                             Text(
                               message.text,
                               style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w400,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w500,
                                 color: colorScheme.surface,
                               ),
                             ),
@@ -258,6 +172,7 @@ class _MessageBodyState extends State<MessageBody> {
                                   ? Alignment.bottomRight
                                   : Alignment.bottomLeft,
                               child: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
                                   Text(
                                     formatTimestamp(message.time),
@@ -268,7 +183,8 @@ class _MessageBodyState extends State<MessageBody> {
                                     ),
                                   ),
                                   SizedBox(width: 5),
-                                  getMessageStatusIcon(message.status),
+                                  chatService
+                                      .getMessageStatusIcon(message.status),
                                 ],
                               ),
                             ),
@@ -343,7 +259,7 @@ class _MessageBodyState extends State<MessageBody> {
                     Icons.send,
                     color: colorScheme.surface,
                   ),
-                  onPressed: sendMessage,
+                  onPressed: () => chatService.sendMessage(_messageController),
                 ),
               ),
             ],

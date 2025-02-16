@@ -63,16 +63,14 @@ class _SearchState extends State<Search> {
           return doc.id;
         }
       }
-    } else {
-      var conversation =
-          await FirebaseFirestore.instance.collection('conversations').add({
-        'participants': [userId1, userId2],
-      });
-      return conversation.id;
     }
-    return '';
-  }
 
+    var conversation =
+        await FirebaseFirestore.instance.collection('conversations').add({
+      'participants': [userId1, userId2],
+    });
+    return conversation.id;
+  }
 
   @override
   Widget build(BuildContext context) {

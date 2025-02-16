@@ -104,6 +104,7 @@ class _SignupFormState extends State<SignupForm> {
                       .doc(credential.user?.uid)
                       .set({
                     'name': nameController.text,
+                    'last conversation': [],
                   });
                   await credential.user?.sendEmailVerification();
                   Navigator.pushAndRemoveUntil(
