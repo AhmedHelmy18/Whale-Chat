@@ -99,11 +99,12 @@ class _LoginFormState extends State<LoginForm> {
                     email: emailController.text,
                     password: passwordController.text,
                   );
-                  Navigator.pushReplacement(
+                  Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(
                       builder: (context) => const HomePage(),
                     ),
+                    (route) => false,
                   );
                 } on FirebaseAuthException catch (e) {
                   if (e.code == 'user-not-found') {
@@ -120,7 +121,9 @@ class _LoginFormState extends State<LoginForm> {
             },
             child: Text(
               'Log in',
-              style: TextStyle(color: colorScheme.onPrimary),
+              style: TextStyle(
+                color: colorScheme.onPrimary,
+              ),
             ),
           ),
         ),

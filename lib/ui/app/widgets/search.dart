@@ -1,4 +1,8 @@
+import 'dart:developer';
 import 'package:chat_app/constants/theme.dart';
+import 'package:chat_app/ui/app/pages/chat.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class Search extends StatefulWidget {
@@ -10,41 +14,62 @@ class Search extends StatefulWidget {
 
 class _SearchState extends State<Search> {
   final TextEditingController _searchController = TextEditingController();
-  List<String> data = [
-    'Apple',
-    'Banana',
-    'Cherry',
-    'Date',
-    'Elderberry',
-    'Fig',
-    'Grapes',
-    'Honeydew',
-    'Kiwi',
-    'Lemon',
-  ];
+  List<Map<String, dynamic>> searchResults = [];
 
-  List<String> searchResults = [];
+  void performSearch(String query) async {
+    if (query.isEmpty) {
+      setState(() {
+        searchResults = [];
+      });
+      return;
+    }
 
-  void _search(String query) {
-    setState(() {
-      if (query.isEmpty) {
-        searchResults = data;
-      } else {
-        searchResults = data
-            .where(
-              (item) => item.toLowerCase().contains(
-                    query.toLowerCase(),
-                  ),
-            )
+    try {
+      QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('name', isGreaterThanOrEqualTo: query)
+          .where('name', isLessThan: query + 'z')
+          .get();
+
+      String currentUserId = FirebaseAuth.instance.currentUser!.uid;
+
+      setState(() {
+        searchResults = snapshot.docs
+            .map((doc) {
+              var data = doc.data() as Map<String, dynamic>;
+              return {
+                'userId': doc.id,
+                'name': data['name'] ?? 'Unknown',
+              };
+            })
+            .where((user) =>
+                user['userId'] != currentUserId) // Remove current user
             .toList();
-      }
-    });
+      });
+    } catch (e) {
+      log('Error fetching search results: $e');
+    }
   }
 
-  @override
-  void initState() {
-    searchResults = data;
-    super.initState();
+  Future<String> getOrCreateConversation(String userId1, String userId2) async {
+    var conversationRef = await FirebaseFirestore.instance
+        .collection('conversations')
+        .where('participants', arrayContainsAny: [userId1, userId2]).get();
+
+    if (conversationRef.docs.isNotEmpty) {
+      for (var doc in conversationRef.docs) {
+        if (doc['participants'].contains(userId1) &&
+            doc['participants'].contains(userId2)) {
+          return doc.id;
+        }
+      }
+    }
+
+    var conversation =
+        await FirebaseFirestore.instance.collection('conversations').add({
+      'participants': [userId1, userId2],
+    });
+    return conversation.id;
   }
 
   @override
@@ -52,12 +77,8 @@ class _SearchState extends State<Search> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          onPressed: () => Navigator.pop(
-            context,
-          ),
-          icon: Icon(
-            Icons.arrow_back_ios_new,
-          ),
+          onPressed: () => Navigator.pop(context),
+          icon: Icon(Icons.arrow_back_ios_new),
         ),
       ),
       body: Column(
@@ -66,32 +87,26 @@ class _SearchState extends State<Search> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 15.0),
             child: TextFormField(
-              onChanged: (value) => _search(value),
+              onChanged: performSearch,
               controller: _searchController,
               textInputAction: TextInputAction.done,
               decoration: InputDecoration(
                 border: OutlineInputBorder(
-                  borderSide: BorderSide(width: 20, color: Colors.black),
+                  borderSide: BorderSide(width: 1, color: Colors.black),
                   borderRadius: BorderRadius.circular(50),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(50),
-                  borderSide: BorderSide(
-                    width: 3,
-                    color: colorScheme.primary,
-                  ),
+                  borderSide: BorderSide(width: 3, color: colorScheme.primary),
                 ),
-                prefixIcon: Icon(
-                  Icons.search,
-                  color: colorScheme.onSurface,
-                ),
+                prefixIcon: Icon(Icons.search, color: colorScheme.onSurface),
                 suffixIcon: IconButton(
-                  icon: Icon(
-                    Icons.clear,
-                    color: colorScheme.onSurface,
-                  ),
+                  icon: Icon(Icons.clear, color: colorScheme.onSurface),
                   onPressed: () {
                     _searchController.clear();
+                    setState(() {
+                      searchResults = [];
+                    });
                   },
                 ),
                 hintText: 'Search.....',
@@ -100,17 +115,10 @@ class _SearchState extends State<Search> {
             ),
           ),
           Container(
-            margin: EdgeInsets.only(
-              top: 30,
-              bottom: 20,
-              left: 20,
-            ),
+            margin: EdgeInsets.only(top: 30, bottom: 20, left: 20),
             child: Text(
               'Search Results',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
           ),
           Expanded(
@@ -119,9 +127,33 @@ class _SearchState extends State<Search> {
               itemBuilder: (BuildContext context, int index) {
                 return ListTile(
                   title: Text(
-                    searchResults[index],
-                    style: TextStyle(fontSize: 16),
+                    searchResults[index]['name'] ?? 'Unknown',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
+                  onTap: () async {
+                    String selectedUserId = searchResults[index]['userId'];
+                    String selectedUserName = searchResults[index]['name'];
+                    String currentUserId =
+                        FirebaseAuth.instance.currentUser!.uid;
+
+                    String conversationId = await getOrCreateConversation(
+                        currentUserId, selectedUserId);
+
+                    if (!mounted) return;
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Chat(
+                          userId: selectedUserId,
+                          userName: selectedUserName,
+                          conversationId: conversationId,
+                        ),
+                      ),
+                    );
+                  },
                 );
               },
             ),

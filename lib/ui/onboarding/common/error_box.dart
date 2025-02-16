@@ -31,6 +31,7 @@ class ErrorBox extends StatelessWidget {
             style: TextStyle(
               fontSize: 16,
               color: colorScheme.error,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ),

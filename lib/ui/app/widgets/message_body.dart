@@ -1,13 +1,21 @@
-import 'dart:developer';
-
+import 'dart:async';
+import 'package:chat_app/constants/format_time.dart';
 import 'package:chat_app/constants/theme.dart';
 import 'package:chat_app/ui/app/models/message.dart';
+import 'package:chat_app/ui/app/services/message_services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class MessageBody extends StatefulWidget {
-  const MessageBody({super.key});
+  const MessageBody({
+    super.key,
+    required this.conversationId,
+    required this.userId,
+  });
+
+  final String conversationId;
+  final String userId;
 
   @override
   State<MessageBody> createState() => _MessageBodyState();
@@ -17,54 +25,58 @@ class _MessageBodyState extends State<MessageBody> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   List<Message> messages = [];
+  StreamSubscription? _messageSubscription;
 
-  void sendMessage() {
-    FirebaseFirestore.instance
-        .collection('conversations')
-        .doc('Tj0bgkutWrJOnAeCQMJ9')
-        .collection('messages')
-        .add({
-      'text': _messageController.text,
-      'sender': FirebaseAuth.instance.currentUser!.uid,
-      'time': FieldValue.serverTimestamp(),
-    });
-    _messageController.clear();
-  }
+  late final ChatService chatService;
 
   @override
   void initState() {
     super.initState();
-    FirebaseFirestore.instance
+
+    chatService = ChatService(
+      conversationId: widget.conversationId,
+      userId: widget.userId,
+    );
+    _messageSubscription = FirebaseFirestore.instance
         .collection('conversations')
-        .doc('Tj0bgkutWrJOnAeCQMJ9')
+        .doc(widget.conversationId)
         .collection('messages')
         .orderBy('time', descending: false)
         .snapshots()
-        .listen((QuerySnapshot snapshot) {
-      List<Message> updatedMessages = [];
+        .listen(
+      (QuerySnapshot snapshot) {
+        if (!mounted) return;
 
-      for (var doc in snapshot.docs) {
-        updatedMessages.add(
-          Message(
-            text: doc['text'],
-            isMe: doc['sender'] == FirebaseAuth.instance.currentUser!.uid,
-            // time: doc['time'],
-          ),
-        );
-      }
-      setState(() {
-        messages =
-            updatedMessages;
-      });
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: Duration(milliseconds: 300), // Smooth scroll
-          curve: Curves.easeOut,
-        );
-      });
+        List<Message> updatedMessages = [];
 
-    });
+        for (var doc in snapshot.docs) {
+          updatedMessages
+              .add(Message.fromFirestore(doc.data() as Map<String, dynamic>));
+
+          if (doc['status'] == 'sent' &&
+              doc['sender'] != FirebaseAuth.instance.currentUser!.uid) {
+            doc.reference.update(
+              {'status': 'delivered'},
+            );
+          }
+        }
+        setState(
+          () {
+            messages = updatedMessages;
+          },
+        );
+        chatService.scrollToBottom(_scrollController);
+      },
+    );
+    chatService.markMessagesAsSeen();
+  }
+
+  @override
+  void dispose() {
+    _messageSubscription?.cancel();
+    _messageController.dispose();
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -81,49 +93,107 @@ class _MessageBodyState extends State<MessageBody> {
             physics: const BouncingScrollPhysics(),
             itemBuilder: (context, index) {
               final message = messages[index];
-              return Align(
-                alignment:
-                    message.isMe ? Alignment.centerRight : Alignment.centerLeft,
-                child: IntrinsicWidth(
-                  child: Container(
-                    constraints: BoxConstraints(
-                      maxWidth: width * 0.65,
-                      minWidth: 50,
-                    ),
-                    margin: EdgeInsets.only(
-                      top: 10,
-                      bottom: 10,
-                      right: message.isMe ? 10 : 0,
-                      left: message.isMe ? 0 : 10,
-                    ),
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 15,
-                    ),
-                    decoration: BoxDecoration(
-                      color: message.isMe
-                          ? colorScheme.primary
-                          : colorScheme.secondary,
-                      shape: BoxShape.rectangle,
-                      borderRadius: BorderRadius.only(
-                        bottomRight: Radius.circular(20),
-                        topLeft: Radius.circular(20),
-                        bottomLeft:
-                            message.isMe ? Radius.circular(20) : Radius.zero,
-                        topRight:
-                            message.isMe ? Radius.zero : Radius.circular(20),
+              final String formattedDate = formatDate(message.time);
+              final bool showDateHeader = index == 0 ||
+                  formatDate(messages[index - 1].time) != formattedDate;
+              return Column(
+                children: [
+                  if (showDateHeader)
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        top: 8.0,
+                      ),
+                      child: Container(
+                        width: 150,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: colorScheme.secondary,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Center(
+                          child: Text(
+                            formattedDate,
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: colorScheme.surface,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
-                    child: Text(
-                      message.text,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w400,
-                        color: colorScheme.surface,
+                  Align(
+                    alignment: message.isMe
+                        ? Alignment.centerRight
+                        : Alignment.centerLeft,
+                    child: IntrinsicWidth(
+                      child: Container(
+                        constraints: BoxConstraints(
+                          maxWidth: width * 0.65,
+                          minWidth: 50,
+                        ),
+                        margin: EdgeInsets.only(
+                          top: 10,
+                          right: message.isMe ? 10 : 0,
+                          left: message.isMe ? 0 : 10,
+                        ),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: message.isMe
+                              ? colorScheme.primary
+                              : colorScheme.secondary,
+                          shape: BoxShape.rectangle,
+                          borderRadius: BorderRadius.only(
+                            bottomRight: Radius.circular(20),
+                            topLeft: Radius.circular(20),
+                            bottomLeft: message.isMe
+                                ? Radius.circular(20)
+                                : Radius.zero,
+                            topRight: message.isMe
+                                ? Radius.zero
+                                : Radius.circular(20),
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            Text(
+                              message.text,
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w500,
+                                color: colorScheme.surface,
+                              ),
+                            ),
+                            Align(
+                              alignment: message.isMe
+                                  ? Alignment.bottomRight
+                                  : Alignment.bottomLeft,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    formatTimestamp(message.time),
+                                    style: TextStyle(
+                                      color: colorScheme.surface,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  SizedBox(width: 5),
+                                  chatService
+                                      .getMessageStatusIcon(message.status),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
+                ],
               );
             },
           ),
@@ -189,7 +259,7 @@ class _MessageBodyState extends State<MessageBody> {
                     Icons.send,
                     color: colorScheme.surface,
                   ),
-                  onPressed: sendMessage,
+                  onPressed: () => chatService.sendMessage(_messageController),
                 ),
               ),
             ],
