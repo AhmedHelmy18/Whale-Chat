@@ -66,6 +66,7 @@ class ChatUserContainer extends StatelessWidget {
                         lastMessage,
                         style: TextStyle(
                           fontSize: 17,
+                          fontWeight: FontWeight.w500,
                         ),
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,

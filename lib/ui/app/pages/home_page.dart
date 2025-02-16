@@ -39,7 +39,10 @@ class _HomePageState extends State<HomePage> {
             .doc(doc)
             .get();
 
+        if (!conversationRef.exists) continue;
+
         var participants = conversationRef.data()?["participants"];
+        if (participants == null || participants.length < 2) continue;
 
         var participantData = await FirebaseFirestore.instance
             .collection('users')
@@ -48,11 +51,28 @@ class _HomePageState extends State<HomePage> {
                 : participants[0])
             .get();
 
+        var lastMessageSnapshot = await FirebaseFirestore.instance
+            .collection('conversations')
+            .doc(doc)
+            .collection('messages')
+            .orderBy('time', descending: true)
+            .limit(1)
+            .get();
+
+        String lastMessage = lastMessageSnapshot.docs.isNotEmpty
+            ? lastMessageSnapshot.docs.first["text"]
+            : "No messages yet";
+        Timestamp lastMessageTime = lastMessageSnapshot.docs.isNotEmpty
+            ? lastMessageSnapshot.docs.first["time"]
+            : Timestamp.now(); // Use current time if no messages
+
         setState(() {
           chats.add({
             "id": doc,
             "name": participantData.data()?["name"],
-            "userId": participantData.id
+            "userId": participantData.id,
+            "lastMessage": lastMessage,
+            "timestamp": lastMessageTime
           });
         });
       }
@@ -118,8 +138,8 @@ class _HomePageState extends State<HomePage> {
               return ChatUserContainer(
                 userId: chats[index]["userId"],
                 userName: chats[index]["name"],
-                lastMessage: "ad",
-                timestamp: Timestamp.fromMicrosecondsSinceEpoch(13),
+                lastMessage: chats[index]["lastMessage"],
+                timestamp: chats[index]["timestamp"],
                 conversationId: chats[index]["id"],
               );
             },

@@ -23,6 +23,7 @@ class ChatService {
       'sender': FirebaseAuth.instance.currentUser!.uid,
       'time': FieldValue.serverTimestamp(),
       'status': 'sent',
+
     });
     var historyConversation = await FirebaseFirestore.instance
         .collection('users')
