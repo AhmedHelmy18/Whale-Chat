@@ -1,4 +1,6 @@
 import 'package:chat_app/constants/theme.dart';
+import 'package:chat_app/ui/app/pages/edit_profile.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class Profile extends StatelessWidget {
@@ -6,13 +8,16 @@ class Profile extends StatelessWidget {
     super.key,
     required this.userName,
     required this.bio,
+    required this.userId,
   });
 
   final String userName;
   final String? bio;
+  final String userId;
 
   @override
   Widget build(BuildContext context) {
+    bool isMyProfile = FirebaseAuth.instance.currentUser!.uid == userId;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: colorScheme.primary,
@@ -64,16 +69,23 @@ class Profile extends StatelessWidget {
         ),
         centerTitle: true,
         actions: [
-          Align(
+          isMyProfile ? Align(
             alignment: Alignment.topRight,
             child: IconButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const EditProfile(),
+                  ),
+                );
+              },
               icon: Icon(
                 Icons.edit,
                 color: colorScheme.surface,
               ),
             ),
-          ),
+          ): Container(),
         ],
       ),
     );

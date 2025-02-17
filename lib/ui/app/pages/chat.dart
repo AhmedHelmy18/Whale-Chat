@@ -43,6 +43,7 @@ class Chat extends StatelessWidget {
                 builder: (context) => Profile(
                   userName: userName,
                   bio: bio,
+                  userId: userId,
                 ),
               ),
             );
