@@ -1,4 +1,5 @@
 import 'package:chat_app/constants/theme.dart';
+import 'package:chat_app/ui/app/services/chat_services.dart';
 import 'package:chat_app/ui/app/widgets/chat_user_container.dart';
 import 'package:chat_app/ui/app/widgets/search.dart';
 
@@ -21,71 +22,14 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
 
-    loadChats();
+    _loadChats();
   }
 
-  void loadChats() async {
-    setState(() {
-      isLoading = true;
-    });
-    FirebaseFirestore.instance
-        .collection("users")
-        .doc(FirebaseAuth.instance.currentUser!.uid)
-        .snapshots()
-        .listen((event) async {
-      setState(() {
-        chats.clear();
-      });
-
-      for (var doc in event.data()?["last conversation"]) {
-        var conversationRef = await FirebaseFirestore.instance
-            .collection('conversations')
-            .doc(doc)
-            .get();
-
-        if (!conversationRef.exists) continue;
-
-        var participants = conversationRef.data()?["participants"];
-        if (participants == null || participants.length < 2) continue;
-
-        var participantData = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(FirebaseAuth.instance.currentUser!.uid == participants[0]
-                ? participants[1]
-                : participants[0])
-            .get();
-
-        var lastMessageSnapshot = await FirebaseFirestore.instance
-            .collection('conversations')
-            .doc(doc)
-            .collection('messages')
-            .orderBy('time', descending: true)
-            .limit(1)
-            .get();
-
-        String lastMessage = lastMessageSnapshot.docs.isNotEmpty
-            ? lastMessageSnapshot.docs.first["text"]
-            : "No messages yet";
-        Timestamp lastMessageTime = lastMessageSnapshot.docs.isNotEmpty
-            ? lastMessageSnapshot.docs.first["time"]
-            : Timestamp.now();
-
-        setState(() {
-          chats.add({
-            "id": doc,
-            "name": participantData.data()?["name"],
-            "userId": participantData.id,
-            "lastMessage": lastMessage,
-            "timestamp": lastMessageTime,
-            "bio": participantData.data()?["bio"]
-          });
-        });
-      }
-
-      setState(() {
-        isLoading = false;
-      });
-    });
+  Future<void> _loadChats() async {
+    setState(() => isLoading = true);
+    final chatService = ChatServices();
+    chats = await chatService.loadChats();
+    setState(() => isLoading = false);
   }
 
   @override
@@ -119,6 +63,51 @@ class _HomePageState extends State<HomePage> {
               size: 30,
               color: colorScheme.surface,
             ),
+          ),
+          PopupMenuButton(
+            offset: const Offset(0, 70),
+            elevation: 10,
+            color: colorScheme.primary,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(
+                Radius.circular(10),
+              ),
+            ),
+            icon: Icon(
+              Icons.more_vert,
+              size: 30,
+              color: colorScheme.surface,
+            ),
+            onSelected: (value) {
+              if (value == 'logout') {
+                FirebaseAuth.instance.signOut();
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'logout',
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.logout,
+                      size: 25,
+                      color: colorScheme.surface,
+                    ),
+                    SizedBox(
+                      width: 10,
+                    ),
+                    Text(
+                      'Logout',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w500,
+                        color: colorScheme.surface,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -161,6 +150,26 @@ class _HomePageState extends State<HomePage> {
             },
           );
         },
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: colorScheme.primary,
+        selectedItemColor: colorScheme.surface,
+        unselectedItemColor: colorScheme.onSurface,
+        showUnselectedLabels: true,
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.home,
+            ),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.person,
+            ),
+            label: 'My Profile',
+          ),
+        ],
       ),
     );
   }

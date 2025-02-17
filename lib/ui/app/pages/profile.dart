@@ -58,7 +58,7 @@ class Profile extends StatelessWidget {
               height: 10,
             ),
             Text(
-              (bio == null) ? 'Welcome in my Whale chat' : bio!,
+              (bio!.isEmpty) ? 'Welcome in my Whale chat' : bio!,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: colorScheme.surface,
