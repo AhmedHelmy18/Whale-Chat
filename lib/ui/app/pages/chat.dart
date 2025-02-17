@@ -1,4 +1,5 @@
 import 'package:chat_app/constants/theme.dart';
+import 'package:chat_app/ui/app/pages/profile.dart';
 import 'package:chat_app/ui/app/widgets/message_body.dart';
 import 'package:flutter/material.dart';
 
@@ -8,11 +9,13 @@ class Chat extends StatelessWidget {
     required this.userId,
     required this.userName,
     required this.conversationId,
+    required this.bio,
   });
 
   final String userId;
   final String userName;
   final String conversationId;
+  final String? bio;
 
   @override
   Widget build(BuildContext context) {
@@ -32,42 +35,55 @@ class Chat extends StatelessWidget {
             ),
           ),
         ),
-        title: Row(
-          children: [
-            ClipOval(
-              child: Image.asset(
-                'assets/images/download.jpeg',
-                height: 50,
-                width: 50,
-                fit: BoxFit.cover,
+        title: GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => Profile(
+                  userName: userName,
+                  bio: bio,
+                ),
               ),
-            ),
-            const SizedBox(width: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  userName,
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+            );
+          },
+          child: Row(
+            children: [
+              ClipOval(
+                child: Image.asset(
+                  'assets/images/download.jpeg',
+                  height: 50,
+                  width: 50,
+                  fit: BoxFit.cover,
                 ),
-                Text(
-                  'Online',
-                  style: TextStyle(
-                    fontSize: 20,
-                    color: Colors.white70,
+              ),
+              const SizedBox(width: 10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    userName,
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                  softWrap: false,
-                ),
-              ],
-            ),
-          ],
+                  Text(
+                    'Online',
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: Colors.white70,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    softWrap: false,
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
       body: MessageBody(

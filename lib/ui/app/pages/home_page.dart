@@ -1,4 +1,6 @@
+import 'package:chat_app/constants/theme.dart';
 import 'package:chat_app/ui/app/widgets/chat_user_container.dart';
+import 'package:chat_app/ui/app/widgets/search.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -74,7 +76,8 @@ class _HomePageState extends State<HomePage> {
             "name": participantData.data()?["name"],
             "userId": participantData.id,
             "lastMessage": lastMessage,
-            "timestamp": lastMessageTime
+            "timestamp": lastMessageTime,
+            "bio": participantData.data()?["bio"]
           });
         });
       }
@@ -89,44 +92,76 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     String currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
-    return StreamBuilder(
-      stream: FirebaseFirestore.instance
-          .collection('conversations')
-          .where('participants', arrayContains: currentUserId)
-          .orderBy('timestamp', descending: true)
-          .snapshots(),
-      builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-        if (isLoading) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-        if (chats.isEmpty) {
-          return const Center(
-            child: Text(
-              "No recent chats",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w400,
-              ),
+    return Scaffold(
+      appBar: AppBar(
+        toolbarHeight: 100,
+        backgroundColor: colorScheme.primary,
+        title: Text(
+          'Chat',
+          style: TextStyle(
+            fontSize: 30,
+            color: colorScheme.surface,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const Search(),
+                ),
+              );
+            },
+            icon: Icon(
+              Icons.search_outlined,
+              size: 30,
+              color: colorScheme.surface,
             ),
-          );
-        }
-
-        return ListView.builder(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          itemCount: chats.length,
-          itemBuilder: (context, index) {
-            return ChatUserContainer(
-              userId: chats[index]["userId"],
-              userName: chats[index]["name"],
-              lastMessage: chats[index]["lastMessage"],
-              timestamp: chats[index]["timestamp"],
-              conversationId: chats[index]["id"],
+          ),
+        ],
+      ),
+      body: StreamBuilder(
+        stream: FirebaseFirestore.instance
+            .collection('conversations')
+            .where('participants', arrayContains: currentUserId)
+            .orderBy('timestamp', descending: true)
+            .snapshots(),
+        builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (isLoading) {
+            return const Center(
+              child: CircularProgressIndicator(),
             );
-          },
-        );
-      },
+          }
+          if (chats.isEmpty) {
+            return const Center(
+              child: Text(
+                "No recent chats",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            );
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            itemCount: chats.length,
+            itemBuilder: (context, index) {
+              return ChatUserContainer(
+                userId: chats[index]["userId"],
+                userName: chats[index]["name"],
+                lastMessage: chats[index]["lastMessage"],
+                timestamp: chats[index]["timestamp"],
+                conversationId: chats[index]["id"],
+                bio: chats[index]["bio"],
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }

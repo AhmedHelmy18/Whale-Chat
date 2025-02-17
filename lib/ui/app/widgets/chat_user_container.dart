@@ -11,6 +11,7 @@ class ChatUserContainer extends StatelessWidget {
     required this.lastMessage,
     required this.timestamp,
     required this.conversationId,
+    required this.bio,
   });
 
   final String userId;
@@ -18,6 +19,7 @@ class ChatUserContainer extends StatelessWidget {
   final String lastMessage;
   final Timestamp? timestamp;
   final String conversationId;
+  final String? bio ;
 
   @override
   Widget build(BuildContext context) {
@@ -30,6 +32,7 @@ class ChatUserContainer extends StatelessWidget {
               userId: userId,
               userName: userName,
               conversationId: conversationId,
+              bio: bio,
             ),
           ),
         );
