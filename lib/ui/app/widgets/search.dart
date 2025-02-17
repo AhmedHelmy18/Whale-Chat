@@ -126,18 +126,32 @@ class _SearchState extends State<Search> {
               itemCount: searchResults.length,
               itemBuilder: (BuildContext context, int index) {
                 return ListTile(
-                  title: Text(
-                    searchResults[index]['name'] ?? 'Unknown',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    ),
+                  title: Row(
+                    children: [
+                      ClipOval(
+                        child: Image.asset(
+                          'assets/images/download.jpeg',
+                          height: 50,
+                          width: 50,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        searchResults[index]['name'] ?? 'Unknown',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
                   onTap: () async {
                     String selectedUserId = searchResults[index]['userId'];
                     String selectedUserName = searchResults[index]['name'];
                     String currentUserId =
                         FirebaseAuth.instance.currentUser!.uid;
+                    String? selectedUserBio = searchResults[index]['bio'];
 
                     String conversationId = await getOrCreateConversation(
                         currentUserId, selectedUserId);
@@ -150,6 +164,7 @@ class _SearchState extends State<Search> {
                           userId: selectedUserId,
                           userName: selectedUserName,
                           conversationId: conversationId,
+                          bio: selectedUserBio!,
                         ),
                       ),
                     );

@@ -1,7 +1,7 @@
 import 'package:chat_app/constants/theme.dart';
-import 'package:chat_app/ui/app/pages/add_friend.dart';
 import 'package:chat_app/ui/app/widgets/chat_user_container.dart';
 import 'package:chat_app/ui/app/widgets/search.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +15,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   var chats = [];
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -23,7 +24,10 @@ class _HomePageState extends State<HomePage> {
     loadChats();
   }
 
-  void loadChats() {
+  void loadChats() async {
+    setState(() {
+      isLoading = true;
+    });
     FirebaseFirestore.instance
         .collection("users")
         .doc(FirebaseAuth.instance.currentUser!.uid)
@@ -64,7 +68,7 @@ class _HomePageState extends State<HomePage> {
             : "No messages yet";
         Timestamp lastMessageTime = lastMessageSnapshot.docs.isNotEmpty
             ? lastMessageSnapshot.docs.first["time"]
-            : Timestamp.now(); // Use current time if no messages
+            : Timestamp.now();
 
         setState(() {
           chats.add({
@@ -72,25 +76,32 @@ class _HomePageState extends State<HomePage> {
             "name": participantData.data()?["name"],
             "userId": participantData.id,
             "lastMessage": lastMessage,
-            "timestamp": lastMessageTime
+            "timestamp": lastMessageTime,
+            "bio": participantData.data()?["bio"]
           });
         });
       }
+
+      setState(() {
+        isLoading = false;
+      });
     });
   }
 
   @override
   Widget build(BuildContext context) {
     String currentUserId = FirebaseAuth.instance.currentUser!.uid;
+
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 100,
         backgroundColor: colorScheme.primary,
         title: Text(
-          'Chats',
+          'Chat',
           style: TextStyle(
             fontSize: 30,
             color: colorScheme.surface,
+            fontWeight: FontWeight.w500,
           ),
         ),
         actions: [
@@ -115,10 +126,14 @@ class _HomePageState extends State<HomePage> {
         stream: FirebaseFirestore.instance
             .collection('conversations')
             .where('participants', arrayContains: currentUserId)
-            .orderBy('timestamp',
-                descending: true) // Order by last message time
+            .orderBy('timestamp', descending: true)
             .snapshots(),
         builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (isLoading) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
           if (chats.isEmpty) {
             return const Center(
               child: Text(
@@ -141,25 +156,11 @@ class _HomePageState extends State<HomePage> {
                 lastMessage: chats[index]["lastMessage"],
                 timestamp: chats[index]["timestamp"],
                 conversationId: chats[index]["id"],
+                bio: chats[index]["bio"],
               );
             },
           );
         },
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: colorScheme.primary,
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => AddFriend(),
-            ),
-          );
-        },
-        child: Icon(
-          Icons.add,
-          color: colorScheme.surface,
-        ),
       ),
     );
   }
