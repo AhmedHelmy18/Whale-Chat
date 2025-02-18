@@ -1,5 +1,6 @@
 import 'package:chat_app/constants/theme.dart';
 import 'package:chat_app/ui/app/services/chat_services.dart';
+import 'package:chat_app/ui/app/widgets/bottom_nav_bar.dart';
 import 'package:chat_app/ui/app/widgets/chat_user_container.dart';
 import 'package:chat_app/ui/app/widgets/search.dart';
 
@@ -15,7 +16,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  var chats = [];
+  List<Map<String, dynamic>> chats = [];
   bool isLoading = true;
 
   @override
@@ -27,9 +28,22 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _loadChats() async {
     setState(() => isLoading = true);
-    final chatService = ChatServices();
-    chats = await chatService.loadChats();
-    setState(() => isLoading = false);
+    try {
+      final chatService = ChatServices();
+      final chatData = await chatService.loadChats();
+
+      if (mounted) {
+        setState(() {
+          chats = chatData;
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint("Error loading chats: $e");
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
   }
 
   @override
@@ -151,26 +165,7 @@ class _HomePageState extends State<HomePage> {
           );
         },
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: colorScheme.primary,
-        selectedItemColor: colorScheme.surface,
-        unselectedItemColor: colorScheme.onSurface,
-        showUnselectedLabels: true,
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.home,
-            ),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.person,
-            ),
-            label: 'My Profile',
-          ),
-        ],
-      ),
+      bottomNavigationBar: BottomNavbar(),
     );
   }
 }

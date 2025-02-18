@@ -41,8 +41,6 @@ class Chat extends StatelessWidget {
               context,
               MaterialPageRoute(
                 builder: (context) => Profile(
-                  userName: userName,
-                  bio: bio,
                   userId: userId,
                 ),
               ),
@@ -91,7 +89,6 @@ class Chat extends StatelessWidget {
         conversationId: conversationId,
         userId: userId,
       ),
-
     );
   }
 }

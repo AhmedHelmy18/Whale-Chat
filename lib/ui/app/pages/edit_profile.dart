@@ -1,5 +1,4 @@
 import 'dart:developer';
-
 import 'package:chat_app/constants/theme.dart';
 import 'package:chat_app/ui/app/widgets/edit_container.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -16,10 +15,12 @@ class EditProfile extends StatefulWidget {
 class _EditProfileState extends State<EditProfile> {
   TextEditingController nameController = TextEditingController();
   TextEditingController bioController = TextEditingController();
+  String uid = FirebaseAuth.instance.currentUser!.uid;
 
   @override
   initState() {
     super.initState();
+    getData();
   }
 
   Future<void> getData() async {
@@ -38,24 +39,28 @@ class _EditProfileState extends State<EditProfile> {
     }
   }
 
-  Future<void> updateProfile() async {
+  Future<void> updateProfile({required String field}) async {
     try {
-      String uid = FirebaseAuth.instance.currentUser!.uid;
-      FirebaseFirestore.instance
+      Map<String, dynamic> updateData = {};
+      if (field == 'name') {
+        updateData['name'] = nameController.text;
+      } else if (field == 'bio') {
+        updateData['bio'] = bioController.text;
+      }
+
+      await FirebaseFirestore.instance
           .collection('users')
           .doc(uid)
-          .update({'name': nameController.text, 'bio': bioController.text});
+          .update(updateData);
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Profile updated successfully!"),
-        ),
+        SnackBar(content: Text("$field updated successfully!")),
       );
+      Navigator.pop(context, 'updated');
     } catch (e) {
-      log("Error updating user data: $e");
+      log("Error updating $field: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Failed to update profile"),
-        ),
+        SnackBar(content: Text("Failed to update $field")),
       );
     }
   }
@@ -84,40 +89,58 @@ class _EditProfileState extends State<EditProfile> {
           ),
         ),
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 10.0),
-            child: Center(
-              child: Text(
-                'Edit your name and bio',
-                style: TextStyle(
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'PlayfairDisplay',
+      body: StreamBuilder<DocumentSnapshot>(
+        stream:
+            FirebaseFirestore.instance.collection('users').doc(uid).snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return const Center(child: Text("Failed loading data"));
+          }
+
+          if (!snapshot.hasData || !snapshot.data!.exists) {
+            return const Center(child: Text("User not found"));
+          }
+
+          var userData = snapshot.data!;
+          nameController.text = userData['name'] ?? '';
+          bioController.text = userData['bio'] ?? '';
+
+          return Column(
+            children: [
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 20.0),
+                child: Center(
+                  child: Text(
+                    'Edit your name or bio',
+                    style: TextStyle(
+                      fontSize: 25,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'PlayfairDisplay',
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
-          SizedBox(
-            height: 20,
-          ),
-          EditContainer(
-            text: 'Your Name :',
-            hint: 'Enter new name.',
-            controller: nameController,
-            updateProfile: updateProfile,
-          ),
-          SizedBox(
-            height: 20,
-          ),
-          EditContainer(
-            text: 'Your Bio :',
-            hint: 'Enter new bio.',
-            controller: bioController,
-            updateProfile: updateProfile,
-          ),
-        ],
+              const SizedBox(height: 20),
+              EditContainer(
+                text: 'Your Name:',
+                hint: 'Enter new name',
+                controller: nameController,
+                updateProfile: () => updateProfile(field: 'name'),
+              ),
+              const SizedBox(height: 20),
+              EditContainer(
+                text: 'Your Bio:',
+                hint: 'Enter new bio',
+                controller: bioController,
+                updateProfile: () => updateProfile(field: 'bio'),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

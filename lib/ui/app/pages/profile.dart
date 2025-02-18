@@ -1,23 +1,58 @@
 import 'package:chat_app/constants/theme.dart';
 import 'package:chat_app/ui/app/pages/edit_profile.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class Profile extends StatelessWidget {
+class Profile extends StatefulWidget {
   const Profile({
     super.key,
-    required this.userName,
-    required this.bio,
     required this.userId,
   });
 
-  final String userName;
-  final String? bio;
   final String userId;
 
   @override
+  State<Profile> createState() => _ProfileState();
+}
+
+class _ProfileState extends State<Profile> {
+  String userName = "";
+  String? bio = "";
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    getUserData();
+    super.initState();
+  }
+
+  Future<void> getUserData() async {
+    try {
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.userId)
+          .get();
+
+      if (userDoc.exists) {
+        setState(() {
+          userName = userDoc['name'] ?? "";
+          bio = userDoc['bio'] ?? "";
+          isLoading = false;
+        });
+      } else {
+        setState(() => isLoading = false);
+      }
+    } catch (e) {
+      debugPrint("Error getting user data: $e");
+      setState(() => isLoading = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    bool isMyProfile = FirebaseAuth.instance.currentUser!.uid == userId;
+    bool isMyProfile = FirebaseAuth.instance.currentUser!.uid == widget.userId;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: colorScheme.primary,
@@ -69,23 +104,29 @@ class Profile extends StatelessWidget {
         ),
         centerTitle: true,
         actions: [
-          isMyProfile ? Align(
-            alignment: Alignment.topRight,
-            child: IconButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const EditProfile(),
+          isMyProfile
+              ? Align(
+                  alignment: Alignment.topRight,
+                  child: IconButton(
+                    onPressed: () async {
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const EditProfile(),
+                        ),
+                      );
+
+                      if (result == 'updated') {
+                        getUserData();
+                      }
+                    },
+                    icon: Icon(
+                      Icons.edit,
+                      color: colorScheme.surface,
+                    ),
                   ),
-                );
-              },
-              icon: Icon(
-                Icons.edit,
-                color: colorScheme.surface,
-              ),
-            ),
-          ): Container(),
+                )
+              : Container(),
         ],
       ),
     );
