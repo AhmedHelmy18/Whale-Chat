@@ -183,8 +183,10 @@ class _MessageBodyState extends State<MessageBody> {
                                     ),
                                   ),
                                   SizedBox(width: 5),
-                                  chatService
-                                      .getMessageStatusIcon(message.status),
+                                  message.isMe
+                                      ? chatService
+                                          .getMessageStatusIcon(message.status)
+                                      : Container(),
                                 ],
                               ),
                             ),
