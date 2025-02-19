@@ -8,12 +8,13 @@ class ChatServices {
 
   Future<List<Map<String, dynamic>>> loadChats() async {
     List<Map<String, dynamic>> chats = [];
+    Set<String> processedUserIds = {};
 
     try {
-      DocumentSnapshot userDoc = await _firestore
-          .collection("users")
-          .doc(_auth.currentUser!.uid)
-          .get();
+      String currentUserId = _auth.currentUser!.uid;
+
+      DocumentSnapshot userDoc =
+      await _firestore.collection("users").doc(currentUserId).get();
 
       if (!userDoc.exists || userDoc.data() == null) {
         return chats;
@@ -23,19 +24,28 @@ class ChatServices {
 
       for (var doc in lastConversations) {
         var conversationRef =
-            await _firestore.collection('conversations').doc(doc).get();
+        await _firestore.collection('conversations').doc(doc).get();
 
         if (!conversationRef.exists) continue;
 
         var participants = conversationRef.data()?["participants"];
         if (participants == null || participants.length < 2) continue;
 
-        String otherUserId = _auth.currentUser!.uid == participants[0]
-            ? participants[1]
-            : participants[0];
+        String otherUserId =
+        currentUserId == participants[0] ? participants[1] : participants[0];
+
+        // 🔹 Prevent duplicate conversations for the same userId
+        String conversationKey = currentUserId.compareTo(otherUserId) < 0
+            ? "$currentUserId-$otherUserId"
+            : "$otherUserId-$currentUserId";
+
+        if (processedUserIds.contains(conversationKey)) {
+          continue;
+        }
+        processedUserIds.add(conversationKey);
 
         var participantData =
-            await _firestore.collection('users').doc(otherUserId).get();
+        await _firestore.collection('users').doc(otherUserId).get();
 
         var lastMessageSnapshot = await _firestore
             .collection('conversations')
@@ -64,7 +74,6 @@ class ChatServices {
     } catch (e) {
       log("Error loading chats: $e");
     }
-
     return chats;
   }
 }

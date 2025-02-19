@@ -2,7 +2,7 @@ import 'package:chat_app/constants/theme.dart';
 import 'package:chat_app/ui/app/services/chat_services.dart';
 import 'package:chat_app/ui/app/widgets/bottom_nav_bar.dart';
 import 'package:chat_app/ui/app/widgets/chat_user_container.dart';
-import 'package:chat_app/ui/app/widgets/search.dart';
+import 'package:chat_app/ui/app/pages/search.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -132,12 +132,12 @@ class _HomePageState extends State<HomePage> {
             .orderBy('timestamp', descending: true)
             .snapshots(),
         builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-          if (isLoading) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
               child: CircularProgressIndicator(),
             );
           }
-          if (chats.isEmpty) {
+          if (snapshot.hasError || !snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return const Center(
               child: Text(
                 "No recent chats",

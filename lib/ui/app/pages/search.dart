@@ -69,6 +69,7 @@ class _SearchState extends State<Search> {
         await FirebaseFirestore.instance.collection('conversations').add({
       'participants': [userId1, userId2],
     });
+    log('Conversation created: ${conversation.id}');
     return conversation.id;
   }
 
@@ -164,7 +165,7 @@ class _SearchState extends State<Search> {
                           userId: selectedUserId,
                           userName: selectedUserName,
                           conversationId: conversationId,
-                          bio: selectedUserBio!,
+                            bio: selectedUserBio ?? 'No bio available',
                         ),
                       ),
                     );
