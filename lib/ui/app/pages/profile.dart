@@ -23,7 +23,6 @@ class _ProfileState extends State<Profile> {
 
   @override
   void initState() {
-    // TODO: implement initState
     getUserData();
     super.initState();
   }
@@ -35,10 +34,13 @@ class _ProfileState extends State<Profile> {
           .doc(widget.userId)
           .get();
 
+      var data = userDoc.data() as Map<String, dynamic>?;
+
+
       if (userDoc.exists) {
         setState(() {
           userName = userDoc['name'] ?? "";
-          bio = userDoc['bio'] ?? "";
+          bio = data?.containsKey("bio") == true ? data!["bio"] : "";
           isLoading = false;
         });
       } else {

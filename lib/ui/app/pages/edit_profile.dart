@@ -28,10 +28,14 @@ class _EditProfileState extends State<EditProfile> {
       String uid = FirebaseAuth.instance.currentUser!.uid;
       DocumentSnapshot userData =
           await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      var data = userData.data() as Map<String, dynamic>?;
+
+
       if (userData.exists) {
         setState(() {
-          nameController.text = userData['name'] ?? '';
-          bioController.text = userData['bio'] ?? '';
+          nameController.text = userData['name'] ?? "";
+          bioController.text = data?.containsKey("bio") == true ? data!["bio"] : "";
+
         });
       }
     } catch (e) {
@@ -94,15 +98,21 @@ class _EditProfileState extends State<EditProfile> {
             FirebaseFirestore.instance.collection('users').doc(uid).snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
           }
 
           if (snapshot.hasError) {
-            return const Center(child: Text("Failed loading data"));
+            return const Center(
+              child: Text("Failed loading data"),
+            );
           }
 
           if (!snapshot.hasData || !snapshot.data!.exists) {
-            return const Center(child: Text("User not found"));
+            return const Center(
+              child: Text("User not found"),
+            );
           }
 
           var userData = snapshot.data!;

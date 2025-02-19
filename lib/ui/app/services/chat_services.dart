@@ -14,7 +14,7 @@ class ChatServices {
       String currentUserId = _auth.currentUser!.uid;
 
       DocumentSnapshot userDoc =
-      await _firestore.collection("users").doc(currentUserId).get();
+          await _firestore.collection("users").doc(currentUserId).get();
 
       if (!userDoc.exists || userDoc.data() == null) {
         return chats;
@@ -24,15 +24,16 @@ class ChatServices {
 
       for (var doc in lastConversations) {
         var conversationRef =
-        await _firestore.collection('conversations').doc(doc).get();
+            await _firestore.collection('conversations').doc(doc).get();
 
         if (!conversationRef.exists) continue;
 
         var participants = conversationRef.data()?["participants"];
         if (participants == null || participants.length < 2) continue;
 
-        String otherUserId =
-        currentUserId == participants[0] ? participants[1] : participants[0];
+        String otherUserId = currentUserId == participants[0]
+            ? participants[1]
+            : participants[0];
 
         // 🔹 Prevent duplicate conversations for the same userId
         String conversationKey = currentUserId.compareTo(otherUserId) < 0
@@ -45,7 +46,7 @@ class ChatServices {
         processedUserIds.add(conversationKey);
 
         var participantData =
-        await _firestore.collection('users').doc(otherUserId).get();
+            await _firestore.collection('users').doc(otherUserId).get();
 
         var lastMessageSnapshot = await _firestore
             .collection('conversations')

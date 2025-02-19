@@ -16,7 +16,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<Map<String, dynamic>> chats = [];
+  var chats = [];
   bool isLoading = true;
 
   @override
@@ -137,7 +137,7 @@ class _HomePageState extends State<HomePage> {
               child: CircularProgressIndicator(),
             );
           }
-          if (snapshot.hasError || !snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          if (chats.isEmpty) {
             return const Center(
               child: Text(
                 "No recent chats",
