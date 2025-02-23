@@ -107,13 +107,15 @@ class _SignupFormState extends State<SignupForm> {
                     'last conversation': [],
                   });
                   await credential.user?.sendEmailVerification();
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => HomePage(),
-                    ),
+                  if (context.mounted) {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => HomePage(),
+                      ),
                       (route) => false,
-                  );
+                    );
+                  }
                 } on FirebaseAuthException catch (e) {
                   if (e.code == 'weak-password') {
                     setState(() {

@@ -94,18 +94,19 @@ class _LoginFormState extends State<LoginForm> {
                 });
               } else {
                 try {
-                  final credential =
-                      await FirebaseAuth.instance.signInWithEmailAndPassword(
+                  await FirebaseAuth.instance.signInWithEmailAndPassword(
                     email: emailController.text,
                     password: passwordController.text,
                   );
-                  Navigator.pushAndRemoveUntil(
+                  if(context.mounted) {
+                    Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(
                       builder: (context) => const HomePage(),
                     ),
                     (route) => false,
                   );
+                  }
                 } on FirebaseAuthException catch (e) {
                   if (e.code == 'user-not-found') {
                     setState(() {

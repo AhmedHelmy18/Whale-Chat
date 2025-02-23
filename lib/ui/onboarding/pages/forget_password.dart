@@ -71,7 +71,7 @@ class _ForgetPasswordState extends State<ForgetPassword> {
               ),
               onPressed: () async {
                 try {
-                  if(emailController.text.isEmpty){
+                  if (emailController.text.isEmpty) {
                     showDialog(
                       context: context,
                       builder: (context) => AlertDialog(
@@ -90,28 +90,32 @@ class _ForgetPasswordState extends State<ForgetPassword> {
                   }
                   await FirebaseAuth.instance
                       .sendPasswordResetEmail(email: emailController.text);
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const VerifyEmail(),
-                    ),
-                  );
+                  if (context.mounted) {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const VerifyEmail(),
+                      ),
+                    );
+                  }
                 } catch (e) {
-                  DialogRoute(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: Text('Error'),
-                      content: Text(e.toString()),
-                      actions: [
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          child: Text('OK'),
-                        ),
-                      ],
-                    ),
-                  );
+                  if (context.mounted) {
+                    DialogRoute(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: Text('Error'),
+                        content: Text(e.toString()),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            child: Text('OK'),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
                 }
               },
               child: Text(
