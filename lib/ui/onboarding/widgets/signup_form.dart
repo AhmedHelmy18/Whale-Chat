@@ -110,9 +110,11 @@ class _SignupFormState extends State<SignupForm> {
                   Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => HomePage(),
+                      builder: (context) => HomePage(
+
+                      ),
                     ),
-                      (route) => false,
+                    (route) => false,
                   );
                 } on FirebaseAuthException catch (e) {
                   if (e.code == 'weak-password') {

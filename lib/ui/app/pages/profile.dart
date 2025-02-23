@@ -36,7 +36,6 @@ class _ProfileState extends State<Profile> {
 
       var data = userDoc.data() as Map<String, dynamic>?;
 
-
       if (userDoc.exists) {
         setState(() {
           userName = userDoc['name'] ?? "";
@@ -111,16 +110,13 @@ class _ProfileState extends State<Profile> {
                   alignment: Alignment.topRight,
                   child: IconButton(
                     onPressed: () async {
-                      final result = await Navigator.push(
+                      await Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => const EditProfile(),
                         ),
                       );
-
-                      if (result == 'updated') {
-                        getUserData();
-                      }
+                      getUserData();
                     },
                     icon: Icon(
                       Icons.edit,

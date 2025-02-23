@@ -55,7 +55,9 @@ class _BottomNavbarState extends State<BottomNavbar> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => const HomePage(),
+              builder: (context) => HomePage(
+
+              ),
             ),
           );
         } else if (index == 1) {

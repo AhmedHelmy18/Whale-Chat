@@ -1,5 +1,4 @@
 import 'package:chat_app/constants/theme.dart';
-import 'package:chat_app/ui/app/services/chat_services.dart';
 import 'package:chat_app/ui/app/widgets/bottom_nav_bar.dart';
 import 'package:chat_app/ui/app/widgets/chat_user_container.dart';
 import 'package:chat_app/ui/app/pages/search.dart';
@@ -18,6 +17,10 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   var chats = [];
   bool isLoading = true;
+  final FirebaseFirestore fireStore = FirebaseFirestore.instance;
+  Set<String> processedUserIds = {};
+
+  String currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
   @override
   void initState() {
@@ -26,30 +29,74 @@ class _HomePageState extends State<HomePage> {
     _loadChats();
   }
 
-  Future<void> _loadChats() async {
+  void _loadChats() async {
     setState(() => isLoading = true);
-    try {
-      final chatService = ChatServices();
-      final chatData = await chatService.loadChats();
+    FirebaseFirestore.instance
+        .collection("users")
+        .doc(currentUserId)
+        .snapshots()
+        .listen(
+      (event) async {
+        for (var doc in event.data()?["last conversation"]) {
+          var conversationRef =
+              await fireStore.collection('conversations').doc(doc).get();
 
-      if (mounted) {
-        setState(() {
-          chats = chatData;
-          isLoading = false;
-        });
-      }
-    } catch (e) {
-      debugPrint("Error loading chats: $e");
-      if (mounted) {
-        setState(() => isLoading = false);
-      }
-    }
+          if (!conversationRef.exists) continue;
+
+          var participants = conversationRef.data()?["participants"];
+          if (participants == null || participants.length < 2) continue;
+
+          String otherUserId = currentUserId == participants[0]
+              ? participants[1]
+              : participants[0];
+
+          String conversationKey = currentUserId.compareTo(otherUserId) < 0
+              ? "$currentUserId-$otherUserId"
+              : "$otherUserId-$currentUserId";
+
+          if (processedUserIds.contains(conversationKey)) {
+            continue;
+          }
+
+          processedUserIds.add(conversationKey);
+
+          var participantData =
+              await fireStore.collection('users').doc(otherUserId).get();
+
+          var lastMessageSnapshot = await FirebaseFirestore.instance
+              .collection('conversations')
+              .doc(doc)
+              .collection('messages')
+              .orderBy('time', descending: true)
+              .limit(1)
+              .get();
+
+          String lastMessage = lastMessageSnapshot.docs.isNotEmpty
+              ? lastMessageSnapshot.docs.first["text"]
+              : "No messages yet";
+          Timestamp lastMessageTime = lastMessageSnapshot.docs.isNotEmpty
+              ? lastMessageSnapshot.docs.first["time"]
+              : Timestamp.now();
+
+          if (!mounted) return;
+          setState(() {
+            chats.add({
+              "id": doc,
+              "name": participantData.data()?["name"],
+              "userId": participantData.id,
+              "lastMessage": lastMessage,
+              "timestamp": lastMessageTime,
+              "bio": participantData.data()?["bio"]
+            });
+          });
+        }
+      },
+    );
+    setState(() => isLoading = false);
   }
 
   @override
   Widget build(BuildContext context) {
-    String currentUserId = FirebaseAuth.instance.currentUser!.uid;
-
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 100,
@@ -132,7 +179,7 @@ class _HomePageState extends State<HomePage> {
             .orderBy('timestamp', descending: true)
             .snapshots(),
         builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+          if (isLoading) {
             return const Center(
               child: CircularProgressIndicator(),
             );

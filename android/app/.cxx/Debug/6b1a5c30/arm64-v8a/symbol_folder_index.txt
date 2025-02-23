@@ -1,0 +1,1 @@
+/home/ahmed-helmy/Developer/Whale Chat/build/app/intermediates/cxx/Debug/6b1a5c30/obj/arm64-v8a

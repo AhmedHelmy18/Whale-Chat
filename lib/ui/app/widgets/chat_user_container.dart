@@ -36,6 +36,7 @@ class ChatUserContainer extends StatelessWidget {
             ),
           ),
         );
+
       },
       child: Container(
         height: 90,

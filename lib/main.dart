@@ -33,6 +33,8 @@ class _ChatAppState extends State<ChatApp> {
       setState(() {
         isLoggedIn = user != null;
       });
+
+
     });
   }
 
@@ -43,7 +45,7 @@ class _ChatAppState extends State<ChatApp> {
       key: scaffoldKey,
       theme: ThemeData(colorScheme: colorScheme, useMaterial3: true),
       debugShowCheckedModeBanner: false,
-      home: isLoggedIn ? const HomePage() : const OnboardingPage(),
+      home: isLoggedIn ?  const HomePage() : const OnboardingPage(),
     );
   }
 }

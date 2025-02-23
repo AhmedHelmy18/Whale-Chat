@@ -17,6 +17,8 @@ class _EditProfileState extends State<EditProfile> {
   TextEditingController bioController = TextEditingController();
   String uid = FirebaseAuth.instance.currentUser!.uid;
 
+  late Map<String, dynamic>? data;
+
   @override
   initState() {
     super.initState();
@@ -28,14 +30,13 @@ class _EditProfileState extends State<EditProfile> {
       String uid = FirebaseAuth.instance.currentUser!.uid;
       DocumentSnapshot userData =
           await FirebaseFirestore.instance.collection('users').doc(uid).get();
-      var data = userData.data() as Map<String, dynamic>?;
-
+      data = userData.data() as Map<String, dynamic>?;
 
       if (userData.exists) {
         setState(() {
           nameController.text = userData['name'] ?? "";
-          bioController.text = data?.containsKey("bio") == true ? data!["bio"] : "";
-
+          bioController.text =
+              data?.containsKey("bio") == true ? data!["bio"] : "";
         });
       }
     } catch (e) {
@@ -60,7 +61,6 @@ class _EditProfileState extends State<EditProfile> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("$field updated successfully!")),
       );
-      Navigator.pop(context, 'updated');
     } catch (e) {
       log("Error updating $field: $e");
       ScaffoldMessenger.of(context).showSnackBar(
@@ -93,64 +93,36 @@ class _EditProfileState extends State<EditProfile> {
           ),
         ),
       ),
-      body: StreamBuilder<DocumentSnapshot>(
-        stream:
-            FirebaseFirestore.instance.collection('users').doc(uid).snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-
-          if (snapshot.hasError) {
-            return const Center(
-              child: Text("Failed loading data"),
-            );
-          }
-
-          if (!snapshot.hasData || !snapshot.data!.exists) {
-            return const Center(
-              child: Text("User not found"),
-            );
-          }
-
-          var userData = snapshot.data!;
-          nameController.text = userData['name'] ?? '';
-          bioController.text = userData['bio'] ?? '';
-
-          return Column(
-            children: [
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 20.0),
-                child: Center(
-                  child: Text(
-                    'Edit your name or bio',
-                    style: TextStyle(
-                      fontSize: 25,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'PlayfairDisplay',
-                    ),
-                  ),
+      body: Column(
+        children: [
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 20.0),
+            child: Center(
+              child: Text(
+                'Edit your name or bio',
+                style: TextStyle(
+                  fontSize: 25,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'PlayfairDisplay',
                 ),
               ),
-              const SizedBox(height: 20),
-              EditContainer(
-                text: 'Your Name:',
-                hint: 'Enter new name',
-                controller: nameController,
-                updateProfile: () => updateProfile(field: 'name'),
-              ),
-              const SizedBox(height: 20),
-              EditContainer(
-                text: 'Your Bio:',
-                hint: 'Enter new bio',
-                controller: bioController,
-                updateProfile: () => updateProfile(field: 'bio'),
-              ),
-            ],
-          );
-        },
+            ),
+          ),
+          const SizedBox(height: 20),
+          EditContainer(
+            text: 'Your Name:',
+            hint: 'Enter new name',
+            controller: nameController,
+            updateProfile: () => updateProfile(field: 'name'),
+          ),
+          const SizedBox(height: 20),
+          EditContainer(
+            text: 'Your Bio:',
+            hint: 'Enter new bio',
+            controller: bioController,
+            updateProfile: () => updateProfile(field: 'bio'),
+          ),
+        ],
       ),
     );
   }

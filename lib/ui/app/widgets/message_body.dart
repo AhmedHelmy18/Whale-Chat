@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:chat_app/constants/format_time.dart';
 import 'package:chat_app/constants/theme.dart';
 import 'package:chat_app/ui/app/models/message.dart';
@@ -25,7 +24,6 @@ class _MessageBodyState extends State<MessageBody> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   List<Message> messages = [];
-  StreamSubscription? _messageSubscription;
 
   late final ChatService chatService;
 
@@ -37,46 +35,34 @@ class _MessageBodyState extends State<MessageBody> {
       conversationId: widget.conversationId,
       userId: widget.userId,
     );
-    _messageSubscription = FirebaseFirestore.instance
+    FirebaseFirestore.instance
         .collection('conversations')
         .doc(widget.conversationId)
         .collection('messages')
         .orderBy('time', descending: false)
         .snapshots()
-        .listen(
-      (QuerySnapshot snapshot) {
-        if (!mounted) return;
+        .listen((QuerySnapshot snapshot) {
+      if (!mounted) return;
 
-        List<Message> updatedMessages = [];
+      List<Message> updatedMessages = [];
 
-        for (var doc in snapshot.docs) {
-          updatedMessages
-              .add(Message.fromFirestore(doc.data() as Map<String, dynamic>));
+      for (var doc in snapshot.docs) {
+        updatedMessages
+            .add(Message.fromFirestore(doc.data() as Map<String, dynamic>));
 
-          if (doc['status'] == 'sent' &&
-              doc['sender'] != FirebaseAuth.instance.currentUser!.uid) {
-            doc.reference.update(
-              {'status': 'delivered'},
-            );
-          }
+        if (doc['status'] == 'sent' &&
+            doc['sender'] != FirebaseAuth.instance.currentUser!.uid) {
+          doc.reference.update(
+            {'status': 'delivered'},
+          );
         }
-        setState(
-          () {
-            messages = updatedMessages;
-          },
-        );
-        chatService.scrollToBottom(_scrollController);
-      },
-    );
+      }
+      setState(() {
+        messages = updatedMessages;
+      });
+      chatService.scrollToBottom(_scrollController);
+    });
     chatService.markMessagesAsSeen();
-  }
-
-  @override
-  void dispose() {
-    _messageSubscription?.cancel();
-    _messageController.dispose();
-    _scrollController.dispose();
-    super.dispose();
   }
 
   @override
