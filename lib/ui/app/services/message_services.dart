@@ -33,7 +33,7 @@ class MessageService {
     List<Map<String, dynamic>> lastMessages = [{
       'id': conversationId,
       'last message': messageController.text.trim(),
-      'last message time': "test",
+      'last message time': Timestamp.now()
     }];
     if (historyConversation.exists) {
       for (var conv in historyConversation.data()?['last conversation']) {
@@ -43,10 +43,14 @@ class MessageService {
       }
     }
 
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(FirebaseAuth.instance.currentUser!.uid)
-        .update({'last conversation': lastMessages});
+    try {
+      FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser?.uid).update({
+        'last conversation': lastMessages,
+      });
+    }
+    catch(e) {
+      print(e);
+    }
 
     historyConversation = await FirebaseFirestore.instance
         .collection('users')
@@ -56,7 +60,7 @@ class MessageService {
     lastMessages = [{
       'id': conversationId,
       'last message': messageController.text.trim(),
-      'last message time': "test"
+      'last message time': Timestamp.now()
     }];
     if (historyConversation.exists) {
       for (var conv in historyConversation.data()?['last conversation']) {
@@ -65,9 +69,14 @@ class MessageService {
         }
       }
     }
-    FirebaseFirestore.instance.collection('users').doc(userId).update({
-      'last conversation': lastMessages,
-    });
+    try {
+      FirebaseFirestore.instance.collection('users').doc(userId).update({
+        'last conversation': lastMessages,
+      });
+    }
+    catch(e) {
+      print(e);
+    }
     messageController.clear();
   }
 
