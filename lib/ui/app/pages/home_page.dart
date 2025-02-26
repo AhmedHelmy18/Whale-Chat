@@ -26,15 +26,18 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
 
+    print("INIT STATEEEE");
     _loadChats();
   }
 
   void _loadChats() {
+
     _chatSubscription = FirebaseFirestore.instance
         .collection("users")
         .doc(currentUserId)
         .snapshots()
         .listen((event) async {
+
       if (!mounted) return;
 
       var lastConversations = event.data()?["last conversation"];
@@ -46,17 +49,19 @@ class _HomePageState extends State<HomePage> {
         return;
       }
 
-      List<dynamic> conversationList = lastConversations is List
-          ? lastConversations
-          : lastConversations.values.toList();
+      // List<dynamic> conversationList = lastConversations is List
+      //     ? lastConversations
+      //     : lastConversations.values.toList();
 
       List<Map<String, dynamic>> newChats = [];
 
-      for (var doc in conversationList) {
+      print(lastConversations);
+
+      for (var doc in lastConversations) {
         if (doc == null || doc.isEmpty) continue;
 
         var conversationRef =
-            await fireStore.collection('conversations').doc(doc["conversationId"]).get();
+            await fireStore.collection('conversations').doc(doc["id"]).get();
         if (!conversationRef.exists) continue;
 
         var participants = conversationRef.data()?["participants"];
@@ -69,23 +74,11 @@ class _HomePageState extends State<HomePage> {
         var participantData =
             await fireStore.collection('users').doc(otherUserId).get();
 
-        var lastMessageSnapshot = await FirebaseFirestore.instance
-            .collection('conversations')
-            .doc(doc["conversationId"])
-            .collection('messages')
-            .orderBy('time', descending: true)
-            .limit(1)
-            .get();
-
-        String lastMessage = lastMessageSnapshot.docs.isNotEmpty
-            ? lastMessageSnapshot.docs.first["text"]
-            : "No messages yet";
-        Timestamp lastMessageTime = lastMessageSnapshot.docs.isNotEmpty
-            ? lastMessageSnapshot.docs.first["time"]
-            : Timestamp.now();
+        String lastMessage = doc["last message"];
+        Timestamp lastMessageTime = doc["last message time"];
 
         newChats.add({
-          "id": doc["conversationId"],
+          "id": doc["id"],
           "name": participantData.data()?["name"] ?? "Unknown",
           "userId": participantData.id,
           "lastMessage": lastMessage,

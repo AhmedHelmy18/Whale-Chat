@@ -33,17 +33,16 @@ class MessageService {
     List<Map<String, dynamic>> lastMessages = [{
       'id': conversationId,
       'last message': messageController.text.trim(),
+      'last message time': "test",
     }];
     if (historyConversation.exists) {
       for (var conv in historyConversation.data()?['last conversation']) {
         if (conv["id"] != conversationId) {
-          lastMessages.add({
-            "id": conversationId,
-            "last message": messageController.text.trim(),
-          });
+          lastMessages.add(conv);
         }
       }
     }
+
     await FirebaseFirestore.instance
         .collection('users')
         .doc(FirebaseAuth.instance.currentUser!.uid)
@@ -57,14 +56,12 @@ class MessageService {
     lastMessages = [{
       'id': conversationId,
       'last message': messageController.text.trim(),
+      'last message time': "test"
     }];
     if (historyConversation.exists) {
       for (var conv in historyConversation.data()?['last conversation']) {
         if (conv["id"] != conversationId) {
-          lastMessages.add({
-            "id": conversationId,
-            "last message": messageController.text.trim(),
-          });
+          lastMessages.add(conv);
         }
       }
     }
