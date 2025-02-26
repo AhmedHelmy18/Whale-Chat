@@ -1,9 +1,10 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class ChatService {
-  const ChatService({
+class MessageService {
+  const MessageService({
     required this.userId,
     required this.conversationId,
   });
@@ -29,11 +30,17 @@ class ChatService {
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .get();
 
-    List<String> lastMessages = [conversationId];
+    List<Map<String, dynamic>> lastMessages = [{
+      'id': conversationId,
+      'last message': messageController.text.trim(),
+    }];
     if (historyConversation.exists) {
-      for (var convId in historyConversation.data()?['last conversation']) {
-        if (convId != conversationId) {
-          lastMessages.add(convId);
+      for (var conv in historyConversation.data()?['last conversation']) {
+        if (conv["id"] != conversationId) {
+          lastMessages.add({
+            "id": conversationId,
+            "last message": messageController.text.trim(),
+          });
         }
       }
     }
@@ -47,10 +54,18 @@ class ChatService {
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .get();
 
-    lastMessages = [conversationId];
-    for (var convId in historyConversation.data()?['last conversation']) {
-      if (convId != conversationId) {
-        lastMessages.add(convId);
+    lastMessages = [{
+      'id': conversationId,
+      'last message': messageController.text.trim(),
+    }];
+    if (historyConversation.exists) {
+      for (var conv in historyConversation.data()?['last conversation']) {
+        if (conv["id"] != conversationId) {
+          lastMessages.add({
+            "id": conversationId,
+            "last message": messageController.text.trim(),
+          });
+        }
       }
     }
     FirebaseFirestore.instance.collection('users').doc(userId).update({
@@ -59,7 +74,6 @@ class ChatService {
     messageController.clear();
   }
 
-  // mark messages as seen
   Future<void> markMessagesAsSeen() async {
     var snapshot = await FirebaseFirestore.instance
         .collection('conversations')

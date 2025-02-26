@@ -1,1 +1,0 @@
-/home/ahmed-helmy/Developer/chat-app/build/app/intermediates/cxx/Debug/1ll6k226/obj/x86_64

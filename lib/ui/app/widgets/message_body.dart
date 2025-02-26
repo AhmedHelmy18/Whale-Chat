@@ -25,13 +25,13 @@ class _MessageBodyState extends State<MessageBody> {
   final ScrollController _scrollController = ScrollController();
   List<Message> messages = [];
 
-  late final ChatService chatService;
+  late final MessageService messageService;
 
   @override
   void initState() {
     super.initState();
 
-    chatService = ChatService(
+    messageService = MessageService(
       conversationId: widget.conversationId,
       userId: widget.userId,
     );
@@ -60,9 +60,9 @@ class _MessageBodyState extends State<MessageBody> {
       setState(() {
         messages = updatedMessages;
       });
-      chatService.scrollToBottom(_scrollController);
+      messageService.scrollToBottom(_scrollController);
     });
-    chatService.markMessagesAsSeen();
+    messageService.markMessagesAsSeen();
   }
 
   @override
@@ -170,7 +170,7 @@ class _MessageBodyState extends State<MessageBody> {
                                   ),
                                   SizedBox(width: 5),
                                   message.isMe
-                                      ? chatService
+                                      ? messageService
                                           .getMessageStatusIcon(message.status)
                                       : Container(),
                                 ],
@@ -247,7 +247,8 @@ class _MessageBodyState extends State<MessageBody> {
                     Icons.send,
                     color: colorScheme.surface,
                   ),
-                  onPressed: () => chatService.sendMessage(_messageController),
+                  onPressed: () =>
+                      messageService.sendMessage(_messageController),
                 ),
               ),
             ],

@@ -1,8 +1,8 @@
+import 'dart:async';
 import 'package:chat_app/constants/theme.dart';
 import 'package:chat_app/ui/app/widgets/bottom_nav_bar.dart';
 import 'package:chat_app/ui/app/widgets/chat_user_container.dart';
 import 'package:chat_app/ui/app/pages/search.dart';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -15,11 +15,11 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  var chats = [];
+  List<Map<String, dynamic>> chats = [];
   bool isLoading = true;
   final FirebaseFirestore fireStore = FirebaseFirestore.instance;
-  Set<String> processedUserIds = {};
 
+  StreamSubscription? _chatSubscription;
   String currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
   @override
@@ -29,70 +29,83 @@ class _HomePageState extends State<HomePage> {
     _loadChats();
   }
 
-  void _loadChats() async {
-    setState(() => isLoading = true);
-    FirebaseFirestore.instance
+  void _loadChats() {
+    _chatSubscription = FirebaseFirestore.instance
         .collection("users")
         .doc(currentUserId)
         .snapshots()
-        .listen(
-      (event) async {
-        for (var doc in event.data()?["last conversation"]) {
-          var conversationRef =
-              await fireStore.collection('conversations').doc(doc).get();
+        .listen((event) async {
+      if (!mounted) return;
 
-          if (!conversationRef.exists) continue;
+      var lastConversations = event.data()?["last conversation"];
+      if (lastConversations == null || lastConversations.isEmpty) {
+        setState(() {
+          isLoading = false;
+          chats = [];
+        });
+        return;
+      }
 
-          var participants = conversationRef.data()?["participants"];
-          if (participants == null || participants.length < 2) continue;
+      List<dynamic> conversationList = lastConversations is List
+          ? lastConversations
+          : lastConversations.values.toList();
 
-          String otherUserId = currentUserId == participants[0]
-              ? participants[1]
-              : participants[0];
+      List<Map<String, dynamic>> newChats = [];
 
-          String conversationKey = currentUserId.compareTo(otherUserId) < 0
-              ? "$currentUserId-$otherUserId"
-              : "$otherUserId-$currentUserId";
+      for (var doc in conversationList) {
+        if (doc == null || doc.isEmpty) continue;
 
-          if (processedUserIds.contains(conversationKey)) {
-            continue;
-          }
+        var conversationRef =
+            await fireStore.collection('conversations').doc(doc["conversationId"]).get();
+        if (!conversationRef.exists) continue;
 
-          processedUserIds.add(conversationKey);
+        var participants = conversationRef.data()?["participants"];
+        if (participants == null || participants.length < 2) continue;
 
-          var participantData =
-              await fireStore.collection('users').doc(otherUserId).get();
+        String otherUserId = currentUserId == participants[0]
+            ? participants[1]
+            : participants[0];
 
-          var lastMessageSnapshot = await FirebaseFirestore.instance
-              .collection('conversations')
-              .doc(doc)
-              .collection('messages')
-              .orderBy('time', descending: true)
-              .limit(1)
-              .get();
+        var participantData =
+            await fireStore.collection('users').doc(otherUserId).get();
 
-          String lastMessage = lastMessageSnapshot.docs.isNotEmpty
-              ? lastMessageSnapshot.docs.first["text"]
-              : "No messages yet";
-          Timestamp lastMessageTime = lastMessageSnapshot.docs.isNotEmpty
-              ? lastMessageSnapshot.docs.first["time"]
-              : Timestamp.now();
+        var lastMessageSnapshot = await FirebaseFirestore.instance
+            .collection('conversations')
+            .doc(doc["conversationId"])
+            .collection('messages')
+            .orderBy('time', descending: true)
+            .limit(1)
+            .get();
 
-          if (!mounted) return;
-          setState(() {
-            chats.add({
-              "id": doc,
-              "name": participantData.data()?["name"],
-              "userId": participantData.id,
-              "lastMessage": lastMessage,
-              "timestamp": lastMessageTime,
-              "bio": participantData.data()?["bio"]
-            });
-          });
-        }
-      },
-    );
-    setState(() => isLoading = false);
+        String lastMessage = lastMessageSnapshot.docs.isNotEmpty
+            ? lastMessageSnapshot.docs.first["text"]
+            : "No messages yet";
+        Timestamp lastMessageTime = lastMessageSnapshot.docs.isNotEmpty
+            ? lastMessageSnapshot.docs.first["time"]
+            : Timestamp.now();
+
+        newChats.add({
+          "id": doc["conversationId"],
+          "name": participantData.data()?["name"] ?? "Unknown",
+          "userId": participantData.id,
+          "lastMessage": lastMessage,
+          "timestamp": lastMessageTime,
+          "bio": participantData.data()?["bio"] ?? "No bio available"
+        });
+      }
+
+      if (!mounted) return;
+      setState(() {
+        isLoading = false;
+        chats = newChats;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _chatSubscription?.cancel();
+    super.dispose();
   }
 
   @override
@@ -172,46 +185,35 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: StreamBuilder(
-        stream: FirebaseFirestore.instance
-            .collection('conversations')
-            .where('participants', arrayContains: currentUserId)
-            .orderBy('timestamp', descending: true)
-            .snapshots(),
-        builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-          if (isLoading) {
-            return const Center(
+      body: (isLoading)
+          ? const Center(
               child: CircularProgressIndicator(),
-            );
-          }
-          if (chats.isEmpty) {
-            return const Center(
-              child: Text(
-                "No recent chats",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w400,
+            )
+          : chats.isEmpty
+              ? const Center(
+                  child: Text(
+                    "No recent chats",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                )
+              : ListView.builder(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  itemCount: chats.length,
+                  itemBuilder: (context, index) {
+                    return ChatUserContainer(
+                      userId: chats[index]["userId"],
+                      userName: chats[index]["name"],
+                      lastMessage: chats[index]["lastMessage"],
+                      timestamp: chats[index]["timestamp"],
+                      conversationId: chats[index]["id"],
+                      bio: chats[index]["bio"],
+                    );
+                  },
                 ),
-              ),
-            );
-          }
-
-          return ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            itemCount: chats.length,
-            itemBuilder: (context, index) {
-              return ChatUserContainer(
-                userId: chats[index]["userId"],
-                userName: chats[index]["name"],
-                lastMessage: chats[index]["lastMessage"],
-                timestamp: chats[index]["timestamp"],
-                conversationId: chats[index]["id"],
-                bio: chats[index]["bio"],
-              );
-            },
-          );
-        },
-      ),
       bottomNavigationBar: BottomNavbar(),
     );
   }
