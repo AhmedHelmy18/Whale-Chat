@@ -4,6 +4,8 @@ import 'package:chat_app/ui/onboarding/pages/onboarding_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'cubits/auth_cubit/auth_cubit.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -33,19 +35,24 @@ class _ChatAppState extends State<ChatApp> {
       setState(() {
         isLoggedIn = user != null;
       });
-
-
     });
   }
 
   @override
   Widget build(BuildContext context) {
     final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
-    return MaterialApp(
-      key: scaffoldKey,
-      theme: ThemeData(colorScheme: colorScheme, useMaterial3: true),
-      debugShowCheckedModeBanner: false,
-      home: isLoggedIn ?  const HomePage() : const OnboardingPage(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => AuthCubit(),
+        ),
+      ],
+      child: MaterialApp(
+        key: scaffoldKey,
+        theme: ThemeData(colorScheme: colorScheme, useMaterial3: true),
+        debugShowCheckedModeBanner: false,
+        home: isLoggedIn ? const HomePage() : const OnboardingPage(),
+      ),
     );
   }
 }

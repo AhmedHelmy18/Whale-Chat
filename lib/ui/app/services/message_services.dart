@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -49,7 +50,7 @@ class MessageService {
       });
     }
     catch(e) {
-      print(e);
+      log(e.toString());
     }
 
     historyConversation = await FirebaseFirestore.instance
@@ -75,7 +76,7 @@ class MessageService {
       });
     }
     catch(e) {
-      print(e);
+      log(e.toString());
     }
     messageController.clear();
   }

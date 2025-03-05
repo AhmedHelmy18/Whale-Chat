@@ -1,0 +1,2 @@
+/home/ahmed-helmy/Developer/Whale Chat/android/app/.cxx/Debug/6b1a5c30/x86/CMakeFiles/edit_cache.dir
+/home/ahmed-helmy/Developer/Whale Chat/android/app/.cxx/Debug/6b1a5c30/x86/CMakeFiles/rebuild_cache.dir
