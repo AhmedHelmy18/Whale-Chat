@@ -32,9 +32,11 @@ class _ChatAppState extends State<ChatApp> {
   void initState() {
     super.initState();
     FirebaseAuth.instance.authStateChanges().listen((User? user) {
-      setState(() {
-        isLoggedIn = user != null;
-      });
+      if (mounted) {
+        setState(() {
+          isLoggedIn = user != null;
+        });
+      }
     });
   }
 

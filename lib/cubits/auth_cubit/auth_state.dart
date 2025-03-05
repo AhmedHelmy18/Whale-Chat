@@ -9,9 +9,9 @@ final class LoginLoading extends AuthState {}
 final class LoginSuccess extends AuthState {}
 
 final class LoginFailure extends AuthState {
-  final String error;
+  final String errMessage;
 
-  LoginFailure({required this.error});
+  LoginFailure({required this.errMessage});
 }
 
 final class IconPassword extends AuthState {}
@@ -25,7 +25,3 @@ final class SignUpFailure extends AuthState {
 
   SignUpFailure({required this.errMessage});
 }
-
-final class LogoutSuccess extends AuthState {}
-
-final class LogoutFailure extends AuthState {}

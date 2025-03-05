@@ -28,7 +28,7 @@ class _SearchState extends State<Search> {
       QuerySnapshot snapshot = await FirebaseFirestore.instance
           .collection('users')
           .where('name', isGreaterThanOrEqualTo: query)
-          .where('name', isLessThan: query + 'z')
+          .where('name', isLessThan: '${query}z')
           .get();
 
       String currentUserId = FirebaseAuth.instance.currentUser!.uid;
@@ -158,17 +158,19 @@ class _SearchState extends State<Search> {
                         currentUserId, selectedUserId);
 
                     if (!mounted) return;
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => Chat(
-                          userId: selectedUserId,
-                          userName: selectedUserName,
-                          conversationId: conversationId,
+                    if (context.mounted) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Chat(
+                            userId: selectedUserId,
+                            userName: selectedUserName,
+                            conversationId: conversationId,
                             bio: selectedUserBio ?? 'No bio available',
+                          ),
                         ),
-                      ),
-                    );
+                      );
+                    }
                   },
                 );
               },

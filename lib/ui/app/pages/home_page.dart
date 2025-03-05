@@ -26,18 +26,15 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
 
-    print("INIT STATEEEE");
     _loadChats();
   }
 
   void _loadChats() {
-
     _chatSubscription = FirebaseFirestore.instance
         .collection("users")
         .doc(currentUserId)
         .snapshots()
         .listen((event) async {
-
       if (!mounted) return;
 
       var lastConversations = event.data()?["last conversation"];
@@ -49,13 +46,7 @@ class _HomePageState extends State<HomePage> {
         return;
       }
 
-      // List<dynamic> conversationList = lastConversations is List
-      //     ? lastConversations
-      //     : lastConversations.values.toList();
-
       List<Map<String, dynamic>> newChats = [];
-
-      print(lastConversations);
 
       for (var doc in lastConversations) {
         if (doc == null || doc.isEmpty) continue;
