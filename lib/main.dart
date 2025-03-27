@@ -11,6 +11,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   runApp(
     const ChatApp(),
   );
@@ -18,6 +19,7 @@ void main() async {
 
 class ChatApp extends StatefulWidget {
   const ChatApp({super.key});
+
 
   @override
   State<ChatApp> createState() => _ChatAppState();
@@ -33,8 +35,6 @@ class _ChatAppState extends State<ChatApp> {
       setState(() {
         isLoggedIn = user != null;
       });
-
-
     });
   }
 
@@ -45,7 +45,7 @@ class _ChatAppState extends State<ChatApp> {
       key: scaffoldKey,
       theme: ThemeData(colorScheme: colorScheme, useMaterial3: true),
       debugShowCheckedModeBanner: false,
-      home: isLoggedIn ?  const HomePage() : const OnboardingPage(),
+      home: isLoggedIn ? const HomePage() : const OnboardingPage(),
     );
   }
 }
