@@ -8,7 +8,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -16,7 +15,6 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
 
   if(kDebugMode) {
     await FirebaseAuth.instance.useAuthEmulator("10.0.2.2", 9099);
@@ -47,6 +45,8 @@ class _ChatAppState extends State<ChatApp> {
         isLoggedIn = user != null;
       });
     });
+
+    FirebaseMessaging.instance.requestPermission();
   }
 
   @override
