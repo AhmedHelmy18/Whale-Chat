@@ -3,7 +3,9 @@ import 'package:chat_app/ui/onboarding/pages/sign_up_page.dart';
 import 'package:chat_app/ui/onboarding/common//error_box.dart';
 import 'package:chat_app/constants/theme.dart';
 import 'package:chat_app/ui/app/pages/home_page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
 class LoginForm extends StatefulWidget {
@@ -99,15 +101,21 @@ class _LoginFormState extends State<LoginForm> {
                     email: emailController.text,
                     password: passwordController.text,
                   );
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => HomePage(
-
+                  await FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(credential.user?.uid)
+                      .update({
+                    "fcm token": await FirebaseMessaging.instance.getToken()
+                  });
+                  if (context.mounted) {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => HomePage(),
                       ),
-                    ),
-                    (route) => false,
-                  );
+                      (route) => false,
+                    );
+                  }
                 } on FirebaseAuthException catch (e) {
                   if (e.code == 'user-not-found') {
                     setState(() {

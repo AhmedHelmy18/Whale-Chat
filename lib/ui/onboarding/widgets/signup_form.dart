@@ -4,6 +4,7 @@ import 'package:chat_app/constants/theme.dart';
 import 'package:chat_app/ui/app/pages/home_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
 class SignupForm extends StatefulWidget {
@@ -105,17 +106,18 @@ class _SignupFormState extends State<SignupForm> {
                       .set({
                     'name': nameController.text,
                     'last conversation': [],
+                    "fcm token": await FirebaseMessaging.instance.getToken(),
                   });
                   await credential.user?.sendEmailVerification();
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => HomePage(
-
+                  if (context.mounted) {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => HomePage(),
                       ),
-                    ),
-                    (route) => false,
-                  );
+                      (route) => false,
+                    );
+                  }
                 } on FirebaseAuthException catch (e) {
                   if (e.code == 'weak-password') {
                     setState(() {
