@@ -1,8 +1,8 @@
 import 'package:chat_app/constants/theme.dart';
 import 'package:chat_app/ui/app/pages/home_page.dart';
-import 'package:chat_app/ui/app/services/notification_permission.dart';
 import 'package:chat_app/ui/onboarding/pages/onboarding_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -19,6 +19,7 @@ void main() async {
   if(kDebugMode) {
     await FirebaseAuth.instance.useAuthEmulator("10.0.2.2", 9099);
     FirebaseFirestore.instance.useFirestoreEmulator("10.0.2.2", 8080);
+    FirebaseFunctions.instance.useFunctionsEmulator("10.0.2.2", 5001);
   }
 
   runApp(
@@ -45,9 +46,9 @@ class _ChatAppState extends State<ChatApp> {
         isLoggedIn = user != null;
       });
     });
-
     FirebaseMessaging.instance.requestPermission();
   }
+
 
   @override
   Widget build(BuildContext context) {

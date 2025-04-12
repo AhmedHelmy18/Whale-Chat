@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -30,11 +31,13 @@ class MessageService {
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .get();
 
-    List<Map<String, dynamic>> lastMessages = [{
-      'id': conversationId,
-      'last message': messageController.text.trim(),
-      'last message time': Timestamp.now()
-    }];
+    List<Map<String, dynamic>> lastMessages = [
+      {
+        'id': conversationId,
+        'last message': messageController.text.trim(),
+        'last message time': Timestamp.now()
+      }
+    ];
     if (historyConversation.exists) {
       for (var conv in historyConversation.data()?['last conversation']) {
         if (conv["id"] != conversationId) {
@@ -44,24 +47,26 @@ class MessageService {
     }
 
     try {
-      FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser?.uid).update({
+      FirebaseFirestore.instance
+          .collection('users')
+          .doc(FirebaseAuth.instance.currentUser?.uid)
+          .update({
         'last conversation': lastMessages,
       });
-    }
-    catch(e) {
+    } catch (e) {
       print(e);
     }
 
-    historyConversation = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(FirebaseAuth.instance.currentUser!.uid)
-        .get();
+    historyConversation =
+        await FirebaseFirestore.instance.collection('users').doc(userId).get();
 
-    lastMessages = [{
-      'id': conversationId,
-      'last message': messageController.text.trim(),
-      'last message time': Timestamp.now()
-    }];
+    lastMessages = [
+      {
+        'id': conversationId,
+        'last message': messageController.text.trim(),
+        'last message time': Timestamp.now()
+      }
+    ];
     if (historyConversation.exists) {
       for (var conv in historyConversation.data()?['last conversation']) {
         if (conv["id"] != conversationId) {
@@ -73,10 +78,13 @@ class MessageService {
       FirebaseFirestore.instance.collection('users').doc(userId).update({
         'last conversation': lastMessages,
       });
-    }
-    catch(e) {
+    } catch (e) {
       print(e);
     }
+    await FirebaseFunctions.instance.httpsCallable("sendNotification").call({
+      "userId": userId,
+      "message": messageController.text.trim(),
+    });
     messageController.clear();
   }
 
