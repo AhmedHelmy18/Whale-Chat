@@ -1,8 +1,7 @@
 import 'dart:async';
-import 'package:chat_app/constants/theme.dart';
-import 'package:chat_app/ui/app/widgets/bottom_nav_bar.dart';
-import 'package:chat_app/ui/app/widgets/chat_user_container.dart';
-import 'package:chat_app/ui/app/pages/search.dart';
+import 'package:chat_app/theme/color_scheme.dart';
+import 'package:chat_app/view/app/widgets/chat_user_container.dart';
+import 'package:chat_app/view/app/pages/search.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -19,25 +18,21 @@ class _HomePageState extends State<HomePage> {
   bool isLoading = true;
   final FirebaseFirestore fireStore = FirebaseFirestore.instance;
 
-  StreamSubscription? _chatSubscription;
+  StreamSubscription? chatSubscription;
   String currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
   @override
   void initState() {
     super.initState();
-
-    print("INIT STATEEEE");
-    _loadChats();
+    loadChats();
   }
 
-  void _loadChats() {
-
-    _chatSubscription = FirebaseFirestore.instance
+  void loadChats() {
+    chatSubscription = FirebaseFirestore.instance
         .collection("users")
         .doc(currentUserId)
         .snapshots()
         .listen((event) async {
-
       if (!mounted) return;
 
       var lastConversations = event.data()?["last conversation"];
@@ -54,8 +49,6 @@ class _HomePageState extends State<HomePage> {
       //     : lastConversations.values.toList();
 
       List<Map<String, dynamic>> newChats = [];
-
-      print(lastConversations);
 
       for (var doc in lastConversations) {
         if (doc == null || doc.isEmpty) continue;
@@ -97,7 +90,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
-    _chatSubscription?.cancel();
+    chatSubscription?.cancel();
     super.dispose();
   }
 
@@ -105,7 +98,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 100,
+        toolbarHeight: 60,
         backgroundColor: colorScheme.primary,
         title: Text(
           'Chat',
@@ -207,7 +200,6 @@ class _HomePageState extends State<HomePage> {
                     );
                   },
                 ),
-      bottomNavigationBar: BottomNavbar(),
     );
   }
 }

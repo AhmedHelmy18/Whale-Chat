@@ -1,15 +1,14 @@
-import 'package:chat_app/ui/onboarding/widgets/login_form.dart';
-import 'package:chat_app/constants/theme.dart';
+import 'package:chat_app/view/onboarding/widgets/signup_form.dart';
+import 'package:chat_app/theme/color_scheme.dart';
 import 'package:flutter/material.dart';
 
-class LoginPage extends StatelessWidget {
-  const LoginPage({super.key});
+class SignUpPage extends StatelessWidget {
+  const SignUpPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
-
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -28,26 +27,26 @@ class LoginPage extends StatelessWidget {
         child: Stack(
           children: [
             Container(
-              height: screenHeight / 2,
+              height: screenHeight / 2 - 50,
               width: screenWidth,
               decoration: const BoxDecoration(
                 image: DecorationImage(
-                  image: AssetImage("assets/images/background.png"),
+                  image: AssetImage('assets/images/background.png'),
                   fit: BoxFit.cover,
                 ),
               ),
               child: Padding(
                 padding: const EdgeInsets.only(left: 24.0),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Welcome Back",
+                      'Create Account',
                       style: TextStyle(
                         color: colorScheme.onPrimary,
-                        fontWeight: FontWeight.bold,
                         fontSize: 30,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ],
@@ -55,11 +54,11 @@ class LoginPage extends StatelessWidget {
               ),
             ),
             Container(
-              height: screenHeight - 50,
+              height: screenHeight - 100,
               width: screenWidth,
               decoration: const BoxDecoration(
                 image: DecorationImage(
-                  image: AssetImage("assets/images/wave.png"),
+                  image: AssetImage('assets/images/wave.png'),
                   fit: BoxFit.fitWidth,
                 ),
               ),
@@ -69,12 +68,12 @@ class LoginPage extends StatelessWidget {
                 alignment: Alignment.bottomCenter,
                 child: Padding(
                   padding: EdgeInsets.only(
-                    top: screenHeight / 2,
+                    top: screenHeight / 2 - 30,
                     left: 20.0,
                     right: 20.0,
                     bottom: 10,
                   ),
-                  child: LoginForm(),
+                  child: SignupForm(),
                 ),
               ),
             ),

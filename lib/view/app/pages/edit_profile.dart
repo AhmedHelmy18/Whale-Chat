@@ -1,18 +1,18 @@
 import 'dart:developer';
-import 'package:chat_app/constants/theme.dart';
-import 'package:chat_app/ui/app/widgets/edit_container.dart';
+import 'package:chat_app/theme/color_scheme.dart';
+import 'package:chat_app/view/app/widgets/edit_container.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class EditProfile extends StatefulWidget {
-  const EditProfile({super.key});
+class EditProfilePage extends StatefulWidget {
+  const EditProfilePage({super.key});
 
   @override
-  State<EditProfile> createState() => _EditProfileState();
+  State<EditProfilePage> createState() => _EditProfilePageState();
 }
 
-class _EditProfileState extends State<EditProfile> {
+class _EditProfilePageState extends State<EditProfilePage> {
   TextEditingController nameController = TextEditingController();
   TextEditingController bioController = TextEditingController();
   String uid = FirebaseAuth.instance.currentUser!.uid;
@@ -44,7 +44,7 @@ class _EditProfileState extends State<EditProfile> {
     }
   }
 
-  Future<void> updateProfile({required String field}) async {
+  Future<void> updateProfilePage({required String field}) async {
     try {
       Map<String, dynamic> updateData = {};
       if (field == 'name') {
@@ -58,14 +58,18 @@ class _EditProfileState extends State<EditProfile> {
           .doc(uid)
           .update(updateData);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("$field updated successfully!")),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("$field updated successfully!")),
+        );
+      }
     } catch (e) {
       log("Error updating $field: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to update $field")),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to update $field")),
+        );
+      }
     }
   }
 
@@ -87,9 +91,10 @@ class _EditProfileState extends State<EditProfile> {
         title: Text(
           'Edit Profile',
           style: TextStyle(
-            fontSize: 30,
-            fontWeight: FontWeight.w500,
+            fontSize: 25,
+            fontWeight: FontWeight.bold,
             color: colorScheme.surface,
+            fontFamily: 'PlayfairDisplay',
           ),
         ),
       ),
@@ -113,14 +118,14 @@ class _EditProfileState extends State<EditProfile> {
             text: 'Your Name:',
             hint: 'Enter new name',
             controller: nameController,
-            updateProfile: () => updateProfile(field: 'name'),
+            updateProfilePage: () => updateProfilePage(field: 'name'),
           ),
           const SizedBox(height: 20),
           EditContainer(
             text: 'Your Bio:',
             hint: 'Enter new bio',
             controller: bioController,
-            updateProfile: () => updateProfile(field: 'bio'),
+            updateProfilePage: () => updateProfilePage(field: 'bio'),
           ),
         ],
       ),

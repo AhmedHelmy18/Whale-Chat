@@ -53,9 +53,7 @@ class MessageService {
           .update({
         'last conversation': lastMessages,
       });
-    } catch (e) {
-      print(e);
-    }
+    } catch (_) {}
 
     historyConversation =
         await FirebaseFirestore.instance.collection('users').doc(userId).get();
@@ -78,9 +76,7 @@ class MessageService {
       FirebaseFirestore.instance.collection('users').doc(userId).update({
         'last conversation': lastMessages,
       });
-    } catch (e) {
-      print(e);
-    }
+    } catch (_) {}
     await FirebaseFunctions.instance.httpsCallable("sendNotification").call({
       "userId": userId,
       "message": messageController.text.trim(),
@@ -103,7 +99,6 @@ class MessageService {
     await batch.commit();
   }
 
-  // show if see the message or not
   Icon getMessageStatusIcon(String status) {
     if (status == 'sent') {
       return Icon(Icons.check, color: Colors.grey, size: 16);
@@ -115,7 +110,6 @@ class MessageService {
     return Icon(Icons.check, color: Colors.grey, size: 16);
   }
 
-  // scroll messages to bottom
   void scrollToBottom(ScrollController scrollController) {
     Future.delayed(
       Duration(milliseconds: 100),

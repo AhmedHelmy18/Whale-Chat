@@ -1,6 +1,6 @@
-import 'package:chat_app/constants/theme.dart';
-import 'package:chat_app/ui/app/pages/profile.dart';
-import 'package:chat_app/ui/app/widgets/message_body.dart';
+import 'package:chat_app/theme/color_scheme.dart';
+import 'package:chat_app/view/app/pages/profile.dart';
+import 'package:chat_app/view/app/widgets/message_body.dart';
 import 'package:flutter/material.dart';
 
 class Chat extends StatelessWidget {
@@ -40,7 +40,7 @@ class Chat extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => Profile(
+                builder: (context) => ProfilePage(
                   userId: userId,
                 ),
               ),

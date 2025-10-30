@@ -1,4 +1,4 @@
-import 'package:chat_app/constants/theme.dart';
+import 'package:chat_app/theme/color_scheme.dart';
 import 'package:flutter/material.dart';
 
 class EditContainer extends StatelessWidget {
@@ -7,13 +7,13 @@ class EditContainer extends StatelessWidget {
     required this.text,
     required this.hint,
     required this.controller,
-    required this.updateProfile,
+    required this.updateProfilePage,
   });
 
   final String text;
   final String hint;
   final TextEditingController controller;
-  final VoidCallback updateProfile;
+  final VoidCallback updateProfilePage;
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +62,7 @@ class EditContainer extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
-              onPressed: updateProfile,
+              onPressed: updateProfilePage,
               child: Text(
                 'Save',
                 style: TextStyle(

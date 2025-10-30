@@ -1,7 +1,7 @@
-import 'package:chat_app/ui/onboarding/pages/login_page.dart';
-import 'package:chat_app/ui/onboarding/common/error_box.dart';
-import 'package:chat_app/constants/theme.dart';
-import 'package:chat_app/ui/app/pages/home_page.dart';
+import 'package:chat_app/view/onboarding/pages/login_page.dart';
+import 'package:chat_app/view/onboarding/common/error_box.dart';
+import 'package:chat_app/theme/color_scheme.dart';
+import 'package:chat_app/view/app/pages/home_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';

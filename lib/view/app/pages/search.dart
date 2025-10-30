@@ -1,6 +1,6 @@
 import 'dart:developer';
-import 'package:chat_app/constants/theme.dart';
-import 'package:chat_app/ui/app/pages/chat.dart';
+import 'package:chat_app/theme/color_scheme.dart';
+import 'package:chat_app/view/app/pages/chat.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -28,7 +28,7 @@ class _SearchState extends State<Search> {
       QuerySnapshot snapshot = await FirebaseFirestore.instance
           .collection('users')
           .where('name', isGreaterThanOrEqualTo: query)
-          .where('name', isLessThan: query + 'z')
+          .where('name', isLessThan: '${query}z')
           .get();
 
       String currentUserId = FirebaseAuth.instance.currentUser!.uid;
@@ -158,17 +158,19 @@ class _SearchState extends State<Search> {
                         currentUserId, selectedUserId);
 
                     if (!mounted) return;
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => Chat(
-                          userId: selectedUserId,
-                          userName: selectedUserName,
-                          conversationId: conversationId,
+                    if (context.mounted) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Chat(
+                            userId: selectedUserId,
+                            userName: selectedUserName,
+                            conversationId: conversationId,
                             bio: selectedUserBio ?? 'No bio available',
+                          ),
                         ),
-                      ),
-                    );
+                      );
+                    }
                   },
                 );
               },

@@ -1,4 +1,4 @@
-import 'package:chat_app/constants//theme.dart';
+import 'package:chat_app/theme/color_scheme.dart';
 import 'package:flutter/material.dart';
 
 class ErrorBox extends StatelessWidget {

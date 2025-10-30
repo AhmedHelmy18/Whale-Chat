@@ -2,15 +2,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class ChatServices {
-  ChatServices() {
+class ChatService {
+  ChatService() {
     loading();
   }
 
   final FirebaseFirestore fireStore = FirebaseFirestore.instance;
   Set<String> processedUserIds = {};
 
-  /// Use ValueNotifier to notify UI when chats change
   ValueNotifier<List<Map<String, dynamic>>> chats = ValueNotifier([]);
 
   void loading() {
@@ -75,7 +74,6 @@ class ChatServices {
           });
         }
 
-        // Notify UI about the new data
         chats.value = updatedChats;
       },
     );

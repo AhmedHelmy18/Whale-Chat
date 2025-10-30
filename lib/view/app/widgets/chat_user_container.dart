@@ -1,5 +1,5 @@
-import 'package:chat_app/constants/format_time.dart';
-import 'package:chat_app/ui/app/pages/chat.dart';
+import 'package:chat_app/util/format_time.dart';
+import 'package:chat_app/view/app/pages/chat.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -19,7 +19,7 @@ class ChatUserContainer extends StatelessWidget {
   final String lastMessage;
   final Timestamp? timestamp;
   final String conversationId;
-  final String? bio ;
+  final String? bio;
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +36,6 @@ class ChatUserContainer extends StatelessWidget {
             ),
           ),
         );
-
       },
       child: Container(
         height: 90,
