@@ -6,6 +6,7 @@ import 'package:whale_chat/view/onboarding/pages/onboarding_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:whale_chat/view/onboarding/pages/verify_email.dart';
 
 class ChatApp extends StatefulWidget {
   const ChatApp({super.key});
@@ -66,46 +67,50 @@ class _ChatAppState extends State<ChatApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: ThemeData(colorScheme: colorScheme, useMaterial3: true),
-      debugShowCheckedModeBanner: false,
-      home: (isLoggedIn && hasUserData)
-          ? Scaffold(
-              body: IndexedStack(
-                index: selectedIndex,
-                children: pages,
-              ),
-              bottomNavigationBar: SizedBox(
-                height: 125,
-                child: BottomNavigationBar(
-                  backgroundColor: colorScheme.primary,
-                  selectedItemColor: colorScheme.surface,
-                  unselectedItemColor: colorScheme.onSurface,
-                  currentIndex: selectedIndex,
-                  onTap: onItemTapped,
-                  selectedLabelStyle: const TextStyle(
-                    fontWeight: FontWeight.w500,
-                    fontSize: 18,
-                  ),
-                  unselectedLabelStyle: const TextStyle(
-                    fontWeight: FontWeight.w500,
-                    fontSize: 16,
-                  ),
-                  selectedIconTheme: const IconThemeData(size: 30),
-                  unselectedIconTheme: const IconThemeData(size: 25),
-                  items: const [
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.home),
-                      label: 'Home',
-                    ),
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.person),
-                      label: 'Profile',
-                    ),
-                  ],
-                ),
-              ),
-            )
-          : const OnboardingPage(),
-    );
+        theme: ThemeData(colorScheme: colorScheme, useMaterial3: true),
+        debugShowCheckedModeBanner: false,
+        home: VerifyEmailPage(
+          email: '',
+          name: '',
+        ));
+    //   (isLoggedIn && hasUserData)
+    //       ? Scaffold(
+    //           body: IndexedStack(
+    //             index: selectedIndex,
+    //             children: pages,
+    //           ),
+    //           bottomNavigationBar: SizedBox(
+    //             height: 125,
+    //             child: BottomNavigationBar(
+    //               backgroundColor: colorScheme.primary,
+    //               selectedItemColor: colorScheme.surface,
+    //               unselectedItemColor: colorScheme.onSurface,
+    //               currentIndex: selectedIndex,
+    //               onTap: onItemTapped,
+    //               selectedLabelStyle: const TextStyle(
+    //                 fontWeight: FontWeight.w500,
+    //                 fontSize: 18,
+    //               ),
+    //               unselectedLabelStyle: const TextStyle(
+    //                 fontWeight: FontWeight.w500,
+    //                 fontSize: 16,
+    //               ),
+    //               selectedIconTheme: const IconThemeData(size: 30),
+    //               unselectedIconTheme: const IconThemeData(size: 25),
+    //               items: const [
+    //                 BottomNavigationBarItem(
+    //                   icon: Icon(Icons.home),
+    //                   label: 'Home',
+    //                 ),
+    //                 BottomNavigationBarItem(
+    //                   icon: Icon(Icons.person),
+    //                   label: 'Profile',
+    //                 ),
+    //               ],
+    //             ),
+    //           ),
+    //         )
+    //       : const OnboardingPage(),
+    // );
   }
 }

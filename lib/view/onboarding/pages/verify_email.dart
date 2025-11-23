@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:whale_chat/app.dart';
 import 'package:whale_chat/services/user_service.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
+import 'package:whale_chat/view/onboarding/widgets/primary_button.dart';
 
 class VerifyEmailPage extends StatefulWidget {
   final String email;
@@ -27,8 +28,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
     if (user != null) {
       if (user.email == widget.email) {
         if (user.emailVerified) {
-          createUserDocument(
-              uid: user.uid, name: widget.name, email: widget.email);
+          createUserDocument(uid: user.uid, name: widget.name, email: widget.email);
           if (!mounted) return;
           Navigator.pushAndRemoveUntil(
             context,
@@ -61,40 +61,45 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(leading: BackButton(color: colorScheme.onSurface)),
-      body: Stack(
-        children: [
-          Container(
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/images/emailVerify.png'),
-                fit: BoxFit.fitWidth,
-              ),
-            ),
+      appBar: AppBar(
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: Icon(
+            Icons.arrow_back_ios_new,
+            color: colorScheme.onSurface,
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 60),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Please verify your email',
-                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  'We sent a verification link to:\n${widget.email}',
-                  style: const TextStyle(fontSize: 16),
-                ),
-                const Spacer(),
-                ElevatedButton(
-                  onPressed: loading ? null : checkVerification,
-                  child: Text(loading ? 'Checking...' : 'I verified'),
-                ),
-              ],
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          children: [
+            const Text(
+              'Please verify your email',
+              style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
             ),
-          ),
-        ],
+            const SizedBox(height: 10),
+            Text(
+              'We sent a verification link to:\n${widget.email}',
+              style: const TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 50),
+            Image.asset(
+              "assets/images/emailVerify.png",
+              height: 400,
+              width: 400,
+            ),
+            const Spacer(),
+            PrimaryButton(
+              text: loading ? 'checkIn...' : 'Verify',
+              onPressed: checkVerification,
+              primaryButton: true,
+              enabled: !loading,
+            ),
+          ],
+        ),
       ),
     );
   }
