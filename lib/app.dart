@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
 import 'package:whale_chat/view/app/pages/home_page.dart';
 import 'package:whale_chat/view/app/pages/profile.dart';
+import 'package:whale_chat/view/onboarding/pages/forget_password.dart';
 import 'package:whale_chat/view/onboarding/pages/onboarding_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -69,10 +70,7 @@ class _ChatAppState extends State<ChatApp> {
     return MaterialApp(
         theme: ThemeData(colorScheme: colorScheme, useMaterial3: true),
         debugShowCheckedModeBanner: false,
-        home: VerifyEmailPage(
-          email: '',
-          name: '',
-        ));
+        home: ForgetPassword());
     //   (isLoggedIn && hasUserData)
     //       ? Scaffold(
     //           body: IndexedStack(

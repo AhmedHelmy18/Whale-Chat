@@ -4,7 +4,6 @@ import 'package:whale_chat/view/onboarding/widgets/custom_text_form_field.dart';
 import 'package:whale_chat/view/onboarding/widgets/error_box.dart';
 import 'package:whale_chat/view/onboarding/widgets/primary_button.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
-import 'package:whale_chat/view/onboarding/pages/verify_email.dart';
 import 'package:whale_chat/controller/auth_controller.dart';
 
 class ForgetPassword extends StatefulWidget {
@@ -60,14 +59,23 @@ class _ForgetPasswordState extends State<ForgetPassword> {
     }
 
     if (!mounted) return;
-    // Navigator.pushReplacement(
-    //   context,
-    //   MaterialPageRoute(
-    //     builder: (_) => VerifyEmailPage(
-    //       email: emailController.text.trim(),
-    //     ),
-    //   ),
-    // );
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Check your email"),
+        content: Text(
+            "A password reset link has been sent to ${emailController.text.trim()}. Please check your inbox."),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text("OK"),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
