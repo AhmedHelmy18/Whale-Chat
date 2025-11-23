@@ -14,7 +14,7 @@ class ForgetPassword extends StatefulWidget {
 }
 
 class _ForgetPasswordState extends State<ForgetPassword> {
-  final emailController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final AuthController controller = AuthController();
 
@@ -59,7 +59,6 @@ class _ForgetPasswordState extends State<ForgetPassword> {
     }
 
     if (!mounted) return;
-
     showDialog(
       context: context,
       builder: (_) => AlertDialog(

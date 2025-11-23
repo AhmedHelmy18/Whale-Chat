@@ -28,7 +28,8 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
     if (user != null) {
       if (user.email == widget.email) {
         if (user.emailVerified) {
-          createUserDocument(uid: user.uid, name: widget.name, email: widget.email);
+          createUserDocument(
+              uid: user.uid, name: widget.name, email: widget.email);
           if (!mounted) return;
           Navigator.pushAndRemoveUntil(
             context,
@@ -73,7 +74,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
         elevation: 0,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.only(left: 24.0, right: 24.0, bottom: 24.0),
         child: Column(
           children: [
             const Text(
@@ -81,9 +82,24 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
               style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
-            Text(
-              'We sent a verification link to:\n${widget.email}',
-              style: const TextStyle(fontSize: 16),
+            Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: "We have sent a verification email to: ",
+                    style: TextStyle(
+                        color: colorScheme.onPrimary,
+                        fontWeight: FontWeight.w500),
+                  ),
+                  TextSpan(
+                    text: widget.email,
+                    style: TextStyle(
+                      color: colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 50),
             Image.asset(
