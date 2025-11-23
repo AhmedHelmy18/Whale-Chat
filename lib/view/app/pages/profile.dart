@@ -1,5 +1,5 @@
-import 'package:chat_app/theme/color_scheme.dart';
-import 'package:chat_app/view/app/pages/edit_profile.dart';
+import 'package:whale_chat/theme/color_scheme.dart';
+import 'package:whale_chat/view/app/pages/edit_profile.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';

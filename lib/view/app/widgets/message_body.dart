@@ -1,7 +1,7 @@
-import 'package:chat_app/util/format_time.dart';
-import 'package:chat_app/theme/color_scheme.dart';
-import 'package:chat_app/model/message.dart';
-import 'package:chat_app/services/message_service.dart';
+import 'package:whale_chat/util/format_time.dart';
+import 'package:whale_chat/theme/color_scheme.dart';
+import 'package:whale_chat/model/message.dart';
+import 'package:whale_chat/services/message_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';

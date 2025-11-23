@@ -1,9 +1,7 @@
-import 'dart:async';
-import 'package:chat_app/theme/color_scheme.dart';
-import 'package:chat_app/view/app/widgets/chat_user_container.dart';
-import 'package:chat_app/view/app/pages/search.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:whale_chat/controller/home_controller.dart';
+import 'package:whale_chat/theme/color_scheme.dart';
+import 'package:whale_chat/view/app/widgets/chat_user_container.dart';
+import 'package:whale_chat/view/app/pages/search.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
@@ -14,83 +12,30 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final HomeController controller = HomeController();
+
   List<Map<String, dynamic>> chats = [];
   bool isLoading = true;
-  final FirebaseFirestore fireStore = FirebaseFirestore.instance;
-
-  StreamSubscription? chatSubscription;
-  String currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
   @override
   void initState() {
     super.initState();
-    loadChats();
-  }
 
-  void loadChats() {
-    chatSubscription = FirebaseFirestore.instance
-        .collection("users")
-        .doc(currentUserId)
-        .snapshots()
-        .listen((event) async {
-      if (!mounted) return;
-
-      var lastConversations = event.data()?["last conversation"];
-      if (lastConversations == null || lastConversations.isEmpty) {
-        setState(() {
-          isLoading = false;
-          chats = [];
-        });
-        return;
-      }
-
-      // List<dynamic> conversationList = lastConversations is List
-      //     ? lastConversations
-      //     : lastConversations.values.toList();
-
-      List<Map<String, dynamic>> newChats = [];
-
-      for (var doc in lastConversations) {
-        if (doc == null || doc.isEmpty) continue;
-
-        var conversationRef =
-            await fireStore.collection('conversations').doc(doc["id"]).get();
-        if (!conversationRef.exists) continue;
-
-        var participants = conversationRef.data()?["participants"];
-        if (participants == null || participants.length < 2) continue;
-
-        String otherUserId = currentUserId == participants[0]
-            ? participants[1]
-            : participants[0];
-
-        var participantData =
-            await fireStore.collection('users').doc(otherUserId).get();
-
-        String lastMessage = doc["last message"];
-        Timestamp lastMessageTime = doc["last message time"];
-
-        newChats.add({
-          "id": doc["id"],
-          "name": participantData.data()?["name"] ?? "Unknown",
-          "userId": participantData.id,
-          "lastMessage": lastMessage,
-          "timestamp": lastMessageTime,
-          "bio": participantData.data()?["bio"] ?? "No bio available"
-        });
-      }
-
-      if (!mounted) return;
-      setState(() {
-        isLoading = false;
-        chats = newChats;
-      });
-    });
+    controller.listenToChats(
+      onChatsUpdated: (updatedChats) {
+        if (!mounted) return;
+        setState(() => chats = updatedChats);
+      },
+      onLoadingChanged: (loading) {
+        if (!mounted) return;
+        setState(() => isLoading = loading);
+      },
+    );
   }
 
   @override
   void dispose() {
-    chatSubscription?.cancel();
+    controller.dispose();
     super.dispose();
   }
 
@@ -125,7 +70,7 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           PopupMenuButton(
-            offset: const Offset(0, 70),
+            offset: const Offset(0, 58),
             elevation: 10,
             color: colorScheme.primary,
             shape: const RoundedRectangleBorder(
@@ -140,7 +85,7 @@ class _HomePageState extends State<HomePage> {
             ),
             onSelected: (value) {
               if (value == 'logout') {
-                FirebaseAuth.instance.signOut();
+                controller.logout();
               }
             },
             itemBuilder: (context) => [
@@ -153,9 +98,7 @@ class _HomePageState extends State<HomePage> {
                       size: 25,
                       color: colorScheme.surface,
                     ),
-                    SizedBox(
-                      width: 10,
-                    ),
+                    const SizedBox(width: 10),
                     Text(
                       'Logout',
                       style: TextStyle(
@@ -171,18 +114,13 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: (isLoading)
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
           : chats.isEmpty
               ? const Center(
                   child: Text(
                     "No recent chats",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w400,
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400),
                   ),
                 )
               : ListView.builder(
@@ -190,13 +128,14 @@ class _HomePageState extends State<HomePage> {
                       const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   itemCount: chats.length,
                   itemBuilder: (context, index) {
+                    final chat = chats[index];
                     return ChatUserContainer(
-                      userId: chats[index]["userId"],
-                      userName: chats[index]["name"],
-                      lastMessage: chats[index]["lastMessage"],
-                      timestamp: chats[index]["timestamp"],
-                      conversationId: chats[index]["id"],
-                      bio: chats[index]["bio"],
+                      userId: chat["userId"],
+                      userName: chat["name"],
+                      lastMessage: chat["lastMessage"],
+                      timestamp: chat["timestamp"],
+                      conversationId: chat["id"],
+                      bio: chat["bio"],
                     );
                   },
                 ),

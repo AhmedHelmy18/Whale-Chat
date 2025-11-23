@@ -1,6 +1,6 @@
-import 'package:chat_app/theme/color_scheme.dart';
-import 'package:chat_app/view/app/pages/profile.dart';
-import 'package:chat_app/view/app/widgets/message_body.dart';
+import 'package:whale_chat/theme/color_scheme.dart';
+import 'package:whale_chat/view/app/pages/profile.dart';
+import 'package:whale_chat/view/app/widgets/message_body.dart';
 import 'package:flutter/material.dart';
 
 class Chat extends StatelessWidget {

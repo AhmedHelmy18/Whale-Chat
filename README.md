@@ -1,4 +1,4 @@
-# chat_app
+# whale_chat
 
 A new Flutter project.
 

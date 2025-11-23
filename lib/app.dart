@@ -1,7 +1,8 @@
-import 'package:chat_app/theme/color_scheme.dart';
-import 'package:chat_app/view/app/pages/home_page.dart';
-import 'package:chat_app/view/app/pages/profile.dart';
-import 'package:chat_app/view/onboarding/pages/onboarding_page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:whale_chat/theme/color_scheme.dart';
+import 'package:whale_chat/view/app/pages/home_page.dart';
+import 'package:whale_chat/view/app/pages/profile.dart';
+import 'package:whale_chat/view/onboarding/pages/onboarding_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -15,18 +16,38 @@ class ChatApp extends StatefulWidget {
 
 class _ChatAppState extends State<ChatApp> {
   bool isLoggedIn = false;
+  bool isFirestoreChecked = false;
+  bool hasUserData = false;
   int selectedIndex = 0;
   final FirebaseAuth auth = FirebaseAuth.instance;
 
   @override
   void initState() {
     super.initState();
-    FirebaseAuth.instance.authStateChanges().listen((User? user) {
-      setState(() {
-        isLoggedIn = user != null;
-      });
-    });
     FirebaseMessaging.instance.requestPermission();
+
+    FirebaseAuth.instance.authStateChanges().listen((User? user) async {
+      if (user != null) {
+        setState(() {
+          isLoggedIn = true;
+          isFirestoreChecked = false;
+        });
+
+        final userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+
+        setState(() {
+          hasUserData = userDoc.exists;
+          isFirestoreChecked = true;
+        });
+      } else {
+        setState(() {
+          isLoggedIn = false;
+        });
+      }
+    });
   }
 
   late final List<Widget> pages = [
@@ -36,7 +57,7 @@ class _ChatAppState extends State<ChatApp> {
     ),
   ];
 
-  void _onItemTapped(int index) {
+  void onItemTapped(int index) {
     setState(() {
       selectedIndex = index;
     });
@@ -47,20 +68,20 @@ class _ChatAppState extends State<ChatApp> {
     return MaterialApp(
       theme: ThemeData(colorScheme: colorScheme, useMaterial3: true),
       debugShowCheckedModeBanner: false,
-      home: isLoggedIn
+      home: (isLoggedIn && hasUserData)
           ? Scaffold(
               body: IndexedStack(
                 index: selectedIndex,
                 children: pages,
               ),
               bottomNavigationBar: SizedBox(
-                height: 100,
+                height: 125,
                 child: BottomNavigationBar(
                   backgroundColor: colorScheme.primary,
                   selectedItemColor: colorScheme.surface,
                   unselectedItemColor: colorScheme.onSurface,
                   currentIndex: selectedIndex,
-                  onTap: _onItemTapped,
+                  onTap: onItemTapped,
                   selectedLabelStyle: const TextStyle(
                     fontWeight: FontWeight.w500,
                     fontSize: 18,
@@ -78,7 +99,7 @@ class _ChatAppState extends State<ChatApp> {
                     ),
                     BottomNavigationBarItem(
                       icon: Icon(Icons.person),
-                      label: 'My Profile',
+                      label: 'Profile',
                     ),
                   ],
                 ),

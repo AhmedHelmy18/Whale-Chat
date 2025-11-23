@@ -1,7 +1,11 @@
-import 'package:chat_app/view/onboarding/pages/verify_email.dart';
-import 'package:chat_app/theme/color_scheme.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:whale_chat/util/auth_validator.dart';
+import 'package:whale_chat/view/onboarding/widgets/custom_text_form_field.dart';
+import 'package:whale_chat/view/onboarding/widgets/error_box.dart';
+import 'package:whale_chat/view/onboarding/widgets/primary_button.dart';
+import 'package:whale_chat/theme/color_scheme.dart';
+import 'package:whale_chat/view/onboarding/pages/verify_email.dart';
+import 'package:whale_chat/controller/auth_controller.dart';
 
 class ForgetPassword extends StatefulWidget {
   const ForgetPassword({super.key});
@@ -11,120 +15,112 @@ class ForgetPassword extends StatefulWidget {
 }
 
 class _ForgetPasswordState extends State<ForgetPassword> {
-  TextEditingController emailController = TextEditingController();
+  final emailController = TextEditingController();
+  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  final AuthController controller = AuthController();
+
+  bool submitted = false;
+  bool loading = false;
+  String? errorText;
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    emailController.addListener(() {
+      if (submitted) formKey.currentState?.validate();
+      if (errorText != null) setState(() => errorText = null);
+    });
+  }
+
+  Future<void> resetPassword() async {
+    setState(() => submitted = true);
+
+    if (!formKey.currentState!.validate()) return;
+
+    setState(() {
+      loading = true;
+      errorText = null;
+    });
+
+    final error = await controller.forgetPassword(
+      email: emailController.text.trim(),
+    );
+
+    setState(() => loading = false);
+
+    if (error != null) {
+      setState(() => errorText = error);
+      return;
+    }
+
+    if (!mounted) return;
+    // Navigator.pushReplacement(
+    //   context,
+    //   MaterialPageRoute(
+    //     builder: (_) => VerifyEmailPage(
+    //       email: emailController.text.trim(),
+    //     ),
+    //   ),
+    // );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: () => Navigator.pop(context),
           icon: Icon(
             Icons.arrow_back_ios_new,
             color: colorScheme.onSurface,
           ),
         ),
         backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'Forget Password',
-            style: TextStyle(fontSize: 30, fontWeight: FontWeight.w500),
-          ),
-          Text(
-            'Please enter your email address to reset your password.',
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400),
-          ),
-          const SizedBox(
-            height: 20,
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 15.0),
-            child: TextField(
-              controller: emailController,
-              keyboardType: TextInputType.text,
-              textInputAction: TextInputAction.next,
-              decoration: InputDecoration(
-                prefixIcon: Icon(Icons.email),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                labelText: 'Email',
+      body: Form(
+        key: formKey,
+        child: Padding(
+          padding: const EdgeInsets.all(15.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                'Forget Password',
+                style: TextStyle(fontSize: 30, fontWeight: FontWeight.w500),
               ),
-            ),
-          ),
-          const SizedBox(
-            height: 15,
-          ),
-          SizedBox(
-            width: MediaQuery.of(context).size.width - 30,
-            child: TextButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: colorScheme.primary,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
+              const SizedBox(height: 10),
+              const Text(
+                'Please enter your email address to reset your password.',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400),
               ),
-              onPressed: () async {
-                try {
-                  if (emailController.text.isEmpty) {
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: Text('Error'),
-                        content: Text('Please enter your email address.'),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            child: Text('OK'),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-                  await FirebaseAuth.instance
-                      .sendPasswordResetEmail(email: emailController.text);
-                  if (context.mounted) {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const VerifyEmail(),
-                      ),
-                    );
-                  }
-                } catch (e) {
-                  if (context.mounted) {
-                    DialogRoute(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: Text('Error'),
-                        content: Text(e.toString()),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            child: Text('OK'),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-                }
-              },
-              child: Text(
-                'Reset Password',
-                style: TextStyle(color: colorScheme.onPrimary),
+              const SizedBox(height: 20),
+              CustomTextFormField(
+                hintText: "John@email.com",
+                validator: AuthValidator.emailValidator,
+                controller: emailController,
+                textInputAction: TextInputAction.done,
+                keyboardType: TextInputType.emailAddress,
+                icon: Icons.email,
               ),
-            ),
+              const SizedBox(height: 15),
+              PrimaryButton(
+                text: loading ? "Loading..." : "Reset Password",
+                primaryButton: true,
+                onPressed: loading ? null : resetPassword,
+                enabled: !loading,
+              ),
+              const SizedBox(height: 15),
+              if (errorText != null) ErrorBox(content: errorText!),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

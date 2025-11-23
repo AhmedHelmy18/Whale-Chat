@@ -1,5 +1,5 @@
-import 'package:chat_app/util/format_time.dart';
-import 'package:chat_app/view/app/pages/chat.dart';
+import 'package:whale_chat/util/format_time.dart';
+import 'package:whale_chat/view/app/pages/chat.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 

@@ -1,5 +1,5 @@
-import 'package:chat_app/view/onboarding/widgets/login_form.dart';
-import 'package:chat_app/theme/color_scheme.dart';
+import 'package:whale_chat/view/onboarding/forms/login_form.dart';
+import 'package:whale_chat/theme/color_scheme.dart';
 import 'package:flutter/material.dart';
 
 class LoginPage extends StatelessWidget {
