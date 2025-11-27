@@ -18,7 +18,7 @@ class SignUpPage extends StatelessWidget {
           },
           icon: Icon(
             Icons.arrow_back_ios_new,
-            color: colorScheme.onPrimary,
+            color: colorScheme.surface,
           ),
         ),
         backgroundColor: Colors.transparent,
@@ -44,7 +44,7 @@ class SignUpPage extends StatelessWidget {
                     Text(
                       'Create Account',
                       style: TextStyle(
-                        color: colorScheme.onPrimary,
+                        color: colorScheme.surface,
                         fontSize: 30,
                         fontWeight: FontWeight.bold,
                       ),

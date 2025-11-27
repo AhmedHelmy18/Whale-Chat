@@ -19,7 +19,7 @@ class LoginPage extends StatelessWidget {
           },
           icon: Icon(
             Icons.arrow_back_ios_new,
-            color: colorScheme.onPrimary,
+            color: colorScheme.surface,
           ),
         ),
         backgroundColor: Colors.transparent,
@@ -45,7 +45,7 @@ class LoginPage extends StatelessWidget {
                     Text(
                       "Welcome Back",
                       style: TextStyle(
-                        color: colorScheme.onPrimary,
+                        color: colorScheme.surface,
                         fontWeight: FontWeight.bold,
                         fontSize: 30,
                       ),

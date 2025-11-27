@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-var colorScheme = ColorScheme.fromSeed(
+ColorScheme colorScheme = ColorScheme.fromSeed(
   seedColor: Color(0xff1c58b6),
   brightness: Brightness.light,
   surface: Color(0xffffffff),

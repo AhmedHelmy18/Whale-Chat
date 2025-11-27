@@ -31,7 +31,7 @@ class OnboardingPage extends StatelessWidget {
                 Text(
                   'Share Your Moments',
                   style: TextStyle(
-                    color: colorScheme.onPrimary,
+                    color: colorScheme.surface,
                     fontSize: 30,
                     fontWeight: FontWeight.w500,
                   ),
@@ -41,7 +41,7 @@ class OnboardingPage extends StatelessWidget {
                   'Enjoy real-time messaging with a simple and intuitive interface. Stay connected with ease.',
                   style: TextStyle(
                     fontWeight: FontWeight.w400,
-                    color: colorScheme.onPrimary,
+                    color: colorScheme.surface,
                     fontSize: 18,
                   ),
                 ),
@@ -52,7 +52,7 @@ class OnboardingPage extends StatelessWidget {
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       shadowColor: Colors.transparent,
-                      backgroundColor: colorScheme.onPrimary,
+                      backgroundColor: colorScheme.surface,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -80,7 +80,7 @@ class OnboardingPage extends StatelessWidget {
                       shadowColor: Colors.transparent,
                       backgroundColor: Colors.transparent,
                       shape: RoundedRectangleBorder(
-                        side: BorderSide(color: colorScheme.onPrimary),
+                        side: BorderSide(color: colorScheme.surface),
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
@@ -93,7 +93,7 @@ class OnboardingPage extends StatelessWidget {
                     child: Text(
                       'Sign Up',
                       style: TextStyle(
-                        color: colorScheme.onPrimary,
+                        color: colorScheme.surface,
                       ),
                     ),
                   ),
