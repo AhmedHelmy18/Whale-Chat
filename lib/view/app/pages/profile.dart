@@ -1,14 +1,11 @@
+import 'package:flutter/material.dart';
+import 'package:whale_chat/controller/profile/profile_controller.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
 import 'package:whale_chat/view/app/pages/edit_profile.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({
-    super.key,
-    required this.userId,
-  });
+  const ProfilePage({super.key, required this.userId});
 
   final String userId;
 
@@ -17,36 +14,27 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  final ProfileController controller = ProfileController();
   String userName = "";
   String? bio = "";
   bool isLoading = true;
 
   @override
   void initState() {
-    getUserData();
     super.initState();
+    loadUserData();
   }
 
-  Future<void> getUserData() async {
-    try {
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(widget.userId)
-          .get();
-
-      var data = userDoc.data() as Map<String, dynamic>?;
-
-      if (userDoc.exists) {
-        setState(() {
-          userName = data?['name'] ?? "You";
-          bio = data?['bio'] ?? "";
-          isLoading = false;
-        });
-      } else {
-        setState(() => isLoading = false);
-      }
-    } catch (e) {
-      debugPrint("Error getting user data: $e");
+  Future<void> loadUserData() async {
+    setState(() => isLoading = true);
+    final data = await controller.getUserData(widget.userId);
+    if (data != null) {
+      setState(() {
+        userName = data['name'] ?? "You";
+        bio = data['bio'] ?? "";
+        isLoading = false;
+      });
+    } else {
       setState(() => isLoading = false);
     }
   }
@@ -66,7 +54,7 @@ class _ProfilePageState extends State<ProfilePage> {
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SizedBox(height: 35),
+                const SizedBox(height: 35),
                 ClipOval(
                   child: Image.asset(
                     'assets/images/download.jpeg',
@@ -101,13 +89,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 top: 40,
                 left: 10,
                 child: IconButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  icon: Icon(
-                    Icons.arrow_back_ios,
-                    color: colorScheme.surface,
-                  ),
+                  onPressed: () => Navigator.pop(context),
+                  icon: Icon(Icons.arrow_back_ios, color: colorScheme.surface),
                 ),
               ),
             if (isMyProfile)
@@ -119,15 +102,11 @@ class _ProfilePageState extends State<ProfilePage> {
                     await Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const EditProfilePage(),
-                      ),
+                          builder: (context) => const EditProfilePage()),
                     );
-                    getUserData();
+                    loadUserData();
                   },
-                  icon: Icon(
-                    Icons.edit,
-                    color: colorScheme.surface,
-                  ),
+                  icon: Icon(Icons.edit, color: colorScheme.surface),
                 ),
               ),
           ],

@@ -1,9 +1,7 @@
-import 'dart:developer';
+import 'package:flutter/material.dart';
+import 'package:whale_chat/controller/profile/edit_profile_controller.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
 import 'package:whale_chat/view/app/widgets/edit_container.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
@@ -13,64 +11,32 @@ class EditProfilePage extends StatefulWidget {
 }
 
 class _EditProfilePageState extends State<EditProfilePage> {
-  TextEditingController nameController = TextEditingController();
-  TextEditingController bioController = TextEditingController();
-  String uid = FirebaseAuth.instance.currentUser!.uid;
-
-  late Map<String, dynamic>? data;
+  late EditProfileController controller;
+  bool isLoading = true;
 
   @override
-  initState() {
+  void initState() {
     super.initState();
-    getData();
+    controller = EditProfileController();
+    loadData();
   }
 
-  Future<void> getData() async {
-    try {
-      String uid = FirebaseAuth.instance.currentUser!.uid;
-      DocumentSnapshot userData =
-          await FirebaseFirestore.instance.collection('users').doc(uid).get();
-      data = userData.data() as Map<String, dynamic>?;
-
-      if (userData.exists) {
-        setState(() {
-          nameController.text = userData['name'] ?? "";
-          bioController.text =
-              data?.containsKey("bio") == true ? data!["bio"] : "";
-        });
-      }
-    } catch (e) {
-      log("Error getting user data: $e");
-    }
+  Future<void> loadData() async {
+    await controller.getData();
+    setState(() {
+      isLoading = false;
+    });
   }
 
-  Future<void> updateProfilePage({required String field}) async {
-    try {
-      Map<String, dynamic> updateData = {};
-      if (field == 'name') {
-        updateData['name'] = nameController.text;
-      } else if (field == 'bio') {
-        updateData['bio'] = bioController.text;
-      }
-
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid)
-          .update(updateData);
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("$field updated successfully!")),
-        );
-      }
-    } catch (e) {
-      log("Error updating $field: $e");
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to update $field")),
-        );
-      }
-    }
+  Future<void> updateField(String field) async {
+    bool success = await controller.updateField(field: field);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(success ? "$field updated!" : "Failed to update $field"),
+      ),
+    );
+    if (success) setState(() {});
   }
 
   @override
@@ -80,13 +46,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
         backgroundColor: colorScheme.primary,
         toolbarHeight: 80,
         leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios,
-            color: colorScheme.surface,
-          ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          icon: Icon(Icons.arrow_back_ios, color: colorScheme.surface),
+          onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           'Edit Profile',
@@ -98,37 +59,39 @@ class _EditProfilePageState extends State<EditProfilePage> {
           ),
         ),
       ),
-      body: Column(
-        children: [
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 20.0),
-            child: Center(
-              child: Text(
-                'Edit your name or bio',
-                style: TextStyle(
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'PlayfairDisplay',
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 20.0),
+                  child: Center(
+                    child: Text(
+                      'Edit your name or bio',
+                      style: TextStyle(
+                        fontSize: 25,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'PlayfairDisplay',
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(height: 20),
+                EditContainer(
+                  text: 'Your Name:',
+                  hint: 'Enter new name',
+                  controller: controller.nameController,
+                  updateProfilePage: () => updateField('name'),
+                ),
+                const SizedBox(height: 20),
+                EditContainer(
+                  text: 'Your Bio:',
+                  hint: 'Enter new bio',
+                  controller: controller.bioController,
+                  updateProfilePage: () => updateField('bio'),
+                ),
+              ],
             ),
-          ),
-          const SizedBox(height: 20),
-          EditContainer(
-            text: 'Your Name:',
-            hint: 'Enter new name',
-            controller: nameController,
-            updateProfilePage: () => updateProfilePage(field: 'name'),
-          ),
-          const SizedBox(height: 20),
-          EditContainer(
-            text: 'Your Bio:',
-            hint: 'Enter new bio',
-            controller: bioController,
-            updateProfilePage: () => updateProfilePage(field: 'bio'),
-          ),
-        ],
-      ),
     );
   }
 }
