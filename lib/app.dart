@@ -36,9 +36,7 @@ class ChatApp extends StatelessWidget {
               if (docSnapshot.connectionState == ConnectionState.waiting) {
                 return const Scaffold(body: Center(child: CircularProgressIndicator()));
               }
-
               final userExists = docSnapshot.data?.exists ?? false;
-
               if (!userExists) {
                 return const OnboardingPage();
               }
@@ -91,10 +89,8 @@ class _MainHomeState extends State<MainHome> {
           unselectedItemColor: colorScheme.onSurface,
           currentIndex: selectedIndex,
           onTap: onItemTapped,
-          selectedLabelStyle:
-              const TextStyle(fontWeight: FontWeight.w500, fontSize: 18),
-          unselectedLabelStyle:
-              const TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
+          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 18),
+          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
           selectedIconTheme: const IconThemeData(size: 30),
           unselectedIconTheme: const IconThemeData(size: 25),
           items: const [
