@@ -11,14 +11,12 @@ class EditProfileController {
 
   Future<void> getData() async {
     try {
-      DocumentSnapshot userData =
-          await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      DocumentSnapshot userData = await FirebaseFirestore.instance.collection('users').doc(uid).get();
 
       if (userData.exists) {
         data = userData.data() as Map<String, dynamic>?;
         nameController.text = data?['name'] ?? "";
-        bioController.text =
-            data?.containsKey('bio') == true ? data!['bio'] : "";
+        bioController.text = data?.containsKey('bio') == true ? data!['bio'] : "";
       }
     } catch (e) {
       log("Error getting user data: $e");
@@ -35,9 +33,7 @@ class EditProfileController {
       }
 
       await FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid)
-          .update(updateData);
+          .collection('users').doc(uid).update(updateData);
       data?[field] = updateData[field];
       return true;
     } catch (e) {
