@@ -43,8 +43,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     bool isMyProfile = FirebaseAuth.instance.currentUser!.uid == widget.userId;
 
-    return Scaffold(
-      body: Container(
+    return Container(
         color: colorScheme.primary,
         height: 250,
         width: double.infinity,
@@ -111,7 +110,6 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
           ],
         ),
-      ),
     );
   }
 }
