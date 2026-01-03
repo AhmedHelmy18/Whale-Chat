@@ -15,6 +15,7 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   final ProfileController controller = ProfileController();
+
   String userName = "";
   String? bio = "";
   bool isLoading = true;
@@ -26,90 +27,99 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> loadUserData() async {
-    setState(() => isLoading = true);
+    if (!mounted) return;
+    setState(() {
+      isLoading = true;
+    });
+
     final data = await controller.getUserData(widget.userId);
-    if (data != null) {
-      setState(() {
-        userName = data['name'] ?? "You";
-        bio = data['bio'] ?? "";
-        isLoading = false;
-      });
-    } else {
-      setState(() => isLoading = false);
-    }
+    if (!mounted) return;
+
+    setState(() {
+      userName = data?['name'] ?? "You";
+      bio = data?['bio'] ?? "";
+      isLoading = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    bool isMyProfile = FirebaseAuth.instance.currentUser!.uid == widget.userId;
+    final bool isMyProfile = FirebaseAuth.instance.currentUser?.uid == widget.userId;
 
     return Container(
-        color: colorScheme.primary,
-        height: 250,
-        width: double.infinity,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const SizedBox(height: 35),
-                ClipOval(
-                  child: Image.asset(
-                    'assets/images/download.jpeg',
-                    height: 110,
-                    width: 110,
-                    fit: BoxFit.cover,
-                  ),
+      color: colorScheme.primary,
+      height: 250,
+      width: double.infinity,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(height: 35),
+              ClipOval(
+                child: Image.asset(
+                  'assets/images/download.jpeg',
+                  height: 110,
+                  width: 110,
+                  fit: BoxFit.cover,
                 ),
-                const SizedBox(height: 10),
-                Text(
-                  userName,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w500,
-                    color: colorScheme.surface,
-                    fontSize: 20,
-                  ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                userName,
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  color: colorScheme.surface,
+                  fontSize: 20,
                 ),
-                const SizedBox(height: 10),
-                Text(
-                  (bio!.isEmpty) ? 'Welcome in my Whale chat' : bio!,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.surface,
-                    fontFamily: 'PlayfairDisplay',
-                    fontSize: 20,
-                  ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                (bio?.isEmpty ?? true)
+                    ? 'Welcome in my Whale chat'
+                    : bio!,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.surface,
+                  fontFamily: 'PlayfairDisplay',
+                  fontSize: 20,
                 ),
-              ],
+              ),
+            ],
+          ),
+          if (!isMyProfile)
+            Positioned(
+              top: 40,
+              left: 10,
+              child: IconButton(
+                onPressed: () {
+                  if (mounted) Navigator.pop(context);
+                },
+                icon: Icon(Icons.arrow_back_ios,
+                    color: colorScheme.surface),
+              ),
             ),
-            if (!isMyProfile)
-              Positioned(
-                top: 40,
-                left: 10,
-                child: IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: Icon(Icons.arrow_back_ios, color: colorScheme.surface),
-                ),
+          if (isMyProfile)
+            Positioned(
+              top: 40,
+              right: 10,
+              child: IconButton(
+                onPressed: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const EditProfilePage(),
+                    ),
+                  );
+                  if (!mounted) return;
+                  loadUserData();
+                },
+                icon: Icon(Icons.edit, color: colorScheme.surface),
               ),
-            if (isMyProfile)
-              Positioned(
-                top: 40,
-                right: 10,
-                child: IconButton(
-                  onPressed: () async {
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const EditProfilePage()),
-                    );
-                    loadUserData();
-                  },
-                  icon: Icon(Icons.edit, color: colorScheme.surface),
-                ),
-              ),
-          ],
-        ),
+            ),
+        ],
+      ),
     );
   }
 }

@@ -77,56 +77,57 @@ class _MainHomeState extends State<MainHome> {
         index: selectedIndex,
         children: pages,
       ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 28),
-        child: Container(
-          decoration: BoxDecoration(
-            color: colorScheme.primary,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: colorScheme.onPrimary.withValues(alpha: 0.2),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: SafeArea(
-              top: false,
-              child: SizedBox(
-                height: 76,
-                child: BottomNavigationBar(
-                  type: BottomNavigationBarType.fixed,
-                  backgroundColor: Colors.transparent,
-                  elevation: 0,
-                  currentIndex: selectedIndex,
-                  selectedItemColor: colorScheme.surface,
-                  unselectedItemColor: colorScheme.onSurface.withValues(alpha: 0.6),
-                  onTap: (index) => setState(() => selectedIndex = index),
-                  selectedIconTheme: const IconThemeData(size: 28),
-                  unselectedIconTheme: const IconThemeData(size: 26),
-                  showSelectedLabels: true,
-                  showUnselectedLabels: true,
-                  items: const [
-                    BottomNavigationBarItem(
-                      icon: Padding(
-                        padding: EdgeInsets.only(top: 13.0),
-                        child: Icon(Icons.chat_bubble_outline_rounded),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 5),
+          child: Container(
+            decoration: BoxDecoration(
+              color: colorScheme.primary,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: colorScheme.onPrimary.withValues(alpha: 0.2),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: SafeArea(
+                top: false,
+                child: SizedBox(
+                  child: BottomNavigationBar(
+                    type: BottomNavigationBarType.fixed,
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    currentIndex: selectedIndex,
+                    selectedItemColor: colorScheme.surface,
+                    unselectedItemColor: colorScheme.onSurface.withValues(alpha: 0.6),
+                    onTap: (index) => setState(() => selectedIndex = index),
+                    selectedIconTheme: const IconThemeData(size: 28),
+                    unselectedIconTheme: const IconThemeData(size: 26),
+                    showSelectedLabels: true,
+                    showUnselectedLabels: true,
+                    items: const [
+                      BottomNavigationBarItem(
+                        icon: Padding(
+                          padding: EdgeInsets.only(top: 13.0),
+                          child: Icon(Icons.chat_bubble_outline_rounded),
+                        ),
+                        activeIcon: Padding(
+                          padding: EdgeInsets.only(top: 13.0),
+                          child: Icon(Icons.chat_bubble_rounded),
+                        ),
+                        label: 'Chats',
                       ),
-                      activeIcon: Padding(
-                        padding: EdgeInsets.only(top: 13.0),
-                        child: Icon(Icons.chat_bubble_rounded),
+                      BottomNavigationBarItem(
+                        icon: Icon(Icons.account_circle_outlined),
+                        activeIcon: Icon(Icons.account_circle),
+                        label: 'Profile',
                       ),
-                      label: 'Chats',
-                    ),
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.account_circle_outlined),
-                      activeIcon: Icon(Icons.account_circle),
-                      label: 'Profile',
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
