@@ -82,7 +82,7 @@ class _MainHomeState extends State<MainHome> {
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 5),
           child: Container(
             decoration: BoxDecoration(
-              color: colorScheme.primary,
+              color: colorScheme.primary.withValues(alpha: 0.9),
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(

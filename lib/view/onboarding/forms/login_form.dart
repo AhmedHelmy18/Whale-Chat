@@ -75,8 +75,7 @@ class _LoginFormState extends State<LoginForm> {
   Widget build(BuildContext context) {
     return Form(
       key: formKey,
-      autovalidateMode:
-          submitted ? AutovalidateMode.always : AutovalidateMode.disabled,
+      autovalidateMode: submitted ? AutovalidateMode.always : AutovalidateMode.disabled,
       child: Column(
         children: [
           if (errorText != null) ErrorBox(content: errorText!),
@@ -128,8 +127,7 @@ class _LoginFormState extends State<LoginForm> {
                   endIndent: 10,
                 ),
               ),
-              Text('or',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
+              Text('or', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
               Expanded(
                 child: Divider(
                   color: colorScheme.secondary,
