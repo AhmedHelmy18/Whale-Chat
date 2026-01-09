@@ -33,8 +33,8 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
           if (!mounted) return;
           Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (_) => const MainHome()),
-            (route) => false,
+            MaterialPageRoute(builder: (_) => const ChatApp()),
+                (route) => false,
           );
         } else {
           if (!mounted) return;

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:whale_chat/controller/profile/profile_controller.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
 import 'package:whale_chat/view/app/pages/edit_profile.dart';
@@ -17,34 +16,24 @@ class _ProfilePageState extends State<ProfilePage> {
   final ProfileController controller = ProfileController();
   String userName = "";
   String? bio;
-  late Future<String?> profileImageFuture;
+  String? profileImageUrl;
   bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    profileImageFuture = getProfileImageUrl();
     loadUserData();
   }
 
   Future<void> loadUserData() async {
-    final data = await controller.getUserData(widget.userId);
+    final data = await controller.getUserDataWithImage(widget.userId);
     if (!mounted) return;
     setState(() {
       userName = data?['name'] ?? "You";
       bio = data?['bio'];
+      profileImageUrl = data?['profileImage'];
       isLoading = false;
     });
-  }
-
-  Future<String?> getProfileImageUrl() async {
-    try {
-      final ref = FirebaseStorage.instance.ref('users/${widget.userId}/profile.jpg');
-      await ref.getMetadata();
-      return await ref.getDownloadURL();
-    } catch (_) {
-      return null;
-    }
   }
 
   @override
@@ -111,43 +100,37 @@ class _ProfilePageState extends State<ProfilePage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const SizedBox(height: 50),
-              FutureBuilder<String?>(
-                future: profileImageFuture,
-                builder: (context, snapshot) {
-                  return Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: colorScheme.onPrimary.withValues(alpha: 0.2),
-                          blurRadius: 20,
-                          spreadRadius: 5,
-                        ),
-                      ],
-                      border: Border.all(
-                        color: colorScheme.surface,
-                        width: 4,
-                      ),
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: colorScheme.onPrimary.withValues(alpha: 0.2),
+                      blurRadius: 20,
+                      spreadRadius: 5,
                     ),
-                    child: ClipOval(
-                      child: snapshot.data == null
-                          ? Image.asset(
-                        'assets/images/download.jpeg',
-                        height: 140,
-                        width: 140,
-                        fit: BoxFit.cover,
-                      )
-                          : Image.network(
-                        snapshot.data!,
-                        height: 140,
-                        width: 140,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  );
-                },
+                  ],
+                  border: Border.all(
+                    color: colorScheme.surface,
+                    width: 4,
+                  ),
+                ),
+                child: ClipOval(
+                  child: profileImageUrl == null
+                      ? Image.asset(
+                    'assets/images/download.jpeg',
+                    height: 140,
+                    width: 140,
+                    fit: BoxFit.cover,
+                  )
+                      : Image.network(
+                    profileImageUrl!,
+                    height: 140,
+                    width: 140,
+                    fit: BoxFit.cover,
+                  ),
+                ),
               ),
-
               const SizedBox(height: 20),
               Text(
                 userName,
@@ -164,9 +147,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ],
                 ),
               ),
-
               const SizedBox(height: 12),
-
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 40),
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -184,7 +165,6 @@ class _ProfilePageState extends State<ProfilePage> {
                     color: colorScheme.surface.withValues(alpha: 0.95),
                     fontSize: 18,
                     fontWeight: FontWeight.w500,
-
                     height: 1.4,
                   ),
                   textAlign: TextAlign.center,
@@ -194,7 +174,6 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ],
           ),
-
           if (isMyProfile)
             Positioned(
               top: 45,
@@ -214,20 +193,32 @@ class _ProfilePageState extends State<ProfilePage> {
                     color: colorScheme.surface,
                     size: 22,
                   ),
-                    onPressed: () async {
-                      final updated = await Navigator.push<bool>(
-                        context,
-                        MaterialPageRoute(builder: (_) => const EditProfilePage()),
-                      );
-                      if (!mounted) return;
-                      if (updated == true) {
-                        setState(() {
-                          profileImageFuture = getProfileImageUrl();
-                        });
-                        await loadUserData();
-                      }
+                  onPressed: () async {
+                    final updated = await Navigator.push<bool>(
+                      context,
+                      MaterialPageRoute(builder: (_) => const EditProfilePage()),
+                    );
+                    if (!mounted) return;
+                    if (updated == true) {
+                      await loadUserData();
                     }
+                  },
                 ),
+              ),
+            ),
+          if (!isMyProfile)
+            Positioned(
+              top: 45,
+              left: 15,
+              child: IconButton(
+                icon: Icon(
+                  Icons.arrow_back_ios_new_outlined,
+                  color: colorScheme.surface,
+                  size: 25,
+                ),
+                onPressed: () async {
+                  Navigator.pop(context);
+                },
               ),
             ),
         ],

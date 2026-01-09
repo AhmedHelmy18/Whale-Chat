@@ -1,7 +1,8 @@
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
 import 'package:whale_chat/view/app/pages/profile.dart';
 import 'package:whale_chat/view/app/widgets/message_body.dart';
-import 'package:flutter/material.dart';
 
 class Chat extends StatelessWidget {
   const Chat({
@@ -17,21 +18,30 @@ class Chat extends StatelessWidget {
   final String conversationId;
   final String? bio;
 
+  Future<String?> getProfileImage() async {
+    try {
+      final ref = FirebaseStorage.instance.ref('users/$userId/profile.jpg');
+      return await ref.getDownloadURL();
+    } catch (_) {
+      return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 100,
+        toolbarHeight: 80,
         backgroundColor: colorScheme.primary,
-        leading: SizedBox(
-          width: 60,
+        elevation: 0,
+        leading: Container(
+          margin: const EdgeInsets.only(left: 8),
           child: IconButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
+            onPressed: () => Navigator.pop(context),
             icon: Icon(
-              Icons.arrow_back_ios,
+              Icons.arrow_back_ios_new_rounded,
               color: colorScheme.surface,
+              size: 24,
             ),
           ),
         ),
@@ -40,50 +50,108 @@ class Chat extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => ProfilePage(
-                  userId: userId,
-                ),
+                builder: (_) => Scaffold(body: ProfilePage(userId: userId)),
               ),
             );
           },
           child: Row(
             children: [
-              ClipOval(
-                child: Image.asset(
-                  'assets/images/download.jpeg',
-                  height: 50,
-                  width: 50,
-                  fit: BoxFit.cover,
+              Hero(
+                tag: 'profile_$userId',
+                child: FutureBuilder<String?>(
+                  future: getProfileImage(),
+                  builder: (context, snapshot) {
+                    return Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white.withAlpha(77),
+                          width: 2,
+                        ),
+                      ),
+                      child: ClipOval(
+                        child: snapshot.data != null
+                            ? Image.network(
+                          snapshot.data!,
+                          height: 50,
+                          width: 50,
+                          fit: BoxFit.cover,
+                        )
+                            : Image.asset(
+                          'assets/images/download.jpeg',
+                          height: 50,
+                          width: 50,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
-              const SizedBox(width: 10),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    userName,
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      userName,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: colorScheme.surface,
+                        letterSpacing: 0.3,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                  Text(
-                    'Online',
-                    style: TextStyle(
-                      fontSize: 20,
-                      color: Colors.white70,
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: Colors.greenAccent,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Online',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: colorScheme.surface.withAlpha(204),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                    softWrap: false,
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.videocam_rounded,
+              color: colorScheme.surface,
+              size: 28,
+            ),
+            onPressed: () {},
+          ),
+          IconButton(
+            icon: Icon(
+              Icons.call_rounded,
+              color: colorScheme.surface,
+              size: 24,
+            ),
+            onPressed: () {},
+          ),
+          const SizedBox(width: 4),
+        ],
       ),
       body: MessageBody(
         conversationId: conversationId,

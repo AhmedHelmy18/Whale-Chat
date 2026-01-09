@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class HomeController {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -19,7 +20,7 @@ class HomeController {
         .doc(currentUserId)
         .snapshots()
         .listen((event) async {
-      var lastConversations = event.data()?["last conversation"];
+      final lastConversations = event.data()?["last conversation"];
 
       if (lastConversations == null || lastConversations.isEmpty) {
         onLoadingChanged(false);
@@ -30,28 +31,34 @@ class HomeController {
       List<Map<String, dynamic>> newChats = [];
 
       for (var doc in lastConversations) {
-        if (doc == null || doc.isEmpty) continue;
-
-        var conversationRef =
+        final conversation =
         await firestore.collection('conversations').doc(doc["id"]).get();
-        if (!conversationRef.exists) continue;
 
-        var participants = conversationRef.data()?["participants"];
+        if (!conversation.exists) continue;
+
+        final participants = conversation.data()?["participants"];
         if (participants == null || participants.length < 2) continue;
 
-        String otherUserId =
+        final otherUserId =
         currentUserId == participants[0] ? participants[1] : participants[0];
 
-        var participantData =
+        final userDoc =
         await firestore.collection('users').doc(otherUserId).get();
+
+        String photoUrl = '';
+
+        try {
+          photoUrl = await FirebaseStorage.instance.ref('users/$otherUserId/profile.jpg').getDownloadURL();
+        } catch (_) {}
 
         newChats.add({
           "id": doc["id"],
-          "name": participantData.data()?["name"] ?? "Unknown",
-          "userId": participantData.id,
+          "userId": otherUserId,
+          "name": userDoc.data()?["name"] ?? "Unknown",
+          "bio": userDoc.data()?["bio"] ?? "",
           "lastMessage": doc["last message"],
           "timestamp": doc["last message time"],
-          "bio": participantData.data()?["bio"] ?? "No bio available"
+          "photoUrl": photoUrl,
         });
       }
 

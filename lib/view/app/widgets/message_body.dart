@@ -68,7 +68,6 @@ class _MessageBodyState extends State<MessageBody> {
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
-    final height = MediaQuery.of(context).size.height;
     return Column(
       children: [
         Expanded(
@@ -77,6 +76,7 @@ class _MessageBodyState extends State<MessageBody> {
             itemCount: messages.length,
             shrinkWrap: true,
             physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
             itemBuilder: (context, index) {
               final message = messages[index];
               final String formattedDate = formatDate(message.time);
@@ -86,24 +86,22 @@ class _MessageBodyState extends State<MessageBody> {
                 children: [
                   if (showDateHeader)
                     Padding(
-                      padding: const EdgeInsets.only(
-                        top: 8.0,
-                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
                       child: Container(
-                        width: 150,
-                        height: 40,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
-                          color: colorScheme.secondary,
+                          color: Colors.grey.shade200,
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: Center(
-                          child: Text(
-                            formattedDate,
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: colorScheme.surface,
-                            ),
+                        child: Text(
+                          formattedDate,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey.shade700,
                           ),
                         ),
                       ),
@@ -112,72 +110,79 @@ class _MessageBodyState extends State<MessageBody> {
                     alignment: message.isMe
                         ? Alignment.centerRight
                         : Alignment.centerLeft,
-                    child: IntrinsicWidth(
-                      child: Container(
-                        constraints: BoxConstraints(
-                          maxWidth: width * 0.65,
-                          minWidth: 50,
+                    child: Container(
+                      constraints: BoxConstraints(
+                        maxWidth: width * 0.75,
+                        minWidth: 50,
+                      ),
+                      margin: EdgeInsets.only(
+                        top: 4,
+                        bottom: 4,
+                        right: message.isMe ? 0 : 60,
+                        left: message.isMe ? 60 : 0,
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: message.isMe
+                            ? colorScheme.primary
+                            : Colors.grey.shade200,
+                        borderRadius: BorderRadius.only(
+                          topLeft: const Radius.circular(20),
+                          topRight: const Radius.circular(20),
+                          bottomLeft: message.isMe
+                              ? const Radius.circular(20)
+                              : const Radius.circular(4),
+                          bottomRight: message.isMe
+                              ? const Radius.circular(4)
+                              : const Radius.circular(20),
                         ),
-                        margin: EdgeInsets.only(
-                          top: 10,
-                          right: message.isMe ? 10 : 0,
-                          left: message.isMe ? 0 : 10,
-                        ),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 10,
-                        ),
-                        decoration: BoxDecoration(
-                          color: message.isMe
-                              ? colorScheme.primary
-                              : colorScheme.secondary,
-                          shape: BoxShape.rectangle,
-                          borderRadius: BorderRadius.only(
-                            bottomRight: Radius.circular(20),
-                            topLeft: Radius.circular(20),
-                            bottomLeft: message.isMe
-                                ? Radius.circular(20)
-                                : Radius.zero,
-                            topRight: message.isMe
-                                ? Radius.zero
-                                : Radius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withAlpha(13),
+                            blurRadius: 4,
+                            offset: const Offset(0, 1),
                           ),
-                        ),
-                        child: Column(
-                          children: [
-                            Text(
-                              message.text,
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w500,
-                                color: colorScheme.surface,
-                              ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            message.text,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w400,
+                              color: message.isMe
+                                  ? colorScheme.surface
+                                  : Colors.grey.shade900,
+                              height: 1.4,
                             ),
-                            Align(
-                              alignment: message.isMe
-                                  ? Alignment.bottomRight
-                                  : Alignment.bottomLeft,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  Text(
-                                    formatTimestamp(message.time),
-                                    style: TextStyle(
-                                      color: colorScheme.surface,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  SizedBox(width: 5),
-                                  message.isMe
-                                      ? messageService
-                                          .getMessageStatusIcon(message.status)
-                                      : Container(),
-                                ],
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Text(
+                                formatTimestamp(message.time),
+                                style: TextStyle(
+                                  color: message.isMe
+                                      ? colorScheme.surface.withAlpha(179)
+                                      : Colors.grey.shade600,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
+                              if (message.isMe) ...[
+                                const SizedBox(width: 4),
+                                messageService.getMessageStatusIcon(message.status),
+                              ],
+                            ],
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -186,72 +191,94 @@ class _MessageBodyState extends State<MessageBody> {
             },
           ),
         ),
-        Align(
-          alignment: Alignment.bottomCenter,
-          child: Row(
-            children: [
-              Expanded(
-                child: Container(
-                  margin: EdgeInsets.only(
-                    left: 10,
-                    right: 8,
-                    bottom: 20,
-                  ),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 30,
-                    vertical: 5,
-                  ),
-                  decoration: BoxDecoration(
-                    color: colorScheme.surface,
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Colors.grey,
-                        offset: Offset(0.0, 0.0),
-                        blurRadius: 10.0,
-                        spreadRadius: 0.0,
-                      ),
-                    ],
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  child: TextFormField(
-                    controller: _messageController,
-                    maxLines: 1,
-                    textInputAction: TextInputAction.done,
-                    decoration: InputDecoration(
-                      constraints: BoxConstraints(
-                        maxWidth: 50,
-                        minHeight: 50,
-                        maxHeight: height / 4,
-                      ),
-                      hintText: 'Message',
-                      border: InputBorder.none,
-                      hintStyle: TextStyle(
-                        color: Colors.black87,
-                        fontSize: 18,
-                      ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(13),
+                blurRadius: 8,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          child: SafeArea(
+            top: false,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _messageController,
+                            maxLines: null,
+                            textInputAction: TextInputAction.newline,
+                            decoration: InputDecoration(
+                              hintText: 'Type a message',
+                              border: InputBorder.none,
+                              hintStyle: TextStyle(
+                                color: Colors.grey.shade500,
+                                fontSize: 16,
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                vertical: 12,
+                              ),
+                            ),
+                            style: const TextStyle(
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            Icons.attach_file_rounded,
+                            color: Colors.grey.shade600,
+                            size: 24,
+                          ),
+                          onPressed: () {},
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              ),
-              Container(
-                margin: EdgeInsets.only(
-                  right: 10,
-                  bottom: 20,
-                ),
-                decoration: BoxDecoration(
-                  color: colorScheme.primary,
-                  shape: BoxShape.circle,
-                ),
-                child: IconButton(
-                  icon: Icon(
-                    Icons.send,
-                    color: colorScheme.surface,
+                const SizedBox(width: 8),
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        colorScheme.primary,
+                        colorScheme.primary.withAlpha(230),
+                      ],
+                    ),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: colorScheme.primary.withAlpha(77),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
-                  onPressed: () =>
-                      messageService.sendMessage(_messageController),
+                  child: IconButton(
+                    icon: Icon(
+                      Icons.send_rounded,
+                      color: colorScheme.surface,
+                      size: 22,
+                    ),
+                    onPressed: () =>
+                        messageService.sendMessage(_messageController),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ],

@@ -1,6 +1,5 @@
 import 'dart:developer';
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -47,7 +46,6 @@ class EditProfileController {
     try {
       final XFile? picked = await _picker.pickImage(source: source, imageQuality: 80);
       if (picked == null) return false;
-
       final file = File(picked.path);
       final ref = FirebaseStorage.instance.ref('users/$uid/profile.jpg');
 

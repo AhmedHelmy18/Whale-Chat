@@ -40,8 +40,8 @@ class _LoginFormState extends State<LoginForm> {
     if (result == null) {
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => const MainHome()),
-        (route) => false,
+        MaterialPageRoute(builder: (_) => const ChatApp()),
+            (route) => false,
       );
     } else {
       setState(() => errorText = result);

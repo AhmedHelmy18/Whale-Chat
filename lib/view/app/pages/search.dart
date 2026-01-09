@@ -21,6 +21,7 @@ class _SearchState extends State<Search> {
 
   void performSearch(String query) {
     debounce?.cancel();
+
     if (query.trim().isEmpty) {
       setState(() {
         searchResults = [];
@@ -31,6 +32,7 @@ class _SearchState extends State<Search> {
 
     debounce = Timer(const Duration(milliseconds: 400), () async {
       if (!mounted) return;
+
       setState(() => isLoading = true);
 
       final results = await controller.searchUsers(query.trim());
@@ -54,94 +56,288 @@ class _SearchState extends State<Search> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
+        backgroundColor: colorScheme.primary,
+        elevation: 0,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back_ios_new),
+          icon: Icon(Icons.arrow_back_ios_rounded, color: colorScheme.surface),
         ),
+        title: Text(
+          'Search Users',
+          style: TextStyle(
+            color: colorScheme.surface,
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
+        ),
+        centerTitle: true,
       ),
       body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 15.0),
-            child: TextFormField(
-              controller: searchController,
-              onChanged: performSearch,
-              textInputAction: TextInputAction.done,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderSide: const BorderSide(width: 1, color: Colors.black),
-                  borderRadius: BorderRadius.circular(50),
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  colorScheme.primary,
+                  colorScheme.surface,
+                ],
+              ),
+            ),
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
+            child: Container(
+              decoration: BoxDecoration(
+                color: colorScheme.surface,
+                borderRadius: BorderRadius.circular(30),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 20,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: TextFormField(
+                controller: searchController,
+                onChanged: performSearch,
+                textInputAction: TextInputAction.search,
+                style: const TextStyle(fontSize: 16),
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide.none,
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: BorderSide(
+                      width: 2,
+                      color: colorScheme.primary,
+                    ),
+                  ),
+                  filled: true,
+                  fillColor: colorScheme.surface,
+                  prefixIcon: Icon(
+                    Icons.search_rounded,
+                    color: colorScheme.primary,
+                    size: 24,
+                  ),
+                  suffixIcon: searchController.text.isNotEmpty
+                      ? IconButton(
+                    icon: Icon(
+                      Icons.clear_rounded,
+                      color: colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                    onPressed: () {
+                      searchController.clear();
+                      performSearch('');
+                      setState(() {});
+                    },
+                  )
+                      : null,
+                  hintText: 'Search for users...',
+                  hintStyle: TextStyle(
+                    color: colorScheme.onSurface.withValues(alpha: 0.5),
+                    fontSize: 16,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 16,
+                  ),
                 ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(50),
-                  borderSide: BorderSide(width: 3, color: colorScheme.primary),
-                ),
-                prefixIcon: Icon(Icons.search, color: colorScheme.onSurface),
-                suffixIcon: IconButton(
-                  icon: Icon(Icons.clear, color: colorScheme.onSurface),
-                  onPressed: () {
-                    searchController.clear();
-                    performSearch('');
-                  },
-                ),
-                hintText: 'Search.....',
-                hintStyle: TextStyle(color: colorScheme.onSurface),
               ),
             ),
           ),
-          if (isLoading) const LinearProgressIndicator(),
-          Container(
-            margin: const EdgeInsets.only(top: 30, bottom: 20, left: 20),
-            child: const Text(
-              'Search Results',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          if (isLoading)
+            LinearProgressIndicator(
+              backgroundColor: colorScheme.primary.withValues(alpha: 0.2),
+              valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
             ),
-          ),
           Expanded(
-            child: ListView.builder(
+            child: searchController.text.isEmpty
+                ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.search_rounded,
+                    size: 80,
+                    color: colorScheme.onSurface.withValues(alpha: 0.2),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Search for users',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: colorScheme.onSurface.withValues(alpha: 0.5),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Start typing to find people',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: colorScheme.onSurface.withValues(alpha: 0.4),
+                    ),
+                  ),
+                ],
+              ),
+            )
+                : searchResults.isEmpty && !isLoading
+                ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.person_search_rounded,
+                    size: 80,
+                    color: colorScheme.onSurface.withValues(alpha: 0.2),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No users found',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: colorScheme.onSurface.withValues(alpha: 0.5),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Try a different search term',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: colorScheme.onSurface.withValues(alpha: 0.4),
+                    ),
+                  ),
+                ],
+              ),
+            )
+                : ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               itemCount: searchResults.length,
               itemBuilder: (context, index) {
                 final user = searchResults[index];
-                return ListTile(
-                  title: Row(
-                    children: [
-                      ClipOval(
-                        child: user['photoUrl']?.isNotEmpty == true
-                            ? Image.network(user['photoUrl'],
-                                width: 50, height: 50, fit: BoxFit.cover)
-                            : Image.asset('assets/images/download.jpeg',
-                                width: 50, height: 50, fit: BoxFit.cover),
-                      ),
-                      const SizedBox(width: 10),
-                      Text(
-                        user['name'] ?? 'Unknown',
-                        style: const TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w500),
+                return Container(
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surface,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: colorScheme.primary.withValues(alpha: 0.15),
+                      width: 1,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
                       ),
                     ],
                   ),
-                  onTap: () async {
-                    final currentUserId =
-                        FirebaseAuth.instance.currentUser!.uid;
-                    final conversationId = await controller
-                        .getOrCreateConversation(currentUserId, user['userId']);
-
-                    if (context.mounted) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => Chat(
-                            userId: user['userId'],
-                            userName: user['name'],
-                            conversationId: conversationId,
-                            bio: user['bio'] ?? 'No bio available',
-                          ),
-                        ),
+                  child: InkWell(
+                    onTap: () async {
+                      final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+                      final conversationId = await controller.getOrCreateConversation(
+                        currentUserId,
+                        user['userId'],
                       );
-                    }
-                  },
+
+                      if (context.mounted) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => Chat(
+                              userId: user['userId'],
+                              userName: user['name'],
+                              conversationId: conversationId,
+                              bio: user['bio'] ?? '',
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(16),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Row(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: colorScheme.primary.withValues(alpha: 0.3),
+                                width: 2,
+                              ),
+                            ),
+                            child: ClipOval(
+                              child: user['photoUrl'] != null &&
+                                  user['photoUrl'].toString().isNotEmpty
+                                  ? Image.network(
+                                user['photoUrl'],
+                                width: 56,
+                                height: 56,
+                                fit: BoxFit.cover,
+                              )
+                                  : Image.asset(
+                                'assets/images/download.jpeg',
+                                width: 56,
+                                height: 56,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  user['name'] ?? 'Unknown',
+                                  style: const TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                if (user['bio'] != null &&
+                                    user['bio'].toString().isNotEmpty)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 4),
+                                    child: Text(
+                                      user['bio'],
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: colorScheme.onSurface.withValues(alpha: 0.6),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: colorScheme.primary.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(
+                              Icons.chat_bubble_rounded,
+                              color: colorScheme.primary,
+                              size: 20,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 );
               },
             ),
