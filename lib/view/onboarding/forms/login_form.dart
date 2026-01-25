@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:whale_chat/app.dart';
-import 'package:whale_chat/controller/auth_controller.dart';
+import 'package:whale_chat/controller/auth/auth_controller.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
 import 'package:whale_chat/util/auth_validator.dart';
 import 'package:whale_chat/view/onboarding/pages/forget_password.dart';

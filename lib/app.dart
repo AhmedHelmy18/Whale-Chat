@@ -3,8 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
-import 'package:whale_chat/view/app/pages/home_page.dart';
-import 'package:whale_chat/view/app/pages/profile.dart';
+import 'package:whale_chat/view/app/screens/home/home_screen.dart';
+import 'package:whale_chat/view/app/screens/profile/profile_screen.dart';
 import 'package:whale_chat/view/onboarding/pages/onboarding_page.dart';
 
 class ChatApp extends StatelessWidget {
@@ -76,8 +76,8 @@ class _MainHomeState extends State<MainHome> {
   int selectedIndex = 0;
 
   late final List<Widget> pages = [
-    const HomePage(),
-    ProfilePage(userId: widget.userId),
+    const HomeScreen(),
+    ProfileScreen(userId: widget.userId),
   ];
 
   @override

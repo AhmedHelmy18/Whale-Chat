@@ -4,7 +4,7 @@ import 'package:whale_chat/view/onboarding/widgets/custom_text_form_field.dart';
 import 'package:whale_chat/view/onboarding/widgets/error_box.dart';
 import 'package:whale_chat/view/onboarding/widgets/primary_button.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
-import 'package:whale_chat/controller/auth_controller.dart';
+import 'package:whale_chat/controller/auth/auth_controller.dart';
 
 class ForgetPassword extends StatefulWidget {
   const ForgetPassword({super.key});

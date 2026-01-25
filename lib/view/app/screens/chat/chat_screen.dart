@@ -1,11 +1,12 @@
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:whale_chat/app.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
-import 'package:whale_chat/view/app/pages/profile.dart';
-import 'package:whale_chat/view/app/widgets/message_body.dart';
+import 'package:whale_chat/view/app/screens/chat/message_body_widget.dart';
+import 'package:whale_chat/view/app/screens/profile/profile_screen.dart';
 
-class Chat extends StatelessWidget {
-  const Chat({
+class ChatScreen extends StatelessWidget {
+  const ChatScreen({
     super.key,
     required this.userId,
     required this.userName,
@@ -37,7 +38,13 @@ class Chat extends StatelessWidget {
         leading: Container(
           margin: const EdgeInsets.only(left: 8),
           child: IconButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const ChatApp()),
+                (route) => false,
+              );
+            },
             icon: Icon(
               Icons.arrow_back_ios_new_rounded,
               color: colorScheme.surface,
@@ -50,7 +57,7 @@ class Chat extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (_) => Scaffold(body: ProfilePage(userId: userId)),
+                builder: (_) => Scaffold(body: ProfileScreen(userId: userId)),
               ),
             );
           },
@@ -72,17 +79,17 @@ class Chat extends StatelessWidget {
                       child: ClipOval(
                         child: snapshot.data != null
                             ? Image.network(
-                          snapshot.data!,
-                          height: 50,
-                          width: 50,
-                          fit: BoxFit.cover,
-                        )
+                                snapshot.data!,
+                                height: 50,
+                                width: 50,
+                                fit: BoxFit.cover,
+                              )
                             : Image.asset(
-                          'assets/images/download.jpeg',
-                          height: 50,
-                          width: 50,
-                          fit: BoxFit.cover,
-                        ),
+                                'assets/images/download.jpeg',
+                                height: 50,
+                                width: 50,
+                                fit: BoxFit.cover,
+                              ),
                       ),
                     );
                   },

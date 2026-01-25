@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -8,74 +9,73 @@ class ChatService {
   }
 
   final FirebaseFirestore fireStore = FirebaseFirestore.instance;
-  Set<String> processedUserIds = {};
 
   ValueNotifier<List<Map<String, dynamic>>> chats = ValueNotifier([]);
+  StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _subscription;
 
   void loading() {
-    String currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
-    FirebaseFirestore.instance
+    _subscription = fireStore
         .collection("users")
         .doc(currentUserId)
         .snapshots()
-        .listen(
-      (event) async {
-        List<Map<String, dynamic>> updatedChats = [];
+        .listen((event) async {
+      final data = event.data();
+      final lastConversation = data?["last conversation"];
 
-        for (var doc in event.data()?["last conversation"]) {
-          var conversationRef =
-              await fireStore.collection('conversations').doc(doc).get();
+      if (lastConversation == null || lastConversation.isEmpty) {
+        chats.value = [];
+        return;
+      }
 
-          if (!conversationRef.exists) continue;
+      List<Map<String, dynamic>> updatedChats = [];
 
-          var participants = conversationRef.data()?["participants"];
-          if (participants == null || participants.length < 2) continue;
+      for (var conv in lastConversation) {
+        if (conv == null) continue;
 
-          String otherUserId = currentUserId == participants[0]
-              ? participants[1]
-              : participants[0];
+        final Map<String, dynamic> convMap =
+        Map<String, dynamic>.from(conv as Map);
 
-          String conversationKey = currentUserId.compareTo(otherUserId) < 0
-              ? "$currentUserId-$otherUserId"
-              : "$otherUserId-$currentUserId";
+        final String conversationId = convMap["id"]?.toString() ?? "";
+        if (conversationId.isEmpty) continue;
 
-          if (processedUserIds.contains(conversationKey)) {
-            continue;
-          }
+        final conversationRef =
+        await fireStore.collection('conversations').doc(conversationId).get();
 
-          processedUserIds.add(conversationKey);
+        if (!conversationRef.exists) continue;
 
-          var participantData =
-              await fireStore.collection('users').doc(otherUserId).get();
+        final participants = conversationRef.data()?["participants"];
+        if (participants == null || participants.length < 2) continue;
 
-          var lastMessageSnapshot = await FirebaseFirestore.instance
-              .collection('conversations')
-              .doc(doc)
-              .collection('messages')
-              .orderBy('time', descending: true)
-              .limit(1)
-              .get();
+        final String otherUserId = currentUserId == participants[0]
+            ? participants[1]
+            : participants[0];
 
-          String lastMessage = lastMessageSnapshot.docs.isNotEmpty
-              ? lastMessageSnapshot.docs.first["text"]
-              : "No messages yet";
-          Timestamp lastMessageTime = lastMessageSnapshot.docs.isNotEmpty
-              ? lastMessageSnapshot.docs.first["time"]
-              : Timestamp.now();
+        final participantData =
+        await fireStore.collection('users').doc(otherUserId).get();
 
-          updatedChats.add({
-            "id": doc,
-            "name": participantData.data()?["name"],
-            "userId": participantData.id,
-            "lastMessage": lastMessage,
-            "timestamp": lastMessageTime,
-            "bio": participantData.data()?["bio"]
-          });
-        }
+        updatedChats.add({
+          "id": conversationId,
+          "name": participantData.data()?["name"] ?? "Unknown",
+          "userId": participantData.id,
+          "lastMessage": convMap["last message"] ?? "",
+          "timestamp": convMap["last message time"] ?? Timestamp.now(),
+          "bio": participantData.data()?["bio"] ?? "",
+        });
+      }
 
-        chats.value = updatedChats;
-      },
-    );
+      updatedChats.sort((a, b) {
+        final Timestamp t1 = a["timestamp"] ?? Timestamp.now();
+        final Timestamp t2 = b["timestamp"] ?? Timestamp.now();
+        return t2.compareTo(t1);
+      });
+
+      chats.value = updatedChats;
+    });
+  }
+
+  void dispose() {
+    _subscription?.cancel();
   }
 }

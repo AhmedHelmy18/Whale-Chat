@@ -1,4 +1,4 @@
-import 'package:whale_chat/controller/auth_controller.dart';
+import 'package:whale_chat/controller/auth/auth_controller.dart';
 import 'package:whale_chat/util/auth_validator.dart';
 import 'package:whale_chat/view/onboarding/pages/login_page.dart';
 import 'package:whale_chat/view/onboarding/pages/verify_email.dart';

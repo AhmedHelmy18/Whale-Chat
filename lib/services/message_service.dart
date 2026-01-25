@@ -1,11 +1,10 @@
-import 'dart:async';
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class MessageService {
-  const MessageService({
+  MessageService({
     required this.userId,
     required this.conversationId,
   });
@@ -13,115 +12,148 @@ class MessageService {
   final String conversationId;
   final String userId;
 
-  Future<void> sendMessage(TextEditingController messageController) async {
-    if (messageController.text.trim().isEmpty) return;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseStorage _storage = FirebaseStorage.instance;
 
-    FirebaseFirestore.instance
+  Future<void> sendTextAndImages({
+    required String text,
+    required List<File> images,
+  }) async {
+    final senderId = _auth.currentUser?.uid;
+    if (senderId == null) return;
+
+    final cleanText = text.trim();
+    if (cleanText.isEmpty && images.isEmpty) return;
+
+    final List<String> imageUrls = [];
+
+    if (images.isNotEmpty) {
+      for (final file in images) {
+        final fileName = "${DateTime.now().millisecondsSinceEpoch}_$senderId.jpg";
+        final ref = _storage.ref("chats/$conversationId/images/$fileName");
+        await ref.putFile(file);
+        final url = await ref.getDownloadURL();
+        imageUrls.add(url);
+      }
+    }
+
+    await _firestore
         .collection('conversations')
         .doc(conversationId)
         .collection('messages')
         .add({
-      'text': messageController.text.trim(),
-      'sender': FirebaseAuth.instance.currentUser!.uid,
+      'text': cleanText,
+      'sender': senderId,
       'time': FieldValue.serverTimestamp(),
       'status': 'sent',
+      'type': imageUrls.isNotEmpty ? 'media' : 'text',
+      'imageUrls': imageUrls,
     });
-    var historyConversation = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(FirebaseAuth.instance.currentUser!.uid)
-        .get();
 
-    List<Map<String, dynamic>> lastMessages = [
-      {
-        'id': conversationId,
-        'last message': messageController.text.trim(),
-        'last message time': Timestamp.now()
-      }
-    ];
-    if (historyConversation.exists) {
-      for (var conv in historyConversation.data()?['last conversation']) {
-        if (conv["id"] != conversationId) {
-          lastMessages.add(conv);
-        }
-      }
+    String lastMessage = '';
+    if (imageUrls.isNotEmpty && cleanText.isNotEmpty) {
+      lastMessage = "📷 Photo + Message";
+    } else if (imageUrls.isNotEmpty) {
+      lastMessage = "📷 Photo";
+    } else {
+      lastMessage = cleanText;
     }
 
-    try {
-      FirebaseFirestore.instance
-          .collection('users')
-          .doc(FirebaseAuth.instance.currentUser?.uid)
-          .update({
-        'last conversation': lastMessages,
-      });
-    } catch (_) {}
-
-    historyConversation =
-        await FirebaseFirestore.instance.collection('users').doc(userId).get();
-
-    lastMessages = [
-      {
-        'id': conversationId,
-        'last message': messageController.text.trim(),
-        'last message time': Timestamp.now()
-      }
-    ];
-    if (historyConversation.exists) {
-      for (var conv in historyConversation.data()?['last conversation']) {
-        if (conv["id"] != conversationId) {
-          lastMessages.add(conv);
-        }
-      }
-    }
-    try {
-      FirebaseFirestore.instance.collection('users').doc(userId).update({
-        'last conversation': lastMessages,
-      });
-    } catch (_) {}
-    await FirebaseFunctions.instance.httpsCallable("sendNotification").call({
-      "userId": userId,
-      "message": messageController.text.trim(),
-    });
-    messageController.clear();
+    await _updateLastConversation(lastMessage: lastMessage);
   }
 
   Future<void> markMessagesAsSeen() async {
-    var snapshot = await FirebaseFirestore.instance
+    final myId = _auth.currentUser?.uid;
+    if (myId == null) return;
+
+    final snapshot = await _firestore
         .collection('conversations')
         .doc(conversationId)
         .collection('messages')
         .where('status', isEqualTo: 'delivered')
-        .where('sender', isNotEqualTo: FirebaseAuth.instance.currentUser!.uid)
+        .where('sender', isNotEqualTo: myId)
         .get();
-    WriteBatch batch = FirebaseFirestore.instance.batch();
-    for (var doc in snapshot.docs) {
+
+    final batch = _firestore.batch();
+
+    for (final doc in snapshot.docs) {
       batch.update(doc.reference, {'status': 'seen'});
     }
+
     await batch.commit();
   }
 
-  Icon getMessageStatusIcon(String status) {
-    if (status == 'sent') {
-      return Icon(Icons.check, color: Colors.grey, size: 16);
-    } else if (status == 'delivered') {
-      return Icon(Icons.done_all, color: Colors.grey, size: 16);
-    } else if (status == 'seen') {
-      return Icon(Icons.done_all, color: Colors.blue, size: 16);
+  Future<void> updateDeliveredForIncoming() async {
+    final myId = _auth.currentUser?.uid;
+    if (myId == null) return;
+
+    final snapshot = await _firestore
+        .collection('conversations')
+        .doc(conversationId)
+        .collection('messages')
+        .where('status', isEqualTo: 'sent')
+        .where('sender', isNotEqualTo: myId)
+        .get();
+
+    final batch = _firestore.batch();
+
+    for (final doc in snapshot.docs) {
+      batch.update(doc.reference, {'status': 'delivered'});
     }
-    return Icon(Icons.check, color: Colors.grey, size: 16);
+
+    await batch.commit();
   }
 
-  void scrollToBottom(ScrollController scrollController) {
-    Future.delayed(
-      Duration(milliseconds: 100),
-      () {
-        if (scrollController.hasClients) {
-          scrollController.animateTo(
-            scrollController.position.maxScrollExtent,
-            duration: Duration(milliseconds: 300),
-            curve: Curves.easeOut,
-          );
-        }
-      },
+  Future<void> _updateLastConversation({required String lastMessage}) async {
+    final myId = _auth.currentUser?.uid;
+    if (myId == null) return;
+
+    final now = Timestamp.now();
+
+    await _setLastConversationForUser(
+      targetUserId: myId,
+      lastMessage: lastMessage,
+      time: now,
     );
+
+    await _setLastConversationForUser(
+      targetUserId: userId,
+      lastMessage: lastMessage,
+      time: now,
+    );
+  }
+
+  Future<void> _setLastConversationForUser({
+    required String targetUserId,
+    required String lastMessage,
+    required Timestamp time,
+  }) async {
+    final userRef = _firestore.collection('users').doc(targetUserId);
+    final doc = await userRef.get();
+
+    final List<Map<String, dynamic>> newList = [
+      {
+        'id': conversationId,
+        'last message': lastMessage,
+        'last message time': time,
+      }
+    ];
+
+    if (doc.exists) {
+      final data = doc.data();
+      final list = data?['last conversation'];
+
+      if (list is List) {
+        for (final item in list) {
+          final map = Map<String, dynamic>.from(item);
+          if (map['id'] != conversationId) {
+            newList.add(map);
+          }
+        }
+      }
+    }
+
+    await userRef.set({'last conversation': newList}, SetOptions(merge: true));
   }
 }

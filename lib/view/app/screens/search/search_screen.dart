@@ -2,8 +2,8 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
-import 'package:whale_chat/view/app/pages/chat.dart';
-import 'package:whale_chat/controller/search_chat_controller.dart';
+import 'package:whale_chat/view/app/screens/chat/chat_screen.dart';
+import 'package:whale_chat/controller/search/search_chat_controller.dart';
 
 class Search extends StatefulWidget {
   const Search({super.key});
@@ -250,10 +250,9 @@ class _SearchState extends State<Search> {
                       );
 
                       if (context.mounted) {
-                        Navigator.push(
-                          context,
+                        Navigator.pushReplacement(context,
                           MaterialPageRoute(
-                            builder: (_) => Chat(
+                            builder: (_) => ChatScreen(
                               userId: user['userId'],
                               userName: user['name'],
                               conversationId: conversationId,

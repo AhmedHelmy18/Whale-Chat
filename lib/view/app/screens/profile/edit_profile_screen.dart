@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:whale_chat/controller/profile/edit_profile_controller.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
-import 'package:whale_chat/view/app/widgets/edit_container.dart';
+import 'package:whale_chat/view/app/screens/profile/edit_profile_widget.dart';
 
-class EditProfilePage extends StatefulWidget {
-  const EditProfilePage({super.key});
+class EditProfileScreen extends StatefulWidget {
+  const EditProfileScreen({super.key});
 
   @override
-  State<EditProfilePage> createState() => _EditProfilePageState();
+  State<EditProfileScreen> createState() => _EditProfileScreenState();
 }
 
-class _EditProfilePageState extends State<EditProfilePage> {
+class _EditProfileScreenState extends State<EditProfileScreen> {
   late EditProfileController controller;
   bool isLoading = true;
   late Future<String?> profileImageFuture;
@@ -42,52 +42,53 @@ class _EditProfilePageState extends State<EditProfilePage> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
-
-    if (success) Navigator.pop(context, true);
   }
 
   void showImageSourcePicker() {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (_) => Container(
         decoration: BoxDecoration(
           color: colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 20,
+              offset: const Offset(0, -5),
+            ),
+          ],
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20),
+          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 20),
+                width: 45,
+                height: 5,
+                margin: const EdgeInsets.only(bottom: 24),
                 decoration: BoxDecoration(
                   color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.circular(3),
                 ),
               ),
               Text(
                 'Choose Photo Source',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: colorScheme.primary,
+                  letterSpacing: 0.3,
                 ),
               ),
-              const SizedBox(height: 20),
-              ListTile(
-                leading: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: colorScheme.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(Icons.photo, color: colorScheme.primary),
-                ),
-                title: const Text('Gallery', style: TextStyle(fontWeight: FontWeight.w500)),
+              const SizedBox(height: 24),
+              _buildSourceOption(
+                icon: Icons.photo_library_rounded,
+                title: 'Gallery',
+                subtitle: 'Choose from your photos',
                 onTap: () async {
                   Navigator.pop(context);
                   await controller.uploadProfileImage(ImageSource.gallery);
@@ -95,28 +96,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   setState(() {
                     profileImageFuture = controller.getProfileImageUrl();
                   });
-                  Navigator.pop(context, true);
                 },
               ),
-              const SizedBox(height: 6),
-              Divider(
-                color: colorScheme.primary.withValues(alpha: 0.2),
-                thickness: 1,
-                height: 2,
-                indent: 20,
-                endIndent: 20,
-              ),
-              const SizedBox(height: 6),
-              ListTile(
-                leading: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: colorScheme.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(Icons.camera_alt, color: colorScheme.primary),
-                ),
-                title: const Text('Camera', style: TextStyle(fontWeight: FontWeight.w500)),
+              const SizedBox(height: 12),
+              _buildSourceOption(
+                icon: Icons.camera_alt_rounded,
+                title: 'Camera',
+                subtitle: 'Take a new photo',
                 onTap: () async {
                   Navigator.pop(context);
                   await controller.uploadProfileImage(ImageSource.camera);
@@ -124,10 +110,75 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   setState(() {
                     profileImageFuture = controller.getProfileImageUrl();
                   });
-                  Navigator.pop(context, true);
                 },
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 16),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSourceOption({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: colorScheme.primary.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: colorScheme.primary.withValues(alpha: 0.1),
+              width: 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(icon, color: colorScheme.primary, size: 26),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 16,
+                color: Colors.grey.shade400,
+              ),
             ],
           ),
         ),
@@ -257,14 +308,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       text: 'Your Name:',
                       hint: 'Enter new name',
                       controller: controller.nameController,
-                      updateProfilePage: () => updateField('name'),
+                      updateProfileScreen: () => updateField('name'),
                     ),
                     const SizedBox(height: 25),
                     EditContainer(
                       text: 'Your Bio:',
                       hint: 'Enter new bio',
                       controller: controller.bioController,
-                      updateProfilePage: () => updateField('bio'),
+                      updateProfileScreen: () => updateField('bio'),
                     ),
                   ],
                 ),

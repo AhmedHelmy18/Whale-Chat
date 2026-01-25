@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:whale_chat/util/format_time.dart';
-import 'package:whale_chat/view/app/pages/chat.dart';
+import 'package:intl/intl.dart';
+import 'package:whale_chat/view/app/screens/chat/chat_screen.dart';
 
 class ChatUserContainer extends StatelessWidget {
   const ChatUserContainer({
@@ -23,6 +23,22 @@ class ChatUserContainer extends StatelessWidget {
   final String? bio;
   final String photoUrl;
 
+  String formatTimestamp(Timestamp? timestamp) {
+    if (timestamp == null) return '';
+
+    final dateTime = timestamp.toDate();
+    final now = DateTime.now();
+
+    final isToday =
+        dateTime.year == now.year && dateTime.month == now.month && dateTime.day == now.day;
+
+    if (isToday) {
+      return DateFormat('h:mm a').format(dateTime);
+    }
+
+    return DateFormat('MMM d').format(dateTime);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Material(
@@ -32,7 +48,7 @@ class ChatUserContainer extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => Chat(
+              builder: (_) => ChatScreen(
                 userId: userId,
                 userName: userName,
                 conversationId: conversationId,
@@ -108,7 +124,6 @@ class ChatUserContainer extends StatelessWidget {
                 ],
               ),
               const SizedBox(width: 16),
-
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

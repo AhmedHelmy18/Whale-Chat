@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:whale_chat/controller/profile/profile_controller.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
-import 'package:whale_chat/view/app/pages/edit_profile.dart';
+import 'package:whale_chat/view/app/screens/profile/edit_profile_screen.dart';
 
-class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key, required this.userId});
+class ProfileScreen extends StatefulWidget {
+  const ProfileScreen({super.key, required this.userId});
   final String userId;
 
   @override
-  State<ProfilePage> createState() => _ProfilePageState();
+  State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfilePageState extends State<ProfilePage> {
+class _ProfileScreenState extends State<ProfileScreen> {
   final ProfileController controller = ProfileController();
   String userName = "";
   String? bio;
@@ -196,7 +196,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   onPressed: () async {
                     final updated = await Navigator.push<bool>(
                       context,
-                      MaterialPageRoute(builder: (_) => const EditProfilePage()),
+                      MaterialPageRoute(builder: (_) => const EditProfileScreen()),
                     );
                     if (!mounted) return;
                     if (updated == true) {
