@@ -204,7 +204,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       itemBuilder: (context, index) {
                         final chat = chats[index];
-                        return ChatUserContainer(
+                        return ChatBodyWidget(
                           userId: chat["userId"],
                           userName: chat["name"],
                           lastMessage: chat["lastMessage"],

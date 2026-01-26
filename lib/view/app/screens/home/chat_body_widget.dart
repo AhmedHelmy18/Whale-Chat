@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:whale_chat/view/app/screens/chat/chat_screen.dart';
 
-class ChatUserContainer extends StatelessWidget {
-  const ChatUserContainer({
+class ChatBodyWidget extends StatelessWidget {
+  const ChatBodyWidget({
     super.key,
     required this.userId,
     required this.userName,
@@ -77,8 +77,7 @@ class ChatUserContainer extends StatelessWidget {
                         ],
                       ),
                       child: ClipOval(
-                        child: photoUrl.isNotEmpty
-                            ? Image.network(
+                        child: photoUrl.isNotEmpty ? Image.network(
                           photoUrl,
                           width: 60,
                           height: 60,
@@ -95,8 +94,7 @@ class ChatUserContainer extends StatelessWidget {
                               ),
                             );
                           },
-                        )
-                            : Image.asset(
+                        ) : Image.asset(
                           'assets/images/download.jpeg',
                           width: 60,
                           height: 60,

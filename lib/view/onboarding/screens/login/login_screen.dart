@@ -1,9 +1,9 @@
-import 'package:whale_chat/view/onboarding/forms/login_form.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
 import 'package:flutter/material.dart';
+import 'package:whale_chat/view/onboarding/screens/login/login_form.dart';
 
-class LoginPage extends StatelessWidget {
-  const LoginPage({super.key});
+class LoginScreen extends StatelessWidget {
+  const LoginScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

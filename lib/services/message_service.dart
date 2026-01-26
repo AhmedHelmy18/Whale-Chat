@@ -16,10 +16,7 @@ class MessageService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
 
-  Future<void> sendTextAndImages({
-    required String text,
-    required List<File> images,
-  }) async {
+  Future<void> sendTextAndImages({required String text, required List<File> images}) async {
     final senderId = _auth.currentUser?.uid;
     if (senderId == null) return;
 
@@ -153,7 +150,6 @@ class MessageService {
         }
       }
     }
-
     await userRef.set({'last conversation': newList}, SetOptions(merge: true));
   }
 }

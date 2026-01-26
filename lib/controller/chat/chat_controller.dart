@@ -34,7 +34,6 @@ class ChatController {
       conversationId: conversationId,
       userId: userId,
     );
-
     _listenToMessages();
   }
 
@@ -110,7 +109,6 @@ class ChatController {
       text: text,
       images: images,
     );
-
     messageController.clear();
     clearPickedImages();
   }

@@ -1,11 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
 import 'package:whale_chat/view/app/screens/home/home_screen.dart';
 import 'package:whale_chat/view/app/screens/profile/profile_screen.dart';
-import 'package:whale_chat/view/onboarding/pages/onboarding_page.dart';
+import 'package:whale_chat/view/onboarding/screens/onboarding/onboarding_screen.dart';
 
 class ChatApp extends StatelessWidget {
   const ChatApp({super.key});
@@ -30,7 +29,7 @@ class ChatApp extends StatelessWidget {
           final user = authSnapshot.data;
 
           if (user == null) {
-            return const OnboardingPage();
+            return const OnboardingScreen();
           }
 
           return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
@@ -41,7 +40,7 @@ class ChatApp extends StatelessWidget {
             builder: (context, docSnapshot) {
               if (docSnapshot.hasError) {
                 FirebaseAuth.instance.signOut();
-                return const OnboardingPage();
+                return const OnboardingScreen();
               }
 
               if (docSnapshot.connectionState == ConnectionState.waiting) {
@@ -51,7 +50,7 @@ class ChatApp extends StatelessWidget {
               }
 
               if (!docSnapshot.hasData || !docSnapshot.data!.exists) {
-                return const OnboardingPage();
+                return const OnboardingScreen();
               }
 
               return MainHome(userId: user.uid);
@@ -79,12 +78,6 @@ class _MainHomeState extends State<MainHome> {
     const HomeScreen(),
     ProfileScreen(userId: widget.userId),
   ];
-
-  @override
-  void initState() {
-    super.initState();
-    FirebaseMessaging.instance.requestPermission();
-  }
 
   @override
   Widget build(BuildContext context) {

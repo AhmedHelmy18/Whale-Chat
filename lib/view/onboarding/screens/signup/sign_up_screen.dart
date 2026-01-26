@@ -1,9 +1,9 @@
-import 'package:whale_chat/view/onboarding/forms/signup_form.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
 import 'package:flutter/material.dart';
+import 'package:whale_chat/view/onboarding/screens/signup/signup_form.dart';
 
-class SignUpPage extends StatelessWidget {
-  const SignUpPage({super.key});
+class SignUpScreen extends StatelessWidget {
+  const SignUpScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +73,7 @@ class SignUpPage extends StatelessWidget {
                     right: 20.0,
                     bottom: 10,
                   ),
-                  child: SignupForm(),
+                  child:SignupForm(),
                 ),
               ),
             ),

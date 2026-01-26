@@ -19,10 +19,7 @@ class Message {
     required this.imageUrls,
   });
 
-  factory Message.fromDoc({
-    required QueryDocumentSnapshot doc,
-    required String myId,
-  }) {
+  factory Message.fromDoc({required QueryDocumentSnapshot doc, required String myId}) {
     final data = doc.data() as Map<String, dynamic>;
 
     final images = data['imageUrls'];
