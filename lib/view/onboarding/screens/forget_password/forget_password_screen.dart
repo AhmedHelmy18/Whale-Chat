@@ -13,8 +13,7 @@ class ForgetPasswordScreen extends StatefulWidget {
   State<ForgetPasswordScreen> createState() => _ForgetPasswordState();
 }
 
-class _ForgetPasswordState extends State<ForgetPasswordScreen>
-    with SingleTickerProviderStateMixin {
+class _ForgetPasswordState extends State<ForgetPasswordScreen> with SingleTickerProviderStateMixin {
   final TextEditingController emailController = TextEditingController();
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final AuthController controller = AuthController();

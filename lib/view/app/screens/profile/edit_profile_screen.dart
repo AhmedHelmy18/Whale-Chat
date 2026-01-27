@@ -52,7 +52,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_rounded, color: colorScheme.surface),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pop(context, true),
         ),
         title: Text(
           'Edit Profile',
@@ -66,8 +66,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       ),
       body: isLoading ? Center(
         child: CircularProgressIndicator(color: colorScheme.primary),
-      )
-          : Container(
+      ) : Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -92,10 +91,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         context: context,
                         onPick: (source) async {
                           await controller.uploadProfileImage(source);
-                          if (!mounted) return;
-                          setState(() {
-                            profileImageFuture = controller.getProfileImageUrl();
-                          });
+                          if (context.mounted) {
+                            setState(() {
+                              profileImageFuture = controller.getProfileImageUrl();
+                            });
+                          }
                         },
                       );
                     },
