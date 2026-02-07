@@ -160,7 +160,7 @@ class ChatScreen extends StatelessWidget {
           const SizedBox(width: 4),
         ],
       ),
-      body: MessageBody(
+      body: MessageBodyWidget(
         conversationId: conversationId,
         userId: userId,
       ),

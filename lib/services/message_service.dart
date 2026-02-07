@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
 
 class MessageService {
   MessageService({
@@ -151,5 +152,16 @@ class MessageService {
       }
     }
     await userRef.set({'last conversation': newList}, SetOptions(merge: true));
+  }
+
+  Icon getMessageStatusIcon(String status) {
+    if (status == 'sent') {
+      return Icon(Icons.check, color: Colors.grey, size: 16);
+    } else if (status == 'delivered') {
+      return Icon(Icons.done_all, color: Colors.grey, size: 16);
+    } else if (status == 'seen') {
+      return Icon(Icons.done_all, color: Colors.blue, size: 16);
+    }
+    return Icon(Icons.check, color: Colors.grey, size: 16);
   }
 }
