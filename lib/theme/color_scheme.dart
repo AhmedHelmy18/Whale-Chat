@@ -6,6 +6,6 @@ ColorScheme colorScheme = ColorScheme.fromSeed(
   surface: Color(0xffffffff),
   primary: Color(0xff1c58b6),
   error: Color(0xff710404),
-  secondary: Color(0xffE0E0E0),
+  secondary: Color(0xd3aba5a5),
   onPrimary: Color(0xff000000)
 );

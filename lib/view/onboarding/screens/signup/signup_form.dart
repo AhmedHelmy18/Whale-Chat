@@ -1,12 +1,10 @@
-import 'package:whale_chat/controller/auth_controller.dart';
-import 'package:whale_chat/util/auth_validator.dart';
-import 'package:whale_chat/view/onboarding/pages/login_page.dart';
-import 'package:whale_chat/view/onboarding/pages/verify_email.dart';
-import 'package:whale_chat/view/onboarding/widgets/custom_text_form_field.dart';
-import 'package:whale_chat/view/onboarding/widgets/error_box.dart';
-import 'package:whale_chat/theme/color_scheme.dart';
 import 'package:flutter/material.dart';
-import 'package:whale_chat/view/onboarding/widgets/primary_button.dart';
+import 'package:whale_chat/controller/auth/auth_controller.dart';
+import 'package:whale_chat/util/auth_validator.dart';
+import 'package:whale_chat/view/onboarding/components/custom_text_form_field.dart';
+import 'package:whale_chat/view/onboarding/components/error_box.dart';
+import 'package:whale_chat/view/onboarding/components/primary_button.dart';
+import 'package:whale_chat/view/onboarding/screens/email_verify/email_verify_screen.dart';
 
 class SignupForm extends StatefulWidget {
   const SignupForm({super.key});
@@ -16,16 +14,41 @@ class SignupForm extends StatefulWidget {
 }
 
 class _SignupFormState extends State<SignupForm> {
-  String error = '';
   bool obscureText = true;
-  TextEditingController emailController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
-  TextEditingController nameController = TextEditingController();
+
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController nameController = TextEditingController();
+
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final AuthController controller = AuthController();
+
   bool loading = false;
   String? errorText;
   bool submitted = false;
+
+  bool get isFormFilled =>
+      nameController.text.trim().isNotEmpty && emailController.text.trim().isNotEmpty && passwordController.text.trim().isNotEmpty;
+
+  bool get canSubmit => !loading && isFormFilled;
+
+  @override
+  void initState() {
+    super.initState();
+
+    for (final controller in [nameController, emailController, passwordController]) {
+      controller.addListener(() {
+        if (submitted) {
+          formKey.currentState?.validate();
+        }
+
+        if (errorText != null) {
+          setState(() => errorText = null);
+        }
+        setState(() {});
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -35,26 +58,14 @@ class _SignupFormState extends State<SignupForm> {
     super.dispose();
   }
 
-  @override
-  void initState() {
-    super.initState();
-    for (final controller in [
-      emailController,
-      passwordController,
-      nameController
-    ]) {
-      controller.addListener(() {
-        if (submitted) {
-          formKey.currentState?.validate();
-        }
-        if (errorText != null) {
-          setState(() => errorText = null);
-        }
-      });
-    }
-  }
-
   Future<void> signUp() async {
+    setState(() {
+      submitted = true;
+    });
+
+    final isValid = formKey.currentState?.validate() ?? false;
+    if (!isValid) return;
+
     setState(() => loading = true);
 
     final result = await controller.signUp(
@@ -70,25 +81,26 @@ class _SignupFormState extends State<SignupForm> {
       });
       return;
     }
-
     if (!mounted) return;
+    setState(() => loading = false);
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (_) => VerifyEmailPage(
+        builder: (_) => EmailVerifyScreen(
           name: nameController.text.trim(),
           email: emailController.text.trim(),
         ),
       ),
     );
-
-    setState(() => loading = false);
   }
 
   @override
   Widget build(BuildContext context) {
     return Form(
       key: formKey,
+      autovalidateMode: submitted
+          ? AutovalidateMode.onUserInteraction
+          : AutovalidateMode.disabled,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -120,45 +132,14 @@ class _SignupFormState extends State<SignupForm> {
             textInputAction: TextInputAction.done,
             validator: AuthValidator.passwordValidator,
           ),
-          const SizedBox(height: 15),
+          const SizedBox(height: 25),
           PrimaryButton(
-              enabled: !loading,
-              primaryButton: true,
-              text: loading ? 'Loading...' : 'Sign Up',
-              onPressed: signUp),
-          const SizedBox(height: 5),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Divider(
-                  color: colorScheme.secondary,
-                  thickness: 2,
-                  endIndent: 10,
-                ),
-              ),
-              Text('or',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
-              Expanded(
-                child: Divider(
-                  color: colorScheme.secondary,
-                  thickness: 2,
-                  indent: 10,
-                ),
-              ),
-            ],
+            enabled: canSubmit,
+            primaryButton: true,
+            text: loading ? 'Loading...' : 'Sign Up',
+            onPressed: canSubmit ? signUp : null,
           ),
           const SizedBox(height: 5),
-          PrimaryButton(
-            primaryButton: false,
-            text: 'Login',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const LoginPage()),
-              );
-            },
-          ),
         ],
       ),
     );

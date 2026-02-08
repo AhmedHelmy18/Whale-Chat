@@ -1,18 +1,27 @@
 import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class ProfileController {
-  Future<Map<String, dynamic>?> getUserData(String userId) async {
+  Future<Map<String, dynamic>?> getUserDataWithImage(String userId) async {
     try {
-      DocumentSnapshot userDoc =
-      await FirebaseFirestore.instance.collection('users').doc(userId).get();
+      final doc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
 
-      if (userDoc.exists) {
-        return userDoc.data() as Map<String, dynamic>?;
+      if (!doc.exists) return null;
+
+      final data = doc.data() as Map<String, dynamic>;
+
+      try {
+        final ref = FirebaseStorage.instance.ref('users/$userId/profile.jpg');
+        final imageUrl = await ref.getDownloadURL();
+        data['profileImage'] = imageUrl;
+      } catch (_) {
+        data['profileImage'] = null;
       }
-      return null;
+
+      return data;
     } catch (e) {
-      log("Error getting user data: $e");
+      log("Error fetching user data: $e");
       return null;
     }
   }

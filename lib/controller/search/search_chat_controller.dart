@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class SearchUserController {
   Future<List<Map<String, dynamic>>> searchUsers(String query) async {
@@ -15,22 +16,32 @@ class SearchUserController {
 
       final currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
-      return snapshot.docs.where((doc) => doc.id != currentUserId).map((doc) {
+      return Future.wait(snapshot.docs
+          .where((doc) => doc.id != currentUserId)
+          .map((doc) async {
         final data = doc.data();
+
+        String photoUrl = '';
+
+        try {
+          photoUrl = await FirebaseStorage.instance.ref('users/${doc.id}/profile.jpg').getDownloadURL();
+        } catch (_) {}
+
         return {
           'userId': doc.id,
           'name': data['name'] ?? 'Unknown',
           'bio': data['bio'] ?? '',
-          'photoUrl': data['photoUrl'] ?? '',
+          'photoUrl': photoUrl,
         };
-      }).toList();
+      }).toList());
     } catch (e) {
-      log('Search error: $e');
+      log(e.toString());
       return [];
     }
   }
 
-  Future<String> getOrCreateConversation(String userId1, String userId2) async {
+  Future<String> getOrCreateConversation(
+      String userId1, String userId2) async {
     final ids = [userId1, userId2]..sort();
     final chatId = ids.join('_');
 
@@ -39,12 +50,12 @@ class SearchUserController {
         .doc(chatId)
         .get();
 
-    if (doc.exists) return chatId;
-
-    await FirebaseFirestore.instance
-        .collection('conversations')
-        .doc(chatId)
-        .set({'participants': ids});
+    if (!doc.exists) {
+      await FirebaseFirestore.instance
+          .collection('conversations')
+          .doc(chatId)
+          .set({'participants': ids});
+    }
 
     return chatId;
   }

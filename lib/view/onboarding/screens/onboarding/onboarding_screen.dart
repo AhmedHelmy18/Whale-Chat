@@ -1,10 +1,10 @@
-import 'package:whale_chat/view/onboarding/pages/login_page.dart';
-import 'package:whale_chat/view/onboarding/pages/sign_up_page.dart';
+import 'package:whale_chat/view/onboarding/screens/login/login_screen.dart';
+import 'package:whale_chat/view/onboarding/screens/signup/sign_up_screen.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
 import 'package:flutter/material.dart';
 
-class OnboardingPage extends StatelessWidget {
-  const OnboardingPage({super.key});
+class OnboardingScreen extends StatelessWidget {
+  const OnboardingScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +60,7 @@ class OnboardingPage extends StatelessWidget {
                     onPressed: () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => LoginPage(),
+                        builder: (context) => LoginScreen(),
                       ),
                     ),
                     child: Text(
@@ -87,7 +87,7 @@ class OnboardingPage extends StatelessWidget {
                     onPressed: () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => SignUpPage(),
+                        builder: (context) => SignUpScreen(),
                       ),
                     ),
                     child: Text(

@@ -1,13 +1,12 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:whale_chat/app.dart';
-import 'package:whale_chat/controller/auth_controller.dart';
-import 'package:whale_chat/theme/color_scheme.dart';
+import 'package:whale_chat/controller/auth/auth_controller.dart';
 import 'package:whale_chat/util/auth_validator.dart';
-import 'package:whale_chat/view/onboarding/pages/forget_password.dart';
-import 'package:whale_chat/view/onboarding/pages/sign_up_page.dart';
-import 'package:whale_chat/view/onboarding/widgets/custom_text_form_field.dart';
-import 'package:whale_chat/view/onboarding/widgets/error_box.dart';
-import 'package:whale_chat/view/onboarding/widgets/primary_button.dart';
+import 'package:whale_chat/view/onboarding/components/custom_text_form_field.dart';
+import 'package:whale_chat/view/onboarding/components/error_box.dart';
+import 'package:whale_chat/view/onboarding/components/primary_button.dart';
+import 'package:whale_chat/view/onboarding/screens/forget_password/forget_password_screen.dart';
 
 class LoginForm extends StatefulWidget {
   const LoginForm({super.key});
@@ -22,13 +21,21 @@ class _LoginFormState extends State<LoginForm> {
   final formKey = GlobalKey<FormState>();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+
   bool loading = false;
   String? errorText;
   bool submitted = false;
 
-  void login() async {
+  bool get isFormFilled =>
+      emailController.text.trim().isNotEmpty && passwordController.text.trim().isNotEmpty;
+
+  bool get canSubmit => !loading && isFormFilled;
+
+  Future<void> login() async {
     setState(() => submitted = true);
-    if (!formKey.currentState!.validate()) return;
+
+    final isValid = formKey.currentState?.validate() ?? false;
+    if (!isValid) return;
 
     setState(() => loading = true);
 
@@ -36,24 +43,19 @@ class _LoginFormState extends State<LoginForm> {
       email: emailController.text.trim(),
       password: passwordController.text.trim(),
     );
-    if (!mounted) return;
-    if (result == null) {
+
+    if (result != null && mounted) {
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => const MainHome()),
-        (route) => false,
+        MaterialPageRoute(builder: (_) => const ChatApp()),
+            (route) => false,
       );
+      FirebaseMessaging.instance.requestPermission();
     } else {
       setState(() => errorText = result);
     }
-    setState(() => loading = false);
-  }
 
-  @override
-  void dispose() {
-    emailController.dispose();
-    passwordController.dispose();
-    super.dispose();
+    setState(() => loading = false);
   }
 
   @override
@@ -64,19 +66,29 @@ class _LoginFormState extends State<LoginForm> {
         if (submitted) {
           formKey.currentState?.validate();
         }
+
         if (errorText != null) {
           setState(() => errorText = null);
         }
+        setState(() {});
       });
     }
+  }
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Form(
       key: formKey,
-      autovalidateMode:
-          submitted ? AutovalidateMode.always : AutovalidateMode.disabled,
+      autovalidateMode: submitted
+          ? AutovalidateMode.onUserInteraction
+          : AutovalidateMode.disabled,
       child: Column(
         children: [
           if (errorText != null) ErrorBox(content: errorText!),
@@ -104,51 +116,18 @@ class _LoginFormState extends State<LoginForm> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                      builder: (context) => const ForgetPassword()),
+                  MaterialPageRoute(builder: (_) => const ForgetPasswordScreen()),
                 );
               },
               child: const Text("Forgot Password?"),
             ),
           ),
+          const SizedBox(height: 10),
           PrimaryButton(
-            enabled: !loading,
+            enabled: canSubmit,
             primaryButton: true,
-            onPressed: login,
+            onPressed: canSubmit ? login : null,
             text: loading ? 'Logging in...' : 'Login',
-          ),
-          const SizedBox(height: 5),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Divider(
-                  color: colorScheme.secondary,
-                  thickness: 2,
-                  endIndent: 10,
-                ),
-              ),
-              Text('or',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
-              Expanded(
-                child: Divider(
-                  color: colorScheme.secondary,
-                  thickness: 2,
-                  indent: 10,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 5),
-          PrimaryButton(
-            primaryButton: false,
-            text: 'Sign up',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const SignUpPage()),
-              );
-            },
           ),
         ],
       ),

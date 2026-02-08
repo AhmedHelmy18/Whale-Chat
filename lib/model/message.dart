@@ -1,25 +1,46 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class Message {
+  final String id;
   final String text;
+  final String senderId;
   final bool isMe;
-  final Timestamp? time;
   final String status;
+  final Timestamp? time;
+  final List<String> imageUrls;
 
   Message({
-    required this.time,
+    required this.id,
     required this.text,
+    required this.senderId,
     required this.isMe,
     required this.status,
+    required this.time,
+    required this.imageUrls,
   });
 
-  factory Message.fromFirestore(Map<String, dynamic> data) {
+  factory Message.fromDoc({required QueryDocumentSnapshot doc, required String myId}) {
+    final data = doc.data() as Map<String, dynamic>;
+
+    final images = data['imageUrls'];
+    final singleImage = data['imageUrl'];
+
+    List<String> urls = [];
+
+    if (images is List) {
+      urls = images.map((e) => e.toString()).toList();
+    } else if (singleImage is String && singleImage.isNotEmpty) {
+      urls = [singleImage];
+    }
+
     return Message(
-      text: data['text'],
-      isMe: data['sender'] == FirebaseAuth.instance.currentUser!.uid,
-      status: data['status'],
-      time: data['time'] ?? Timestamp.now(),
+      id: doc.id,
+      text: (data['text'] ?? '').toString(),
+      senderId: (data['sender'] ?? '').toString(),
+      isMe: (data['sender'] ?? '') == myId,
+      status: (data['status'] ?? 'sent').toString(),
+      time: data['time'] is Timestamp ? data['time'] as Timestamp : null,
+      imageUrls: urls,
     );
   }
 }

@@ -7,13 +7,13 @@ class EditContainer extends StatelessWidget {
     required this.text,
     required this.hint,
     required this.controller,
-    required this.updateProfilePage,
+    required this.updateProfileScreen,
   });
 
   final String text;
   final String hint;
   final TextEditingController controller;
-  final VoidCallback updateProfilePage;
+  final VoidCallback updateProfileScreen;
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +62,7 @@ class EditContainer extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
-              onPressed: updateProfilePage,
+              onPressed: updateProfileScreen,
               child: Text(
                 'Save',
                 style: TextStyle(
