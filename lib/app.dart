@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
 import 'package:whale_chat/view/app/screens/home/home_screen.dart';
 import 'package:whale_chat/view/app/screens/profile/profile_screen.dart';
+import 'package:whale_chat/view/app/screens/status/status_screen.dart';
 import 'package:whale_chat/view/onboarding/screens/onboarding/onboarding_screen.dart';
 
 class ChatApp extends StatelessWidget {
@@ -76,6 +77,7 @@ class _MainHomeState extends State<MainHome> {
 
   late final List<Widget> pages = [
     const HomeScreen(),
+    const StatusScreen(),
     ProfileScreen(userId: widget.userId),
   ];
 
@@ -129,6 +131,17 @@ class _MainHomeState extends State<MainHome> {
                       child: Icon(Icons.chat_bubble_rounded),
                     ),
                     label: 'Chats',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Padding(
+                      padding: EdgeInsets.only(top: 13),
+                      child: Icon(Icons.change_circle),
+                    ),
+                    activeIcon: Padding(
+                      padding: EdgeInsets.only(top: 13),
+                      child: Icon(Icons.change_circle_rounded),
+                    ),
+                    label: 'Status',
                   ),
                   BottomNavigationBarItem(
                     icon: Padding(
