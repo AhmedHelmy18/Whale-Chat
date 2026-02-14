@@ -9,7 +9,11 @@ class AuthController {
     required String password,
     required String name,
   }) async {
-    final error = await authService.signUp(email: email, password: password);
+    final error = await authService.signUp(
+      email: email,
+      password: password,
+      name: name,
+    );
     if (error != null) return error;
     return null;
   }

@@ -42,10 +42,10 @@ class ChatController {
     if (myId == null) return;
 
     _sub = _firestore
-        .collection('conversations')
+        .collection('chats')
         .doc(conversationId)
         .collection('messages')
-        .orderBy('time', descending: false)
+        .orderBy('sentAt', descending: false)
         .snapshots()
         .listen((snapshot) {
       final list = snapshot.docs.map((doc) {

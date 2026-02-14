@@ -16,51 +16,52 @@ class HomeController {
     onLoadingChanged(true);
 
     chatSubscription = firestore
-        .collection("users")
-        .doc(currentUserId)
+        .collection("chats")
+        .where('participants', arrayContains: currentUserId)
         .snapshots()
         .listen((event) async {
-      final lastConversations = event.data()?["last conversation"];
+      final chatFutures = event.docs.map((doc) async {
+        final conversation = doc.data();
 
-      if (lastConversations == null || lastConversations.isEmpty) {
-        onLoadingChanged(false);
-        onChatsUpdated([]);
-        return;
-      }
-
-      List<Map<String, dynamic>> newChats = [];
-
-      for (var doc in lastConversations) {
-        final conversation =
-        await firestore.collection('conversations').doc(doc["id"]).get();
-
-        if (!conversation.exists) continue;
-
-        final participants = conversation.data()?["participants"];
-        if (participants == null || participants.length < 2) continue;
+        final participants = conversation["participants"];
+        if (participants == null || participants.length < 2) return null;
 
         final otherUserId =
-        currentUserId == participants[0] ? participants[1] : participants[0];
+            currentUserId == participants[0] ? participants[1] : participants[0];
 
-        final userDoc =
-        await firestore.collection('users').doc(otherUserId).get();
+        final userDoc = await firestore.collection('users').doc(otherUserId).get();
+
+        if (!userDoc.exists) return null;
 
         String photoUrl = '';
 
         try {
-          photoUrl = await FirebaseStorage.instance.ref('users/$otherUserId/profile.jpg').getDownloadURL();
+          photoUrl = await FirebaseStorage.instance
+              .ref('users/$otherUserId/profile.jpg')
+              .getDownloadURL();
         } catch (_) {}
 
-        newChats.add({
-          "id": doc["id"],
+        return {
+          "id": doc.id,
           "userId": otherUserId,
           "name": userDoc.data()?["name"] ?? "Unknown",
-          "bio": userDoc.data()?["bio"] ?? "",
-          "lastMessage": doc["last message"],
-          "timestamp": doc["last message time"],
+          "about": userDoc.data()?["about"] ?? "",
+          "lastMessage": conversation["lastMessage"],
+          "timestamp": conversation["lastMessageTime"],
           "photoUrl": photoUrl,
-        });
-      }
+        };
+      }).toList();
+
+      final newChatsWithNulls = await Future.wait(chatFutures);
+      final newChats = newChatsWithNulls.whereType<Map<String, dynamic>>().toList();
+
+      newChats.sort((a, b) {
+        final aTimestamp = a['timestamp'] as Timestamp?;
+        final bTimestamp = b['timestamp'] as Timestamp?;
+        if (aTimestamp == null) return 1;
+        if (bTimestamp == null) return -1;
+        return bTimestamp.compareTo(aTimestamp);
+      });
 
       onLoadingChanged(false);
       onChatsUpdated(newChats);

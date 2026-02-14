@@ -35,11 +35,11 @@ class Message {
 
     return Message(
       id: doc.id,
-      text: (data['text'] ?? '').toString(),
-      senderId: (data['sender'] ?? '').toString(),
-      isMe: (data['sender'] ?? '') == myId,
+      text: (data['content'] ?? '').toString(),
+      senderId: (data['senderId'] ?? '').toString(),
+      isMe: (data['senderId'] ?? '') == myId,
       status: (data['status'] ?? 'sent').toString(),
-      time: data['time'] is Timestamp ? data['time'] as Timestamp : null,
+      time: data['sentAt'] is Timestamp ? data['sentAt'] as Timestamp : null,
       imageUrls: urls,
     );
   }

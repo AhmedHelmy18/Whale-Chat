@@ -30,7 +30,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (!mounted) return;
     setState(() {
       userName = data?['name'] ?? "You";
-      bio = data?['bio'];
+      bio = data?['about'];
       profileImageUrl = data?['profileImage'];
       isLoading = false;
     });
@@ -196,7 +196,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   onPressed: () async {
                     final updated = await Navigator.push<bool>(
                       context,
-                      MaterialPageRoute(builder: (_) => const EditProfileScreen()),
+                      MaterialPageRoute(
+                        builder: (_) => EditProfileScreen(
+                          currentName: userName,
+                          currentBio: bio,
+                        ),
+                      ),
                     );
                     if (!mounted) return;
                     if (updated == true) {

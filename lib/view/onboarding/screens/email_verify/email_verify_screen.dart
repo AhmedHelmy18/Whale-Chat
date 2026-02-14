@@ -1,7 +1,7 @@
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:whale_chat/app.dart';
+import 'package:whale_chat/services/notification_service.dart';
 import 'package:whale_chat/services/user_service.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
 import 'package:whale_chat/view/onboarding/components/primary_button.dart';
@@ -21,6 +21,7 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> with SingleTicker
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+  final NotificationService _notificationService = NotificationService();
 
   @override
   void initState() {
@@ -59,13 +60,24 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> with SingleTicker
       if (user.email == widget.email) {
         if (user.emailVerified) {
           createUserDocument(uid: user.uid, name: widget.name, email: widget.email);
-          if (!mounted) return;
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (_) => const ChatApp()),
-                (route) => false,
-          );
-          FirebaseMessaging.instance.requestPermission();
+          if (!await _notificationService.hasPermission()) {
+            await _notificationService.requestPermission();
+          }
+          if (await _notificationService.hasPermission()) {
+            if (!mounted) return;
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (_) => const ChatApp()),
+                  (route) => false,
+            );
+          } else {
+            if (!mounted) return;
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (_) => const ChatApp()),
+                  (route) => false,
+            );
+          }
         } else {
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(

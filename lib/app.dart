@@ -131,8 +131,14 @@ class _MainHomeState extends State<MainHome> {
                     label: 'Chats',
                   ),
                   BottomNavigationBarItem(
-                    icon: Icon(Icons.account_circle_outlined),
-                    activeIcon: Icon(Icons.account_circle),
+                    icon: Padding(
+                      padding: EdgeInsets.only(top: 13),
+                      child: Icon(Icons.account_circle_outlined),
+                    ),
+                    activeIcon: Padding(
+                      padding: EdgeInsets.only(top: 13),
+                      child: Icon(Icons.account_circle),
+                    ),
                     label: 'Profile',
                   ),
                 ],
