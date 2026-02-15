@@ -90,7 +90,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           onPressed: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (_) => const Search()),
+                              MaterialPageRoute(builder: (_) => const SearchScreen()),
                             );
                           },
                         ),
@@ -210,7 +210,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           lastMessage: chat["lastMessage"],
                           timestamp: chat["timestamp"],
                           conversationId: chat["id"],
-                          bio: chat["bio"],
+                          bio: chat["about"],
                           photoUrl: chat["photoUrl"],
                         );
                       },

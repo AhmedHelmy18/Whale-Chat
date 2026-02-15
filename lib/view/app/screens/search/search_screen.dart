@@ -5,14 +5,14 @@ import 'package:whale_chat/theme/color_scheme.dart';
 import 'package:whale_chat/view/app/screens/chat/chat_screen.dart';
 import 'package:whale_chat/controller/search/search_chat_controller.dart';
 
-class Search extends StatefulWidget {
-  const Search({super.key});
+class SearchScreen extends StatefulWidget {
+  const SearchScreen({super.key});
 
   @override
-  State<Search> createState() => _SearchState();
+  State<SearchScreen> createState() => _SearchScreenState();
 }
 
-class _SearchState extends State<Search> {
+class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController searchController = TextEditingController();
   final SearchUserController controller = SearchUserController();
   List<Map<String, dynamic>> searchResults = [];

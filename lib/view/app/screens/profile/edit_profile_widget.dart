@@ -7,13 +7,11 @@ class EditContainer extends StatelessWidget {
     required this.text,
     required this.hint,
     required this.controller,
-    required this.updateProfileScreen,
   });
 
   final String text;
   final String hint;
   final TextEditingController controller;
-  final VoidCallback updateProfileScreen;
 
   @override
   Widget build(BuildContext context) {
@@ -47,28 +45,6 @@ class EditContainer extends StatelessWidget {
                 borderSide: BorderSide(
                   width: 3,
                   color: colorScheme.primary,
-                ),
-              ),
-            ),
-          ),
-          SizedBox(
-            height: 10,
-          ),
-          Center(
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: colorScheme.primary,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              onPressed: updateProfileScreen,
-              child: Text(
-                'Save',
-                style: TextStyle(
-                  color: colorScheme.surface,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),

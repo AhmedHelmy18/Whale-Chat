@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
@@ -24,7 +25,9 @@ class SearchUserController {
         String photoUrl = '';
 
         try {
-          photoUrl = await FirebaseStorage.instance.ref('users/${doc.id}/profile.jpg').getDownloadURL();
+          photoUrl = await FirebaseStorage.instance
+              .ref('users/${doc.id}/profile.jpg')
+              .getDownloadURL();
         } catch (_) {}
 
         return {
@@ -40,23 +43,26 @@ class SearchUserController {
     }
   }
 
-  Future<String> getOrCreateConversation(
-      String userId1, String userId2) async {
-    final ids = [userId1, userId2]..sort();
-    final chatId = ids.join('_');
+  Future<String> getOrCreateConversation(String userId1, String userId2) async {
+    // Note: The Cloud Function `createChat` expects `participantId` (the OTHER user).
+    // It assumes the caller is the current user.
+    // userId1 or userId2 must be the current user.
 
-    final doc = await FirebaseFirestore.instance
-        .collection('conversations')
-        .doc(chatId)
-        .get();
+    final currentUser = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUser == null) throw Exception("User not logged in");
 
-    if (!doc.exists) {
-      await FirebaseFirestore.instance
-          .collection('conversations')
-          .doc(chatId)
-          .set({'participants': ids});
+    final otherUserId = userId1 == currentUser ? userId2 : userId1;
+
+    try {
+      final functions = FirebaseFunctions.instanceFor(region: 'us-central1');
+      final result = await functions.httpsCallable('createChat').call({
+        'participantId': otherUserId,
+      });
+
+      return result.data['chatId'];
+    } catch (e) {
+      log("Error creating chat via CF: $e");
+      rethrow;
     }
-
-    return chatId;
   }
 }

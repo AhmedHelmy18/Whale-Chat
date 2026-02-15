@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -19,32 +20,32 @@ class EditProfileController {
       if (doc.exists) {
         final data = doc.data();
         nameController.text = data?['name'] ?? "";
-        bioController.text = data?['bio'] ?? "";
+        bioController.text = data?['about'] ?? "";
       }
     } catch (e) {
       log(e.toString());
     }
   }
 
-  Future<bool> updateField({required String field}) async {
+  Future<bool> updateProfile() async {
     try {
-      final Map<String, dynamic> updateData = {};
-      if (field == 'name') {
-        updateData['name'] = nameController.text;
-      } else if (field == 'bio') {
-        updateData['bio'] = bioController.text;
-      }
-      await FirebaseFirestore.instance.collection('users').doc(uid).update(updateData);
+      final functions = FirebaseFunctions.instanceFor(region: 'us-central1');
+      await functions.httpsCallable('updateProfile').call({
+        'name': nameController.text,
+        'about': bioController.text,
+      });
+
       return true;
     } catch (e) {
-      log(e.toString());
+      log("Error updating profile via CF: $e");
       return false;
     }
   }
 
   Future<bool> uploadProfileImage(ImageSource source) async {
     try {
-      final XFile? picked = await _picker.pickImage(source: source, imageQuality: 80);
+      final XFile? picked =
+          await _picker.pickImage(source: source, imageQuality: 80);
       if (picked == null) return false;
       final file = File(picked.path);
       final ref = FirebaseStorage.instance.ref('users/$uid/profile.jpg');

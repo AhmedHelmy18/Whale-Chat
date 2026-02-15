@@ -1,7 +1,7 @@
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:whale_chat/app.dart';
 import 'package:whale_chat/controller/auth/auth_controller.dart';
+import 'package:whale_chat/services/notification_service.dart';
 import 'package:whale_chat/util/auth_validator.dart';
 import 'package:whale_chat/view/onboarding/components/custom_text_form_field.dart';
 import 'package:whale_chat/view/onboarding/components/error_box.dart';
@@ -17,6 +17,7 @@ class LoginForm extends StatefulWidget {
 
 class _LoginFormState extends State<LoginForm> {
   final AuthController controller = AuthController();
+  final NotificationService _notificationService = NotificationService();
 
   final formKey = GlobalKey<FormState>();
   final emailController = TextEditingController();
@@ -45,12 +46,25 @@ class _LoginFormState extends State<LoginForm> {
     );
 
     if (result != null && mounted) {
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (_) => const ChatApp()),
-            (route) => false,
-      );
-      FirebaseMessaging.instance.requestPermission();
+      if (!await _notificationService.hasPermission()) {
+        await _notificationService.requestPermission();
+      }
+      if (await _notificationService.hasPermission()) {
+        if (!mounted) return;
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const ChatApp()),
+              (route) => false,
+        );
+      } else {
+        // Handle the case where the user denies permission
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Notification permission is required to use the app."),
+          ),
+        );
+      }
     } else {
       setState(() => errorText = result);
     }
