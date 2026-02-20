@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:whale_chat/app.dart';
-import 'package:whale_chat/services/notification_service.dart';
-import 'package:whale_chat/services/user_service.dart';
+import 'package:whale_chat/data/service/notification_service.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
 import 'package:whale_chat/view/onboarding/components/primary_button.dart';
 
@@ -59,7 +58,6 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> with SingleTicker
     if (user != null) {
       if (user.email == widget.email) {
         if (user.emailVerified) {
-          createUserDocument(uid: user.uid, name: widget.name, email: widget.email);
           if (!await _notificationService.hasPermission()) {
             await _notificationService.requestPermission();
           }

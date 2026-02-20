@@ -1,18 +1,19 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:whale_chat/controller/chat/chat_controller.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
+import 'package:whale_chat/view_model/chat_view_model.dart';
 
 class ImagePickPreview extends StatelessWidget {
-  const ImagePickPreview({super.key, required this.controller});
+  const ImagePickPreview({super.key, required this.viewModel});
 
-  final ChatController controller;
+  final ChatViewModel viewModel;
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<List<File>>(
-      valueListenable: controller.pickedImages,
-      builder: (_, files, __) {
+    return ListenableBuilder(
+      listenable: viewModel,
+      builder: (_, __) {
+        final files = viewModel.pickedImages;
         if (files.isEmpty) return const SizedBox.shrink();
 
         return Container(
@@ -42,7 +43,7 @@ class ImagePickPreview extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Selected الصور: ${files.length}",
+                  "Selected Images: ${files.length}",
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
@@ -72,7 +73,7 @@ class ImagePickPreview extends StatelessWidget {
                             top: 4,
                             right: 4,
                             child: InkWell(
-                              onTap: () => controller.removePickedImageAt(index),
+                              onTap: () => viewModel.removePickedImageAt(index),
                               child: Container(
                                 padding: const EdgeInsets.all(4),
                                 decoration: BoxDecoration(

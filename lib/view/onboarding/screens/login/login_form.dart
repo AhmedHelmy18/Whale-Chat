@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:whale_chat/app.dart';
-import 'package:whale_chat/controller/auth/auth_controller.dart';
-import 'package:whale_chat/services/notification_service.dart';
+import 'package:whale_chat/view_model/auth_view_model.dart';
+import 'package:whale_chat/data/service/notification_service.dart';
 import 'package:whale_chat/util/auth_validator.dart';
 import 'package:whale_chat/view/onboarding/components/custom_text_form_field.dart';
 import 'package:whale_chat/view/onboarding/components/error_box.dart';
@@ -16,7 +16,7 @@ class LoginForm extends StatefulWidget {
 }
 
 class _LoginFormState extends State<LoginForm> {
-  final AuthController controller = AuthController();
+  final AuthViewModel viewModel = AuthViewModel();
   final NotificationService _notificationService = NotificationService();
 
   final formKey = GlobalKey<FormState>();
@@ -40,12 +40,12 @@ class _LoginFormState extends State<LoginForm> {
 
     setState(() => loading = true);
 
-    final result = await controller.login(
+    final result = await viewModel.login(
       email: emailController.text.trim(),
       password: passwordController.text.trim(),
     );
 
-    if (result != null && mounted) {
+    if (result == null && mounted) {
       if (!await _notificationService.hasPermission()) {
         await _notificationService.requestPermission();
       }

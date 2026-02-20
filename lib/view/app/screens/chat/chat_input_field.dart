@@ -1,11 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:whale_chat/controller/chat/chat_controller.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
 import 'package:whale_chat/view/common/image_options/model_sheet_options.dart';
+import 'package:whale_chat/view_model/chat_view_model.dart';
 
 class ChatInputField extends StatelessWidget {
-  const ChatInputField({super.key, required this.controller, required this.fabAnimationController, required this.fabScaleAnimation});
-  final ChatController controller;
+  const ChatInputField({
+    super.key,
+    required this.viewModel,
+    required this.messageController,
+    required this.fabAnimationController,
+    required this.fabScaleAnimation,
+  });
+
+  final ChatViewModel viewModel;
+  final TextEditingController messageController;
   final AnimationController fabAnimationController;
   final Animation<double> fabScaleAnimation;
 
@@ -44,7 +52,7 @@ class ChatInputField extends StatelessWidget {
                   children: [
                     Expanded(
                       child: TextField(
-                        controller: controller.messageController,
+                        controller: messageController,
                         maxLines: null,
                         style: const TextStyle(fontSize: 15),
                         decoration: const InputDecoration(
@@ -69,7 +77,7 @@ class ChatInputField extends StatelessWidget {
                           showImageSourcePicker(
                             context: context,
                             onPick: (source) async {
-                              await controller.pickSingleImage(source);
+                              await viewModel.pickSingleImage(source);
                             },
                           );
                         },
@@ -87,7 +95,12 @@ class ChatInputField extends StatelessWidget {
               onTapDown: (_) => fabAnimationController.forward(),
               onTapUp: (_) => fabAnimationController.reverse(),
               onTapCancel: () => fabAnimationController.reverse(),
-              onTap: () async => await controller.sendMessageWithMedia(),
+              onTap: () async {
+                final text = messageController.text;
+                if (text.trim().isEmpty && viewModel.pickedImages.isEmpty) return;
+                await viewModel.sendMessage(text);
+                messageController.clear();
+              },
               child: ScaleTransition(
                 scale: fabScaleAnimation,
                 child: Container(

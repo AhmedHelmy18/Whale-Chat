@@ -4,7 +4,7 @@ import 'package:whale_chat/view/onboarding/components/custom_text_form_field.dar
 import 'package:whale_chat/view/onboarding/components/error_box.dart';
 import 'package:whale_chat/view/onboarding/components/primary_button.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
-import 'package:whale_chat/controller/auth/auth_controller.dart';
+import 'package:whale_chat/view_model/auth_view_model.dart';
 
 class ForgetPasswordScreen extends StatefulWidget {
   const ForgetPasswordScreen({super.key});
@@ -16,7 +16,7 @@ class ForgetPasswordScreen extends StatefulWidget {
 class _ForgetPasswordState extends State<ForgetPasswordScreen> with SingleTickerProviderStateMixin {
   final TextEditingController emailController = TextEditingController();
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-  final AuthController controller = AuthController();
+  final AuthViewModel viewModel = AuthViewModel();
 
   bool submitted = false;
   bool loading = false;
@@ -81,7 +81,7 @@ class _ForgetPasswordState extends State<ForgetPasswordScreen> with SingleTicker
       errorText = null;
     });
 
-    final error = await controller.forgetPassword(
+    final error = await viewModel.forgetPassword(
       email: emailController.text.trim(),
     );
 

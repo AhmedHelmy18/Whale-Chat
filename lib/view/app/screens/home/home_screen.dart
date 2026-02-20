@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:whale_chat/controller/home/home_controller.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
 import 'package:whale_chat/view/app/screens/search/search_screen.dart';
 import 'package:whale_chat/view/app/screens/home/chat_body_widget.dart';
+import 'package:whale_chat/view_model/auth_view_model.dart';
+import 'package:whale_chat/view_model/home_view_model.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -12,30 +13,21 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final HomeController controller = HomeController();
-
-  List<Map<String, dynamic>> chats = [];
-  bool isLoading = true;
+  final HomeViewModel viewModel = HomeViewModel();
+  final AuthViewModel authViewModel = AuthViewModel();
 
   @override
   void initState() {
     super.initState();
-
-    controller.listenToChats(
-      onChatsUpdated: (updatedChats) {
-        if (!mounted) return;
-        setState(() => chats = updatedChats);
-      },
-      onLoadingChanged: (loading) {
-        if (!mounted) return;
-        setState(() => isLoading = loading);
-      },
-    );
+    final userId = authViewModel.currentUser?.uid;
+    if (userId != null) {
+      viewModel.listenToChats(userId);
+    }
   }
 
   @override
   void dispose() {
-    controller.dispose();
+    viewModel.dispose();
     super.dispose();
   }
 
@@ -118,7 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 const Duration(milliseconds: 150),
                               );
                               if (!context.mounted) return;
-                              await controller.logout();
+                              await authViewModel.logout();
                             }
                           },
                           itemBuilder: (_) => [
@@ -154,18 +146,22 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         Expanded(
-          child: isLoading
-              ? Center(
+          child: ListenableBuilder(
+            listenable: viewModel,
+            builder: (context, _) {
+              if (viewModel.isLoading) {
+                return Center(
                   child: CircularProgressIndicator(
                     color: colorScheme.primary,
                     strokeWidth: 3,
                   ),
-                )
-              : chats.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
+                );
+              }
+              if (viewModel.chats.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
                           Icon(
                             Icons.chat_bubble_outline_rounded,
                             size: 80,
@@ -188,33 +184,36 @@ class _HomeScreenState extends State<HomeScreen> {
                               color: Colors.grey.shade400,
                             ),
                           ),
-                        ],
-                      ),
-                    )
-                  : ListView.separated(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      itemCount: chats.length,
-                      separatorBuilder: (context, index) => Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Divider(
-                          height: 1,
-                          thickness: 0.5,
-                          color: Colors.grey.shade200,
-                        ),
-                      ),
-                      itemBuilder: (context, index) {
-                        final chat = chats[index];
-                        return ChatBodyWidget(
-                          userId: chat["userId"],
-                          userName: chat["name"],
-                          lastMessage: chat["lastMessage"],
-                          timestamp: chat["timestamp"],
-                          conversationId: chat["id"],
-                          bio: chat["about"],
-                          photoUrl: chat["photoUrl"],
-                        );
-                      },
-                    ),
+                    ],
+                  ),
+                );
+              }
+              return ListView.separated(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                itemCount: viewModel.chats.length,
+                separatorBuilder: (context, index) => Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Divider(
+                    height: 1,
+                    thickness: 0.5,
+                    color: Colors.grey.shade200,
+                  ),
+                ),
+                itemBuilder: (context, index) {
+                  final chat = viewModel.chats[index];
+                  return ChatBodyWidget(
+                    userId: chat["userId"],
+                    userName: chat["name"],
+                    lastMessage: chat["lastMessage"],
+                    timestamp: chat["timestamp"],
+                    conversationId: chat["id"],
+                    bio: chat["about"],
+                    photoUrl: chat["photoUrl"],
+                  );
+                },
+              );
+            },
+          ),
         ),
       ],
     );
