@@ -4,6 +4,7 @@ import 'package:whale_chat/view/app/screens/search/search_screen.dart';
 import 'package:whale_chat/view/app/screens/home/chat_body_widget.dart';
 import 'package:whale_chat/view_model/auth_view_model.dart';
 import 'package:whale_chat/view_model/home_view_model.dart';
+import 'package:whale_chat/theme/color_scheme.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -38,13 +39,16 @@ class _HomeScreenState extends State<HomeScreen> {
         Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [colorScheme.primary, colorScheme.primary.withAlpha(204)],
+              colors: [
+                colorScheme.primary,
+                colorScheme.primary.withValues(alpha: 0.8),
+              ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             boxShadow: [
               BoxShadow(
-                color: colorScheme.primary.withAlpha(77),
+                color: colorScheme.primary.withValues(alpha: 0.3),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -70,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       Container(
                         decoration: BoxDecoration(
-                          color: Colors.white.withAlpha(51),
+                          color: colorScheme.surface.withValues(alpha: 0.2),
                           shape: BoxShape.circle,
                         ),
                         child: IconButton(
@@ -90,7 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(width: 8),
                       Container(
                         decoration: BoxDecoration(
-                          color: Colors.white.withAlpha(51),
+                          color: colorScheme.surface.withValues(alpha: 0.2),
                           shape: BoxShape.circle,
                         ),
                         child: PopupMenuButton(
@@ -165,7 +169,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           Icon(
                             Icons.chat_bubble_outline_rounded,
                             size: 80,
-                            color: Colors.grey.shade300,
+                            color: colorScheme.grey300,
                           ),
                           const SizedBox(height: 16),
                           Text(
@@ -173,7 +177,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w500,
-                              color: Colors.grey.shade600,
+                              color: colorScheme.grey600,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -181,7 +185,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             "Start a conversation",
                             style: TextStyle(
                               fontSize: 16,
-                              color: Colors.grey.shade400,
+                              color: colorScheme.grey400,
                             ),
                           ),
                     ],
@@ -196,7 +200,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Divider(
                     height: 1,
                     thickness: 0.5,
-                    color: Colors.grey.shade200,
+                    color: colorScheme.grey200,
                   ),
                 ),
                 itemBuilder: (context, index) {

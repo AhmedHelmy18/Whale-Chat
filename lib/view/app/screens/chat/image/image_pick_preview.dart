@@ -23,7 +23,7 @@ class ImagePickPreview extends StatelessWidget {
             color: colorScheme.surface,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
+                color: colorScheme.onSurface.withValues(alpha: 0.08),
                 blurRadius: 12,
                 offset: const Offset(0, -2),
               ),
@@ -47,7 +47,7 @@ class ImagePickPreview extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
-                    color: Colors.grey.shade800,
+                    color: colorScheme.grey800,
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -77,13 +77,13 @@ class ImagePickPreview extends StatelessWidget {
                               child: Container(
                                 padding: const EdgeInsets.all(4),
                                 decoration: BoxDecoration(
-                                  color: Colors.black.withValues(alpha: 0.55),
+                                  color: colorScheme.onSurface.withValues(alpha: 0.55),
                                   shape: BoxShape.circle,
                                 ),
-                                child: const Icon(
+                                child: Icon(
                                   Icons.close_rounded,
                                   size: 16,
-                                  color: Colors.white,
+                                  color: colorScheme.surface,
                                 ),
                               ),
                             ),

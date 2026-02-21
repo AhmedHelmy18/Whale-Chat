@@ -91,19 +91,19 @@ class _MessageBodyWidgetState extends State<MessageBodyWidget> with SingleTicker
 
   Icon _getMessageStatusIcon(String status) {
     if (status == 'sent') {
-      return const Icon(Icons.check, color: Colors.grey, size: 16);
+      return Icon(Icons.check, color: colorScheme.grey500, size: 16);
     } else if (status == 'delivered') {
-      return const Icon(Icons.done_all, color: Colors.grey, size: 16);
+      return Icon(Icons.done_all, color: colorScheme.grey500, size: 16);
     } else if (status == 'seen') {
-      return const Icon(Icons.done_all, color: Colors.blue, size: 16);
+      return Icon(Icons.done_all, color: colorScheme.info, size: 16);
     }
-    return const Icon(Icons.check, color: Colors.grey, size: 16);
+    return Icon(Icons.check, color: colorScheme.grey500, size: 16);
   }
 
   Widget _buildTimeRow(Message message) {
     final textStyle = TextStyle(
       fontSize: 11,
-      color: message.isMe ? Colors.white.withValues(alpha: 0.85) : colorScheme.onPrimary,
+      color: message.isMe ? colorScheme.surface.withValues(alpha: 0.85) : colorScheme.onPrimary,
     );
 
     return Row(
@@ -174,7 +174,7 @@ class _MessageBodyWidgetState extends State<MessageBodyWidget> with SingleTicker
             child: Text(
               message.text,
               style: TextStyle(
-                color: message.isMe ? Colors.white : Colors.black87,
+                color: message.isMe ? colorScheme.surface : colorScheme.onSurface.withValues(alpha: 0.87),
                 fontSize: 15,
                 height: 1.35,
               ),
