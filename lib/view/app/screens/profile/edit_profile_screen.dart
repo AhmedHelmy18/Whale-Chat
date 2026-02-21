@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
 import 'package:whale_chat/view/app/screens/profile/edit_profile_widget.dart';
+import 'package:whale_chat/view/common/custom_snackbar.dart';
 import 'package:whale_chat/view/common/image_options/model_sheet_options.dart';
 import 'package:whale_chat/view_model/profile_view_model.dart';
 
@@ -60,17 +61,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content:
-            Text(success ? "Profile updated!" : "Failed to update profile"),
-        backgroundColor: success ? colorScheme.tertiary : colorScheme.error,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      ),
-    );
     if (success) {
+      showCustomSnackBar(context, "Profile updated!");
       Navigator.pop(context, true);
+    } else {
+      showCustomSnackBar(context, "Failed to update profile", isError: true);
     }
   }
 

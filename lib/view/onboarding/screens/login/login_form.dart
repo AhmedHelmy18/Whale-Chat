@@ -4,6 +4,7 @@ import 'package:whale_chat/view_model/auth_view_model.dart';
 import 'package:whale_chat/data/service/notification_service.dart';
 import 'package:whale_chat/util/auth_validator.dart';
 import 'package:whale_chat/view/onboarding/components/custom_text_form_field.dart';
+import 'package:whale_chat/view/common/custom_snackbar.dart';
 import 'package:whale_chat/view/onboarding/components/error_box.dart';
 import 'package:whale_chat/view/onboarding/components/primary_button.dart';
 import 'package:whale_chat/view/onboarding/screens/forget_password/forget_password_screen.dart';
@@ -59,11 +60,7 @@ class _LoginFormState extends State<LoginForm> {
       } else {
         // Handle the case where the user denies permission
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Notification permission is required to use the app."),
-          ),
-        );
+        showCustomSnackBar(context, "Notification permission is required to use the app.", isError: true);
       }
     } else {
       setState(() => errorText = result);

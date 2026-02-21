@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:whale_chat/app.dart';
 import 'package:whale_chat/data/service/notification_service.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
+import 'package:whale_chat/view/common/custom_snackbar.dart';
 import 'package:whale_chat/view/onboarding/components/primary_button.dart';
 
 class EmailVerifyScreen extends StatefulWidget {
@@ -78,57 +79,15 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> with SingleTicker
           }
         } else {
           if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Row(
-                children: [
-                  Icon(Icons.info_outline, color: Colors.white),
-                  SizedBox(width: 12),
-                  Expanded(child: Text("Email not verified yet. Please check your inbox.")),
-                ],
-              ),
-              backgroundColor: Colors.orange.shade700,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              margin: const EdgeInsets.all(16),
-            ),
-          );
+          showCustomSnackBar(context, "Email not verified yet. Please check your inbox.", isError: true);
         }
       } else {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Row(
-              children: [
-                Icon(Icons.error_outline, color: Colors.white),
-                SizedBox(width: 12),
-                Expanded(child: Text("This email does not match your account.")),
-              ],
-            ),
-            backgroundColor: Colors.red.shade700,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            margin: const EdgeInsets.all(16),
-          ),
-        );
+        showCustomSnackBar(context, "This email does not match your account.", isError: true);
       }
     } else {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Row(
-            children: [
-              Icon(Icons.warning_amber_rounded, color: Colors.white),
-              SizedBox(width: 12),
-              Expanded(child: Text("No signed-in user found.")),
-            ],
-          ),
-          backgroundColor: Colors.red.shade700,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          margin: const EdgeInsets.all(16),
-        ),
-      );
+      showCustomSnackBar(context, "No signed-in user found.", isError: true);
     }
     setState(() => loading = false);
   }
@@ -289,21 +248,7 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> with SingleTicker
 
                   TextButton.icon(
                     onPressed: loading ? null : () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: const Row(
-                            children: [
-                              Icon(Icons.check_circle_outline, color: Colors.white),
-                              SizedBox(width: 12),
-                              Text("Verification email sent!"),
-                            ],
-                          ),
-                          backgroundColor: colorScheme.tertiary,
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          margin: const EdgeInsets.all(16),
-                        ),
-                      );
+                      showCustomSnackBar(context, "Verification email sent!");
                     },
                     icon: Icon(
                       Icons.refresh_rounded,
