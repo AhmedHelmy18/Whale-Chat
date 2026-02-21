@@ -64,7 +64,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       SnackBar(
         content:
             Text(success ? "Profile updated!" : "Failed to update profile"),
-        backgroundColor: success ? colorScheme.success : colorScheme.error,
+        backgroundColor: success ? Colors.green : colorScheme.error,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),

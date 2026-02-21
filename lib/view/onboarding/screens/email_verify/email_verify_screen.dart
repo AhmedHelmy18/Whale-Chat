@@ -193,7 +193,7 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> with SingleTicker
                         Text(
                           "We've sent a verification link to:",
                           style: TextStyle(
-                            color: colorScheme.grey700,
+                            color: Colors.grey.shade700,
                             fontSize: 15,
                             fontWeight: FontWeight.w500,
                             height: 1.5,
@@ -243,10 +243,10 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> with SingleTicker
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: colorScheme.info.withValues(alpha: 0.1),
+                      color: Colors.blue.shade50,
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
-                        color: colorScheme.info.withValues(alpha: 0.3),
+                        color: Colors.blue.shade200,
                         width: 1,
                       ),
                     ),
@@ -254,7 +254,7 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> with SingleTicker
                       children: [
                         Icon(
                           Icons.info_rounded,
-                          color: colorScheme.info,
+                          color: Colors.blue.shade700,
                           size: 24,
                         ),
                         const SizedBox(width: 12),
@@ -262,7 +262,7 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> with SingleTicker
                           child: Text(
                             "Check your inbox and click the verification link to continue",
                             style: TextStyle(
-                              color: colorScheme.info,
+                              color: Colors.blue.shade900,
                               fontSize: 13,
                               fontWeight: FontWeight.w500,
                               height: 1.4,
@@ -298,7 +298,7 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> with SingleTicker
                               Text("Verification email sent!"),
                             ],
                           ),
-                          backgroundColor: colorScheme.success,
+                          backgroundColor: Colors.green.shade700,
                           behavior: SnackBarBehavior.floating,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           margin: const EdgeInsets.all(16),
@@ -308,12 +308,12 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> with SingleTicker
                     icon: Icon(
                       Icons.refresh_rounded,
                       size: 20,
-                      color: loading ? colorScheme.grey : colorScheme.primary,
+                      color: loading ? Colors.grey : colorScheme.primary,
                     ),
                     label: Text(
                       "Didn't receive the email? Resend",
                       style: TextStyle(
-                        color: loading ? colorScheme.grey : colorScheme.primary,
+                        color: loading ? Colors.grey : colorScheme.primary,
                         fontWeight: FontWeight.w600,
                         fontSize: 14,
                       ),

@@ -47,7 +47,7 @@ class ImagePickPreview extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
-                    color: colorScheme.grey800,
+                    color: Colors.grey.shade800,
                   ),
                 ),
                 const SizedBox(height: 10),
