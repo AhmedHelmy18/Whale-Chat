@@ -16,12 +16,14 @@ class HomeViewModel extends ChangeNotifier {
   bool get isLoading => _isLoading;
 
   StreamSubscription? _chatSubscription;
+  bool _isDisposed = false;
 
   void listenToChats(String userId) {
     _isLoading = true;
     notifyListeners();
 
     _chatSubscription = _chatRepository.getChats(userId).listen((chatModels) async {
+      if (_isDisposed) return;
       final List<Map<String, dynamic>> loadedChats = [];
 
       // Note: This still does N+1 queries. To optimize, we'd need a different data structure
@@ -57,12 +59,15 @@ class HomeViewModel extends ChangeNotifier {
 
       _chats = loadedChats;
       _isLoading = false;
-      notifyListeners();
+      if (!_isDisposed) {
+        notifyListeners();
+      }
     });
   }
 
   @override
   void dispose() {
+    _isDisposed = true;
     _chatSubscription?.cancel();
     super.dispose();
   }
