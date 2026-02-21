@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:whale_chat/util/format_time.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
 import 'package:whale_chat/data/model/message.dart';
@@ -33,9 +34,15 @@ class _MessageBodyWidgetState extends State<MessageBodyWidget> with SingleTicker
   void initState() {
     super.initState();
 
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUserId == null) {
+      // Handle the case where the user is not logged in
+      // This might involve popping the screen or redirecting
+    }
+
     viewModel = ChatViewModel(
       conversationId: widget.conversationId,
-      currentUserId: widget.userId,
+      currentUserId: currentUserId ?? '',
     );
 
     _fabAnimationController = AnimationController(
