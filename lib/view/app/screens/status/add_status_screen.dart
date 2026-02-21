@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:whale_chat/controller/status/status_controller.dart';
+import 'package:whale_chat/view_model/status_view_model.dart';
 import 'package:whale_chat/model/status/status.dart';
 import 'dart:io';
 import 'package:whale_chat/theme/color_scheme.dart';
@@ -14,7 +14,7 @@ class AddStatusScreen extends StatefulWidget {
 }
 
 class _AddStatusScreenState extends State<AddStatusScreen> {
-  final StatusController _controller = StatusController();
+  final StatusViewModel _viewModel = StatusViewModel();
   final TextEditingController _textController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
 
@@ -47,6 +47,7 @@ class _AddStatusScreenState extends State<AddStatusScreen> {
   @override
   void dispose() {
     _textController.dispose();
+    _viewModel.dispose();
     super.dispose();
   }
 
@@ -88,7 +89,7 @@ class _AddStatusScreenState extends State<AddStatusScreen> {
 
     try {
       if (_selectedImage != null) {
-        await _controller.addStatus(
+        await _viewModel.addStatus(
           type: StatusType.image,
           content: '',
           imageFile: _selectedImage,
@@ -97,7 +98,7 @@ class _AddStatusScreenState extends State<AddStatusScreen> {
               : null,
         );
       } else {
-        await _controller.addStatus(
+        await _viewModel.addStatus(
           type: StatusType.text,
           content: _textController.text.trim(),
           backgroundColor:

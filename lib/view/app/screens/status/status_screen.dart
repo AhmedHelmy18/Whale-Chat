@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:whale_chat/controller/status/status_controller.dart';
+import 'package:whale_chat/view_model/status_view_model.dart';
 import 'package:whale_chat/model/status/status.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
 import 'package:whale_chat/util/format_time.dart';
@@ -15,17 +15,17 @@ class StatusScreen extends StatefulWidget {
 }
 
 class _StatusScreenState extends State<StatusScreen> {
-  final StatusController _controller = StatusController();
+  final StatusViewModel _viewModel = StatusViewModel();
 
   @override
   void initState() {
     super.initState();
-    _controller.init();
+    _viewModel.init();
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _viewModel.dispose();
     super.dispose();
   }
 
@@ -66,145 +66,128 @@ class _StatusScreenState extends State<StatusScreen> {
             ),
           ];
         },
-        body: RefreshIndicator(
-          onRefresh: () async {
-            // Trigger refresh logic if needed
-            // currently streams handle updates
-          },
-          child: CustomScrollView(
-            slivers: [
-              // Section Header
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                  child: Text(
-                    'Status',
-                    style: TextStyle(
-                      fontSize: 19,
-                      fontWeight: FontWeight.bold,
-                      color: colorScheme.onSurface,
+        body: ListenableBuilder(
+          listenable: _viewModel,
+          builder: (context, _) {
+            final myStatus = _viewModel.myStatus;
+            final userImageUrl = _viewModel.currentUserImageUrl;
+            final statusList = _viewModel.statuses;
+            final currentUserId = _viewModel.currentUserId;
+
+            return CustomScrollView(
+              slivers: [
+                // Section Header
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                    child: Text(
+                      'Status',
+                      style: TextStyle(
+                        fontSize: 19,
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                   ),
                 ),
-              ),
 
-              // My Status Card
-              SliverToBoxAdapter(
-                child: ValueListenableBuilder<Status?>(
-                  valueListenable: _controller.myStatus,
-                  builder: (context, myStatus, _) {
-                    return ValueListenableBuilder<String?>(
-                      valueListenable: _controller.currentUserImageUrl,
-                      builder: (context, imageUrl, _) {
-                        return _MyStatusCard(
-                          myStatus: myStatus,
-                          userImageUrl: imageUrl,
-                          onTap: () {
-                            if (myStatus != null) {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => MyStatusDetailScreen(
-                                    status: myStatus,
-                                    userImageUrl: imageUrl ?? '',
-                                  ),
-                                ),
-                              );
-                            } else {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const AddStatusScreen(),
-                                ),
-                              );
-                            }
-                          },
-                        );
-                      },
-                    );
-                  },
-                ),
-              ),
-
-              const SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Divider(height: 32),
-                ),
-              ),
-
-              // Recent Updates Header
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                  child: Text(
-                    'Recent updates',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ),
-              ),
-
-              // Status List
-              ValueListenableBuilder<List<Status>>(
-                valueListenable: _controller.statusList,
-                builder: (context, statusList, _) {
-                  return ValueListenableBuilder<String?>(
-                    valueListenable: _controller.currentUserId,
-                    builder: (context, currentUserId, _) {
-                      if (statusList.isEmpty) {
-                        return const SliverToBoxAdapter(
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(vertical: 48),
-                            child: Center(
-                              child: Text(
-                                'No recent updates',
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 14,
-                                ),
-                              ),
+                // My Status Card
+                SliverToBoxAdapter(
+                  child: _MyStatusCard(
+                    myStatus: myStatus,
+                    userImageUrl: userImageUrl,
+                    onTap: () {
+                      if (myStatus != null) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => MyStatusDetailScreen(
+                              status: myStatus,
+                              userImageUrl: userImageUrl ?? '',
                             ),
                           ),
                         );
+                      } else {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const AddStatusScreen(),
+                          ),
+                        );
                       }
+                    },
+                  ),
+                ),
 
-                      return SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            final status = statusList[index];
-                            return _StatusListItem(
-                              status: status,
-                              currentUserId: currentUserId,
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => ViewStatusScreen(
-                                      status: status,
-                                      isMyStatus: false,
-                                    ),
-                                  ),
-                                );
-                              },
+                const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: Divider(height: 32),
+                  ),
+                ),
+
+                // Recent Updates Header
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                    child: Text(
+                      'Recent updates',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Status List
+                if (statusList.isEmpty)
+                  const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 48),
+                      child: Center(
+                        child: Text(
+                          'No recent updates',
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final status = statusList[index];
+                        return _StatusListItem(
+                          status: status,
+                          currentUserId: currentUserId,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ViewStatusScreen(
+                                  status: status,
+                                  isMyStatus: false,
+                                ),
+                              ),
                             );
                           },
-                          childCount: statusList.length,
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
+                        );
+                      },
+                      childCount: statusList.length,
+                    ),
+                  ),
 
-              const SliverToBoxAdapter(
-                child: SizedBox(height: 80),
-              ),
-            ],
-          ),
+                const SliverToBoxAdapter(
+                  child: SizedBox(height: 80),
+                ),
+              ],
+            );
+          },
         ),
       ),
       floatingActionButton: Column(

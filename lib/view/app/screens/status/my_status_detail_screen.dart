@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:whale_chat/controller/status/status_controller.dart';
+import 'package:whale_chat/view_model/status_view_model.dart';
 import 'package:whale_chat/model/status/status.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
 import 'package:whale_chat/util/format_time.dart';
@@ -21,17 +21,17 @@ class MyStatusDetailScreen extends StatefulWidget {
 }
 
 class _MyStatusDetailScreenState extends State<MyStatusDetailScreen> {
-  final StatusController _controller = StatusController();
+  final StatusViewModel _viewModel = StatusViewModel();
 
   @override
   void initState() {
     super.initState();
-    _controller.init();
+    _viewModel.init();
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _viewModel.dispose();
     super.dispose();
   }
 
@@ -137,10 +137,10 @@ class _MyStatusDetailScreenState extends State<MyStatusDetailScreen> {
 
           // Status Items Grid
           Expanded(
-            child: ValueListenableBuilder<Status?>(
-              valueListenable: _controller.myStatus,
-              builder: (context, myStatus, _) {
-                final displayStatus = myStatus ?? widget.status;
+            child: ListenableBuilder(
+              listenable: _viewModel,
+              builder: (context, _) {
+                final displayStatus = _viewModel.myStatus ?? widget.status;
 
                 if (displayStatus.statusItems.isEmpty) {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -186,7 +186,7 @@ class _MyStatusDetailScreenState extends State<MyStatusDetailScreen> {
                         );
 
                         if (confirm == true) {
-                          await _controller.deleteStatusItem(
+                          await _viewModel.deleteStatusItem(
                               displayStatus.id, item.id);
                         }
                       },

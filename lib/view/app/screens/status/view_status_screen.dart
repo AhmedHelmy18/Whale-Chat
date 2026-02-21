@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:whale_chat/controller/status/status_controller.dart';
+import 'package:whale_chat/view_model/status_view_model.dart';
 import 'package:whale_chat/model/status/status.dart';
 import 'package:whale_chat/util/format_time.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
@@ -24,7 +24,7 @@ class _ViewStatusScreenState extends State<ViewStatusScreen>
     with SingleTickerProviderStateMixin {
   late final PageController _pageController;
   late final AnimationController _animationController;
-  final StatusController _statusController = StatusController();
+  final StatusViewModel _viewModel = StatusViewModel();
   int _currentIndex = 0;
 
   @override
@@ -42,7 +42,7 @@ class _ViewStatusScreenState extends State<ViewStatusScreen>
         _goToNextPage();
       }
     });
-    _statusController.init();
+    _viewModel.init();
   }
 
   void _goToNextPage() {
@@ -93,7 +93,7 @@ class _ViewStatusScreenState extends State<ViewStatusScreen>
 
     if (confirm == true) {
       final item = widget.status.statusItems[_currentIndex];
-      await _statusController.deleteStatusItem(widget.status.id, item.id);
+      await _viewModel.deleteStatusItem(widget.status.id, item.id);
       if (mounted) {
         Navigator.pop(context); // Close viewer after deletion
       }
@@ -106,7 +106,7 @@ class _ViewStatusScreenState extends State<ViewStatusScreen>
   void dispose() {
     _pageController.dispose();
     _animationController.dispose();
-    _statusController.dispose();
+    _viewModel.dispose();
     super.dispose();
   }
 

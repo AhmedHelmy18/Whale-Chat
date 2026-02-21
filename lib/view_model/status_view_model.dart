@@ -5,19 +5,20 @@ import 'package:flutter/material.dart';
 import 'package:whale_chat/model/status/status.dart';
 import 'package:whale_chat/services/status_service.dart';
 
-class StatusController {
+class StatusViewModel extends ChangeNotifier {
   final StatusService _statusService = StatusService();
   StreamSubscription? _statusesSubscription;
   StreamSubscription? _myStatusSubscription;
 
-  final ValueNotifier<List<Status>> statuses = ValueNotifier<List<Status>>([]);
-  final ValueNotifier<Status?> myStatus = ValueNotifier<Status?>(null);
-  final ValueNotifier<String?> currentUserImageUrl =
-      ValueNotifier<String?>(null);
-  final ValueNotifier<String?> currentUserId = ValueNotifier<String?>(null);
+  List<Status> _statuses = [];
+  Status? _myStatus;
+  String? _currentUserImageUrl;
+  String? _currentUserId;
 
-  // Getter for status list
-  ValueNotifier<List<Status>> get statusList => statuses;
+  List<Status> get statuses => _statuses;
+  Status? get myStatus => _myStatus;
+  String? get currentUserImageUrl => _currentUserImageUrl;
+  String? get currentUserId => _currentUserId;
 
   void init() {
     _listenToStatuses();
@@ -26,21 +27,25 @@ class StatusController {
   }
 
   Future<void> _fetchCurrentUserId() async {
-    currentUserId.value = await _statusService.getCurrentUserId();
+    _currentUserId = await _statusService.getCurrentUserId();
+    notifyListeners();
   }
 
   void _listenToStatuses() {
     _statusesSubscription = _statusService.getStatuses().listen((newStatuses) {
-      statuses.value = newStatuses;
+      _statuses = newStatuses;
+      notifyListeners();
     });
 
     _myStatusSubscription = _statusService.getMyStatus().listen((newMyStatus) {
-      myStatus.value = newMyStatus;
+      _myStatus = newMyStatus;
+      notifyListeners();
     });
   }
 
   void _fetchCurrentUserImage() async {
-    currentUserImageUrl.value = await _statusService.getCurrentUserImageUrl();
+    _currentUserImageUrl = await _statusService.getCurrentUserImageUrl();
+    notifyListeners();
   }
 
   Future<void> addStatus({
@@ -71,12 +76,10 @@ class StatusController {
     await _statusService.deleteStatusItem(statusId, itemId);
   }
 
+  @override
   void dispose() {
     _statusesSubscription?.cancel();
     _myStatusSubscription?.cancel();
-    statuses.dispose();
-    myStatus.dispose();
-    currentUserImageUrl.dispose();
-    currentUserId.dispose();
+    super.dispose();
   }
 }
