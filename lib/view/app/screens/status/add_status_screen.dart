@@ -57,7 +57,7 @@ class _AddStatusScreenState extends State<AddStatusScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error picking image: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: colorScheme.error,
           ),
         );
       }
@@ -88,7 +88,8 @@ class _AddStatusScreenState extends State<AddStatusScreen> {
         await _controller.addStatus(
           type: StatusType.text,
           content: _textController.text.trim(),
-          backgroundColor: '#${_selectedColor.value.toRadixString(16).substring(2)}',
+          backgroundColor:
+              '#${_selectedColor.toARGB32().toRadixString(16).substring(2)}',
         );
       }
 
@@ -103,7 +104,7 @@ class _AddStatusScreenState extends State<AddStatusScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error posting status: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: colorScheme.error,
           ),
         );
       }
@@ -117,19 +118,20 @@ class _AddStatusScreenState extends State<AddStatusScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _selectedImage != null ? Colors.black : _selectedColor,
+      backgroundColor:
+          _selectedImage != null ? colorScheme.scrim : _selectedColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.white),
+          icon: Icon(Icons.close, color: colorScheme.surface),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
           if (_selectedImage == null)
             PopupMenuButton<Color>(
               constraints: BoxConstraints(maxWidth: 50),
-              icon: const Icon(Icons.palette, color: Colors.white),
+              icon: Icon(Icons.palette, color: colorScheme.surface),
               offset: const Offset(0, 35),
               onSelected: (color) {
                 setState(() => _selectedColor = color);
@@ -146,7 +148,9 @@ class _AddStatusScreenState extends State<AddStatusScreen> {
                         color: color,
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: color == _selectedColor ? Colors.white : Colors.transparent,
+                          color: color == _selectedColor
+                              ? colorScheme.surface
+                              : Colors.transparent,
                           width: 2,
                         ),
                       ),
@@ -168,7 +172,7 @@ class _AddStatusScreenState extends State<AddStatusScreen> {
                 height: 300,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.05),
+                  color: colorScheme.surface.withValues(alpha: 0.05),
                 ),
               ),
             ),
@@ -181,11 +185,10 @@ class _AddStatusScreenState extends State<AddStatusScreen> {
                 height: 400,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.05),
+                  color: colorScheme.surface.withValues(alpha: 0.05),
                 ),
               ),
             ),
-
           SafeArea(
             child: Column(
               children: [
@@ -193,57 +196,61 @@ class _AddStatusScreenState extends State<AddStatusScreen> {
                   child: Center(
                     child: _selectedImage != null
                         ? Stack(
-                      children: [
-                        Image.file(
-                          _selectedImage!,
-                          fit: BoxFit.contain,
-                          width: double.infinity,
-                        ),
-                        Positioned(
-                          top: 16,
-                          right: 16,
-                          child: IconButton(
-                            icon: const Icon(
-                              Icons.delete,
-                              color: Colors.white,
-                              size: 28,
+                            children: [
+                              Image.file(
+                                _selectedImage!,
+                                fit: BoxFit.contain,
+                                width: double.infinity,
+                              ),
+                              Positioned(
+                                top: 16,
+                                right: 16,
+                                child: IconButton(
+                                  icon: Icon(
+                                    Icons.delete,
+                                    color: colorScheme.surface,
+                                    size: 28,
+                                  ),
+                                  onPressed: () {
+                                    setState(() => _selectedImage = null);
+                                  },
+                                ),
+                              ),
+                            ],
+                          )
+                        : Padding(
+                            padding: const EdgeInsets.all(24.0),
+                            child: TextField(
+                              controller: _textController,
+                              maxLines: null,
+                              maxLength: 700,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: colorScheme.surface,
+                                fontSize: 32,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              decoration: InputDecoration(
+                                border: InputBorder.none,
+                                hintText: 'Type your status...',
+                                hintStyle: TextStyle(
+                                  color: colorScheme.surface
+                                      .withValues(alpha: 0.6),
+                                  fontSize: 32,
+                                ),
+                                counterStyle: TextStyle(
+                                    color: colorScheme.surface
+                                        .withValues(alpha: 0.6)),
+                              ),
                             ),
-                            onPressed: () {
-                              setState(() => _selectedImage = null);
-                            },
                           ),
-                        ),
-                      ],
-                    ) : Padding(
-                      padding: const EdgeInsets.all(24.0),
-                      child: TextField(
-                        controller: _textController,
-                        maxLines: null,
-                        maxLength: 700,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 32,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          hintText: 'Type your status...',
-                          hintStyle: TextStyle(
-                            color: Colors.white60,
-                            fontSize: 32,
-                          ),
-                          counterStyle: TextStyle(color: Colors.white60),
-                        ),
-                      ),
-                    ),
                   ),
                 ),
-
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.3),
+                    color: colorScheme.scrim.withValues(alpha: 0.3),
                   ),
                   child: Row(
                     children: [
@@ -251,29 +258,28 @@ class _AddStatusScreenState extends State<AddStatusScreen> {
                         Expanded(
                           child: TextField(
                             controller: _textController,
-                            style: const TextStyle(color: Colors.white),
-                            decoration: const InputDecoration(
+                            style: TextStyle(color: colorScheme.surface),
+                            decoration: InputDecoration(
                               hintText: 'Add a caption...',
-                              hintStyle: TextStyle(color: Colors.white60),
+                              hintStyle: TextStyle(
+                                  color: colorScheme.surface
+                                      .withValues(alpha: 0.6)),
                               border: InputBorder.none,
                             ),
                           ),
                         ),
-
                       if (_selectedImage == null)
                         Expanded(
                           child: IconButton(
-                            icon: const Icon(
+                            icon: Icon(
                               Icons.photo_library_rounded,
-                              color: Colors.white,
+                              color: colorScheme.surface,
                               size: 28,
                             ),
                             onPressed: _pickImage,
                           ),
                         ),
-
                       const SizedBox(width: 8),
-
                       Material(
                         color: colorScheme.primary,
                         borderRadius: BorderRadius.circular(30),
@@ -286,35 +292,35 @@ class _AddStatusScreenState extends State<AddStatusScreen> {
                               vertical: 12,
                             ),
                             child: _isLoading
-                                ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  Colors.white,
-                                ),
-                              ),
-                            )
+                                ? SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        colorScheme.surface,
+                                      ),
+                                    ),
+                                  )
                                 : Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.send_rounded,
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 8),
-                                const Text(
-                                  'POST',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.send_rounded,
+                                        color: colorScheme.surface,
+                                        size: 20,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'POST',
+                                        style: TextStyle(
+                                          color: colorScheme.surface,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ),
-                              ],
-                            ),
                           ),
                         ),
                       ),

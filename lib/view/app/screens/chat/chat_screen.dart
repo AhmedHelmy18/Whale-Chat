@@ -72,7 +72,7 @@ class ChatScreen extends StatelessWidget {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: Colors.white.withAlpha(77),
+                          color: colorScheme.surface.withValues(alpha: 0.3),
                           width: 2,
                         ),
                       ),
@@ -128,7 +128,7 @@ class ChatScreen extends StatelessWidget {
                           'Online',
                           style: TextStyle(
                             fontSize: 14,
-                            color: colorScheme.surface.withAlpha(204),
+                            color: colorScheme.surface.withValues(alpha: 0.8),
                             fontWeight: FontWeight.w500,
                           ),
                         ),

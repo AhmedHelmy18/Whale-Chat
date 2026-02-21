@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:whale_chat/view/app/screens/chat/chat_screen.dart';
+import 'package:whale_chat/theme/color_scheme.dart';
 
 class ChatBodyWidget extends StatelessWidget {
   const ChatBodyWidget({
@@ -29,8 +30,9 @@ class ChatBodyWidget extends StatelessWidget {
     final dateTime = timestamp.toDate();
     final now = DateTime.now();
 
-    final isToday =
-        dateTime.year == now.year && dateTime.month == now.month && dateTime.day == now.day;
+    final isToday = dateTime.year == now.year &&
+        dateTime.month == now.month &&
+        dateTime.day == now.day;
 
     if (isToday) {
       return DateFormat('h:mm a').format(dateTime);
@@ -70,36 +72,38 @@ class ChatBodyWidget extends StatelessWidget {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withAlpha(26),
+                            color: colorScheme.shadow.withValues(alpha: 0.1),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
                         ],
                       ),
                       child: ClipOval(
-                        child: photoUrl.isNotEmpty ? Image.network(
-                          photoUrl,
-                          width: 60,
-                          height: 60,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              width: 60,
-                              height: 60,
-                              color: Colors.grey.shade300,
-                              child: Icon(
-                                Icons.person,
-                                size: 30,
-                                color: Colors.grey.shade600,
+                        child: photoUrl.isNotEmpty
+                            ? Image.network(
+                                photoUrl,
+                                width: 60,
+                                height: 60,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    width: 60,
+                                    height: 60,
+                                    color: colorScheme.surfaceContainerHighest,
+                                    child: Icon(
+                                      Icons.person,
+                                      size: 30,
+                                      color: colorScheme.onSurfaceVariant,
+                                    ),
+                                  );
+                                },
+                              )
+                            : Image.asset(
+                                'assets/images/download.jpeg',
+                                width: 60,
+                                height: 60,
+                                fit: BoxFit.cover,
                               ),
-                            );
-                          },
-                        ) : Image.asset(
-                          'assets/images/download.jpeg',
-                          width: 60,
-                          height: 60,
-                          fit: BoxFit.cover,
-                        ),
                       ),
                     ),
                   ),
@@ -113,7 +117,7 @@ class ChatBodyWidget extends StatelessWidget {
                         color: Colors.green,
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: Colors.white,
+                          color: colorScheme.surface,
                           width: 2.5,
                         ),
                       ),
@@ -133,10 +137,11 @@ class ChatBodyWidget extends StatelessWidget {
                         Expanded(
                           child: Text(
                             userName,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.w600,
                               letterSpacing: 0.2,
+                              color: colorScheme.onSurface,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -148,7 +153,8 @@ class ChatBodyWidget extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
-                            color: Colors.grey.shade500,
+                            color: colorScheme.onSurfaceVariant
+                                .withValues(alpha: 0.7),
                           ),
                         ),
                       ],
@@ -161,7 +167,7 @@ class ChatBodyWidget extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w400,
-                        color: Colors.grey.shade600,
+                        color: colorScheme.onSurfaceVariant,
                         height: 1.3,
                       ),
                     ),

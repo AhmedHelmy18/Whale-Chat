@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:whale_chat/theme/color_scheme.dart';
 import 'package:whale_chat/view/app/screens/chat/image/chat_image_tile.dart';
 import 'package:whale_chat/view/app/screens/chat/image/full_screen_image.dart';
 
@@ -35,7 +36,6 @@ class ImageGridWidget extends StatelessWidget {
       containerColor: containerColor,
     );
   }
-
 }
 
 class _SingleImage extends StatelessWidget {
@@ -99,7 +99,7 @@ class _SingleImage extends StatelessWidget {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.45),
+                        color: colorScheme.scrim.withValues(alpha: 0.45),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: overlay!,
@@ -177,14 +177,14 @@ class _MultiImages extends StatelessWidget {
                   if (index == 3 && remaining > 0)
                     Container(
                       decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.6),
+                        color: colorScheme.scrim.withValues(alpha: 0.6),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Center(
                         child: Text(
                           '+$remaining',
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: colorScheme.surface,
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
                           ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:whale_chat/theme/color_scheme.dart';
 
 class ChatImageTile extends StatelessWidget {
   const ChatImageTile({
@@ -24,7 +25,7 @@ class ChatImageTile extends StatelessWidget {
         children: [
           Container(
             decoration: BoxDecoration(
-              color: Colors.black12,
+              color: colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(borderRadius),
               border: Border.all(color: borderColor, width: 2),
             ),
@@ -48,10 +49,9 @@ class ChatImageTile extends StatelessWidget {
               right: 6,
               bottom: 6,
               child: Container(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.45),
+                  color: colorScheme.scrim.withValues(alpha: 0.45),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: overlay!,

@@ -1,46 +1,46 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:whale_chat/model/status/status.dart';
+import 'package:whale_chat/services/status_service.dart';
 
 class StatusController {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseStorage _storage = FirebaseStorage.instance;
+  final StatusService _statusService = StatusService();
+  StreamSubscription? _statusesSubscription;
+  StreamSubscription? _myStatusSubscription;
 
-  Stream<List<Status>> getStatuses() {
-    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
-    if (currentUserId == null) return Stream.value([]);
+  final ValueNotifier<List<Status>> statuses = ValueNotifier<List<Status>>([]);
+  final ValueNotifier<Status?> myStatus = ValueNotifier<Status?>(null);
+  final ValueNotifier<String?> currentUserImageUrl =
+      ValueNotifier<String?>(null);
+  final ValueNotifier<String?> currentUserId = ValueNotifier<String?>(null);
 
-    final cutoffTime = DateTime.now().subtract(const Duration(hours: 24));
+  // Getter for status list
+  ValueNotifier<List<Status>> get statusList => statuses;
 
-    return _firestore.collection('statuses')
-        .where('createdAt', isGreaterThan: Timestamp.fromDate(cutoffTime))
-        .orderBy('createdAt', descending: true)
-        .snapshots().map((snapshot) {
-      return snapshot.docs.map((doc) => Status.fromFirestore(doc))
-          .where((status) => status.userId != currentUserId)
-          .toList();
+  void init() {
+    _listenToStatuses();
+    _fetchCurrentUserImage();
+    _fetchCurrentUserId();
+  }
+
+  Future<void> _fetchCurrentUserId() async {
+    currentUserId.value = await _statusService.getCurrentUserId();
+  }
+
+  void _listenToStatuses() {
+    _statusesSubscription = _statusService.getStatuses().listen((newStatuses) {
+      statuses.value = newStatuses;
+    });
+
+    _myStatusSubscription = _statusService.getMyStatus().listen((newMyStatus) {
+      myStatus.value = newMyStatus;
     });
   }
 
-  Stream<Status?> getMyStatus() {
-    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
-    if (currentUserId == null) return Stream.value(null);
-
-    final cutoffTime = DateTime.now().subtract(const Duration(hours: 24));
-
-    return _firestore
-        .collection('statuses')
-        .where('userId', isEqualTo: currentUserId)
-        .where('createdAt', isGreaterThan: Timestamp.fromDate(cutoffTime))
-        .limit(1)
-        .snapshots()
-        .map((snapshot) {
-      if (snapshot.docs.isEmpty) return null;
-      return Status.fromFirestore(snapshot.docs.first);
-    });
+  void _fetchCurrentUserImage() async {
+    currentUserImageUrl.value = await _statusService.getCurrentUserImageUrl();
   }
 
   Future<void> addStatus({
@@ -50,107 +50,29 @@ class StatusController {
     File? imageFile,
     String? backgroundColor,
   }) async {
-    final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser == null) throw Exception('User not authenticated');
-
-    String finalContent = content;
-
-    if (imageFile != null && type == StatusType.image) {
-      finalContent = await _uploadStatusImage(imageFile, currentUser.uid);
-    }
-
-    final userDoc = await _firestore.collection('users').doc(currentUser.uid).get();
-    final userName = userDoc.data()?['name'] ?? 'Unknown';
-    final userProfileImage = userDoc.data()?['profileImage'];
-
-    final statusItem = StatusItem(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      content: finalContent,
+    await _statusService.addStatus(
       type: type,
+      content: content,
       caption: caption,
-      timestamp: DateTime.now(),
-      viewedBy: [],
+      imageFile: imageFile,
       backgroundColor: backgroundColor,
     );
-
-    final cutoffTime = DateTime.now().subtract(const Duration(hours: 24));
-    final existingStatus = await _firestore
-        .collection('statuses')
-        .where('userId', isEqualTo: currentUser.uid)
-        .where('createdAt', isGreaterThan: Timestamp.fromDate(cutoffTime))
-        .limit(1)
-        .get();
-
-    if (existingStatus.docs.isNotEmpty) {
-      final doc = existingStatus.docs.first;
-      final status = Status.fromFirestore(doc);
-      final updatedItems = [...status.statusItems, statusItem];
-
-      await doc.reference.update({
-        'statusItems': updatedItems.map((item) => item.toMap()).toList(),
-      });
-    } else {
-      final newStatus = Status(
-        id: '',
-        userId: currentUser.uid,
-        userName: userName,
-        userProfileImage: userProfileImage,
-        statusItems: [statusItem],
-        createdAt: DateTime.now(),
-      );
-
-      await _firestore.collection('statuses').add(newStatus.toMap());
-    }
-  }
-
-  Future<String> _uploadStatusImage(File imageFile, String userId) async {
-    final fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
-    final ref = _storage.ref().child('statuses/$userId/$fileName');
-    await ref.putFile(imageFile);
-    return await ref.getDownloadURL();
   }
 
   Future<void> markStatusAsViewed(String statusId, String statusItemId) async {
-    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
-    if (currentUserId == null) return;
-
-    final statusDoc = await _firestore.collection('statuses').doc(statusId).get();
-    if (!statusDoc.exists) return;
-
-    final status = Status.fromFirestore(statusDoc);
-    final updatedItems = status.statusItems.map((item) {
-      if (item.id == statusItemId && !item.viewedBy.contains(currentUserId)) {
-        return StatusItem(
-          id: item.id,
-          content: item.content,
-          type: item.type,
-          caption: item.caption,
-          timestamp: item.timestamp,
-          viewedBy: [...item.viewedBy, currentUserId],
-          backgroundColor: item.backgroundColor,
-        );
-      }
-      return item;
-    }).toList();
-
-    await statusDoc.reference.update({
-      'statusItems': updatedItems.map((item) => item.toMap()).toList(),
-    });
+    await _statusService.markStatusAsViewed(statusId, statusItemId);
   }
 
   Future<void> deleteStatus(String statusId) async {
-    await _firestore.collection('statuses').doc(statusId).delete();
+    await _statusService.deleteStatus(statusId);
   }
 
-  Future<void> deleteOldStatuses() async {
-    final cutoffTime = DateTime.now().subtract(const Duration(hours: 24));
-    final oldStatuses = await _firestore
-        .collection('statuses')
-        .where('createdAt', isLessThan: Timestamp.fromDate(cutoffTime))
-        .get();
-
-    for (var doc in oldStatuses.docs) {
-      await doc.reference.delete();
-    }
+  void dispose() {
+    _statusesSubscription?.cancel();
+    _myStatusSubscription?.cancel();
+    statuses.dispose();
+    myStatus.dispose();
+    currentUserImageUrl.dispose();
+    currentUserId.dispose();
   }
 }

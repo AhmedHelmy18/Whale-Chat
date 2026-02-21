@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:whale_chat/theme/color_scheme.dart';
 
 class FullScreenImageViewer extends StatefulWidget {
   const FullScreenImageViewer({
@@ -48,7 +49,7 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: colorScheme.scrim,
       body: Stack(
         children: [
           GestureDetector(
@@ -78,27 +79,27 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
                             child: CircularProgressIndicator(
                               value: loadingProgress.expectedTotalBytes != null
                                   ? loadingProgress.cumulativeBytesLoaded /
-                                  loadingProgress.expectedTotalBytes!
+                                      loadingProgress.expectedTotalBytes!
                                   : null,
-                              color: Colors.white,
+                              color: colorScheme.surface,
                             ),
                           );
                         },
                         errorBuilder: (context, error, stackTrace) {
-                          return const Center(
+                          return Center(
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(
                                   Icons.error_outline,
-                                  color: Colors.white,
+                                  color: colorScheme.surface,
                                   size: 48,
                                 ),
                                 SizedBox(height: 16),
                                 Text(
                                   'Failed to load image',
                                   style: TextStyle(
-                                    color: Colors.white,
+                                    color: colorScheme.surface,
                                     fontSize: 16,
                                   ),
                                 ),
@@ -139,15 +140,16 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
                     child: Row(
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.arrow_back, color: Colors.white),
+                          icon: Icon(Icons.arrow_back,
+                              color: colorScheme.surface),
                           onPressed: () => Navigator.of(context).pop(),
                         ),
                         Expanded(
                           child: Center(
                             child: Text(
                               '${_currentIndex + 1} / ${widget.imageUrls.length}',
-                              style: const TextStyle(
-                                color: Colors.white,
+                              style: TextStyle(
+                                color: colorScheme.surface,
                                 fontSize: 16,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -155,7 +157,8 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
                           ),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.more_vert, color: Colors.white),
+                          icon:
+                              Icon(Icons.more_vert, color: colorScheme.surface),
                           onPressed: () {
                             // Add more options if needed
                           },
@@ -189,15 +192,19 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: List.generate(
-                        widget.imageUrls.length > 10 ? 10 : widget.imageUrls.length,
-                            (index) {
+                        widget.imageUrls.length > 10
+                            ? 10
+                            : widget.imageUrls.length,
+                        (index) {
                           if (index == 9 && widget.imageUrls.length > 10) {
                             return Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 2),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 2),
                               child: Text(
                                 '...',
                                 style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.5),
+                                  color: colorScheme.surface
+                                      .withValues(alpha: 0.5),
                                   fontSize: 20,
                                 ),
                               ),
@@ -218,8 +225,9 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 color: _currentIndex == index
-                                    ? Colors.white
-                                    : Colors.white.withValues(alpha: 0.4),
+                                    ? colorScheme.surface
+                                    : colorScheme.surface
+                                        .withValues(alpha: 0.4),
                               ),
                             ),
                           );
