@@ -45,7 +45,7 @@ class _CustomSnackBarState extends State<_CustomSnackBar> with SingleTickerProvi
       CurvedAnimation(parent: _controller, curve: Curves.easeOut),
     );
 
-    _offset = Tween<Offset>(begin: const Offset(0, -1), end: Offset.zero).animate(
+    _offset = Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero).animate(
       CurvedAnimation(parent: _controller, curve: Curves.elasticOut),
     );
 
@@ -69,7 +69,7 @@ class _CustomSnackBarState extends State<_CustomSnackBar> with SingleTickerProvi
     final icon = widget.isError ? Icons.error_outline_rounded : Icons.check_circle_outline_rounded;
 
     return Positioned(
-      top: MediaQuery.of(context).padding.top + 10,
+      bottom: MediaQuery.of(context).padding.bottom + 20,
       left: 16,
       right: 16,
       child: Material(
