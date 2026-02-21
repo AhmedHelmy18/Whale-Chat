@@ -6,7 +6,8 @@ import 'dart:io';
 import 'package:whale_chat/theme/color_scheme.dart';
 
 class AddStatusScreen extends StatefulWidget {
-  const AddStatusScreen({super.key});
+  final bool isTextMode;
+  const AddStatusScreen({super.key, this.isTextMode = false});
 
   @override
   State<AddStatusScreen> createState() => _AddStatusScreenState();
@@ -22,15 +23,26 @@ class _AddStatusScreenState extends State<AddStatusScreen> {
   Color _selectedColor = const Color(0xFF0891B2);
 
   final List<Color> _backgroundColors = [
-    const Color(0xFF0891B2),
-    const Color(0xFFDC2626),
-    const Color(0xFF7C3AED),
-    const Color(0xFFEA580C),
-    const Color(0xFF059669),
-    const Color(0xFF2563EB),
-    const Color(0xFFDB2777),
-    const Color(0xFF0D9488),
+    const Color(0xFF0891B2), // Cyan
+    const Color(0xFFDC2626), // Red
+    const Color(0xFF7C3AED), // Violet
+    const Color(0xFFEA580C), // Orange
+    const Color(0xFF059669), // Emerald
+    const Color(0xFF2563EB), // Blue
+    const Color(0xFFDB2777), // Pink
+    const Color(0xFF0D9488), // Teal
+    const Color(0xFF57534E), // Stone
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    if (!widget.isTextMode) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _pickImage();
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -89,7 +101,7 @@ class _AddStatusScreenState extends State<AddStatusScreen> {
           type: StatusType.text,
           content: _textController.text.trim(),
           backgroundColor:
-              '#${_selectedColor.toARGB32().toRadixString(16).substring(2)}',
+              '#${_selectedColor.value.toRadixString(16).substring(2)}',
         );
       }
 
@@ -119,209 +131,132 @@ class _AddStatusScreenState extends State<AddStatusScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor:
-          _selectedImage != null ? colorScheme.scrim : _selectedColor,
+          _selectedImage != null ? Colors.black : _selectedColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.close, color: colorScheme.surface),
+          icon: const Icon(Icons.close, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
           if (_selectedImage == null)
-            PopupMenuButton<Color>(
-              constraints: BoxConstraints(maxWidth: 50),
-              icon: Icon(Icons.palette, color: colorScheme.surface),
-              offset: const Offset(0, 35),
-              onSelected: (color) {
-                setState(() => _selectedColor = color);
+            IconButton(
+              icon: const Icon(Icons.palette, color: Colors.white),
+              onPressed: () {
+                // Cycle through colors or show picker
+                final currentIndex = _backgroundColors.indexOf(_selectedColor);
+                final nextIndex = (currentIndex + 1) % _backgroundColors.length;
+                setState(() {
+                  _selectedColor = _backgroundColors[nextIndex];
+                });
               },
-              itemBuilder: (context) => _backgroundColors.map((color) {
-                return PopupMenuItem<Color>(
-                  value: color,
-                  padding: EdgeInsets.zero,
-                  child: Center(
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: color,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: color == _selectedColor
-                              ? colorScheme.surface
-                              : Colors.transparent,
-                          width: 2,
-                        ),
-                      ),
-                    ),
-                  ),
+            ),
+          if (_selectedImage != null)
+            IconButton(
+              icon: const Icon(Icons.crop_rotate, color: Colors.white),
+              onPressed: () {
+                // Placeholder for crop/rotate
+                ScaffoldMessenger.of(context).showSnackBar(
+                   const SnackBar(content: Text('Image editing coming soon')),
                 );
-              }).toList(),
+              },
             ),
         ],
       ),
       body: Stack(
         children: [
-          if (_selectedImage == null)
-            Positioned(
-              top: -100,
-              right: -100,
-              child: Container(
-                width: 300,
-                height: 300,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: colorScheme.surface.withValues(alpha: 0.05),
-                ),
-              ),
-            ),
-          if (_selectedImage == null)
-            Positioned(
-              bottom: -150,
-              left: -150,
-              child: Container(
-                width: 200,
-                height: 400,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: colorScheme.surface.withValues(alpha: 0.05),
-                ),
-              ),
-            ),
+          // Content
           SafeArea(
             child: Column(
               children: [
                 Expanded(
                   child: Center(
                     child: _selectedImage != null
-                        ? Stack(
-                            children: [
-                              Image.file(
-                                _selectedImage!,
-                                fit: BoxFit.contain,
-                                width: double.infinity,
-                              ),
-                              Positioned(
-                                top: 16,
-                                right: 16,
-                                child: IconButton(
-                                  icon: Icon(
-                                    Icons.delete,
-                                    color: colorScheme.surface,
-                                    size: 28,
-                                  ),
-                                  onPressed: () {
-                                    setState(() => _selectedImage = null);
-                                  },
-                                ),
-                              ),
-                            ],
+                        ? Image.file(
+                            _selectedImage!,
+                            fit: BoxFit.contain,
+                            width: double.infinity,
                           )
                         : Padding(
-                            padding: const EdgeInsets.all(24.0),
+                            padding: const EdgeInsets.all(32.0),
                             child: TextField(
                               controller: _textController,
                               maxLines: null,
                               maxLength: 700,
                               textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: colorScheme.surface,
+                              autofocus: _selectedImage == null,
+                              style: const TextStyle(
+                                color: Colors.white,
                                 fontSize: 32,
                                 fontWeight: FontWeight.w500,
+                                fontFamily: 'PlayfairDisplay', // Using custom font if available or fallback
                               ),
-                              decoration: InputDecoration(
+                              decoration: const InputDecoration(
                                 border: InputBorder.none,
-                                hintText: 'Type your status...',
+                                hintText: 'Type a status',
                                 hintStyle: TextStyle(
-                                  color: colorScheme.surface
-                                      .withValues(alpha: 0.6),
+                                  color: Colors.white54,
                                   fontSize: 32,
                                 ),
-                                counterStyle: TextStyle(
-                                    color: colorScheme.surface
-                                        .withValues(alpha: 0.6)),
+                                counterStyle: TextStyle(color: Colors.white54),
                               ),
                             ),
                           ),
                   ),
                 ),
+
+                // Bottom Bar
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: colorScheme.scrim.withValues(alpha: 0.3),
-                  ),
+                  padding: const EdgeInsets.all(12),
+                  color: Colors.black26,
                   child: Row(
                     children: [
                       if (_selectedImage != null)
                         Expanded(
-                          child: TextField(
-                            controller: _textController,
-                            style: TextStyle(color: colorScheme.surface),
-                            decoration: InputDecoration(
-                              hintText: 'Add a caption...',
-                              hintStyle: TextStyle(
-                                  color: colorScheme.surface
-                                      .withValues(alpha: 0.6)),
-                              border: InputBorder.none,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            decoration: BoxDecoration(
+                              color: Colors.white24,
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                            child: TextField(
+                              controller: _textController,
+                              style: const TextStyle(color: Colors.white),
+                              decoration: const InputDecoration(
+                                hintText: 'Add a caption...',
+                                hintStyle: TextStyle(color: Colors.white70),
+                                border: InputBorder.none,
+                              ),
                             ),
                           ),
                         ),
                       if (_selectedImage == null)
-                        Expanded(
-                          child: IconButton(
-                            icon: Icon(
-                              Icons.photo_library_rounded,
-                              color: colorScheme.surface,
-                              size: 28,
-                            ),
+                         IconButton(
+                            icon: const Icon(Icons.image, color: Colors.white),
                             onPressed: _pickImage,
+                         ),
+                      const SizedBox(width: 12),
+
+                      // Post Button
+                      GestureDetector(
+                        onTap: _isLoading ? null : _postStatus,
+                        child: Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: colorScheme.primary,
+                            shape: BoxShape.circle,
                           ),
-                        ),
-                      const SizedBox(width: 8),
-                      Material(
-                        color: colorScheme.primary,
-                        borderRadius: BorderRadius.circular(30),
-                        child: InkWell(
-                          onTap: _isLoading ? null : _postStatus,
-                          borderRadius: BorderRadius.circular(30),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 12,
-                            ),
-                            child: _isLoading
-                                ? SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        colorScheme.surface,
-                                      ),
-                                    ),
-                                  )
-                                : Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.send_rounded,
-                                        color: colorScheme.surface,
-                                        size: 20,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        'POST',
-                                        style: TextStyle(
-                                          color: colorScheme.surface,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
+                          child: _isLoading
+                              ? const Padding(
+                                  padding: EdgeInsets.all(12.0),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
                                   ),
-                          ),
+                                )
+                              : const Icon(Icons.send, color: Colors.white),
                         ),
                       ),
                     ],
@@ -330,6 +265,23 @@ class _AddStatusScreenState extends State<AddStatusScreen> {
               ],
             ),
           ),
+
+          if (_selectedImage != null)
+             Positioned(
+                top: 50, // Below AppBar
+                left: 16,
+                child: CircleAvatar(
+                   backgroundColor: Colors.black45,
+                   child: IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.white),
+                      onPressed: () {
+                         setState(() {
+                            _selectedImage = null;
+                         });
+                      },
+                   ),
+                ),
+             ),
         ],
       ),
     );

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:whale_chat/controller/status/status_controller.dart';
 import 'package:whale_chat/model/status/status.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
 import 'package:whale_chat/util/format_time.dart';
+import 'package:whale_chat/view/app/screens/status/add_status_screen.dart';
 import 'package:whale_chat/view/app/screens/status/view_status_screen.dart';
 
-class MyStatusDetailScreen extends StatelessWidget {
+class MyStatusDetailScreen extends StatefulWidget {
   final Status status;
   final String userImageUrl;
 
@@ -13,6 +15,25 @@ class MyStatusDetailScreen extends StatelessWidget {
     required this.status,
     required this.userImageUrl,
   });
+
+  @override
+  State<MyStatusDetailScreen> createState() => _MyStatusDetailScreenState();
+}
+
+class _MyStatusDetailScreenState extends State<MyStatusDetailScreen> {
+  final StatusController _controller = StatusController();
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.init();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,12 +54,6 @@ class MyStatusDetailScreen extends StatelessWidget {
             fontWeight: FontWeight.w600,
           ),
         ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.more_vert, color: colorScheme.onSurface),
-            onPressed: () {},
-          ),
-        ],
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -53,19 +68,21 @@ class MyStatusDetailScreen extends StatelessWidget {
                   child: CircleAvatar(
                     radius: 26,
                     backgroundColor: colorScheme.outline,
-                    backgroundImage: (status.userProfileImage != null &&
-                            status.userProfileImage!.isNotEmpty)
-                        ? NetworkImage(status.userProfileImage!)
+                    backgroundImage: (widget.status.userProfileImage != null &&
+                            widget.status.userProfileImage!.isNotEmpty)
+                        ? NetworkImage(widget.status.userProfileImage!)
                         : null,
-                    child: (status.userProfileImage == null ||
-                            status.userProfileImage!.isEmpty)
+                    child: (widget.status.userProfileImage == null ||
+                            widget.status.userProfileImage!.isEmpty)
                         ? Icon(Icons.person, color: colorScheme.surface)
                         : null,
                   ),
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  formatTimeAgo(status.latestItem?.timestamp ?? DateTime.now()),
+                  widget.status.latestItem != null
+                      ? formatTimeAgo(widget.status.latestItem!.timestamp)
+                      : formatTimeAgo(widget.status.createdAt),
                   style: TextStyle(
                     fontSize: 16,
                     color: colorScheme.onSurface,
@@ -120,29 +137,71 @@ class MyStatusDetailScreen extends StatelessWidget {
 
           // Status Items Grid
           Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 8,
-                childAspectRatio: 0.75,
-              ),
-              itemCount: status.statusItems.length,
-              itemBuilder: (context, index) {
-                final item = status.statusItems[index];
-                return _StatusItemTile(
-                  item: item,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ViewStatusScreen(
-                          status: status,
-                          isMyStatus: true,
-                          initialIndex: index,
-                        ),
-                      ),
+            child: ValueListenableBuilder<Status?>(
+              valueListenable: _controller.myStatus,
+              builder: (context, myStatus, _) {
+                final displayStatus = myStatus ?? widget.status;
+
+                if (displayStatus.statusItems.isEmpty) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted) Navigator.pop(context);
+                  });
+                  return const SizedBox.shrink();
+                }
+
+                return GridView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
+                    childAspectRatio: 0.75,
+                  ),
+                  itemCount: displayStatus.statusItems.length,
+                  itemBuilder: (context, index) {
+                    final item = displayStatus.statusItems[index];
+                    return _StatusItemTile(
+                      item: item,
+                      onDelete: () async {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Delete status update?'),
+                            content: const Text(
+                                'This status update will be deleted for everyone who received it.'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: const Text('Cancel'),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, true),
+                                child: Text(
+                                  'Delete',
+                                  style: TextStyle(color: colorScheme.error),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+
+                        if (confirm == true) {
+                          await _controller.deleteStatusItem(
+                              displayStatus.id, item.id);
+                        }
+                      },
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ViewStatusScreen(
+                              status: displayStatus,
+                              isMyStatus: true,
+                              initialIndex: index,
+                            ),
+                          ),
+                        );
+                      },
                     );
                   },
                 );
@@ -155,15 +214,29 @@ class MyStatusDetailScreen extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           FloatingActionButton.small(
-            heroTag: 'edit_status_fab',
-            onPressed: () {},
+            heroTag: 'text_status_fab',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const AddStatusScreen(isTextMode: true),
+                ),
+              );
+            },
             backgroundColor: colorScheme.surfaceContainerHighest,
             child: Icon(Icons.edit, color: colorScheme.onSurface),
           ),
           const SizedBox(height: 16),
           FloatingActionButton(
             heroTag: 'camera_status_fab',
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const AddStatusScreen(),
+                ),
+              );
+            },
             backgroundColor: colorScheme.primary,
             child: Icon(Icons.camera_alt, color: colorScheme.onPrimary),
           ),
@@ -176,10 +249,12 @@ class MyStatusDetailScreen extends StatelessWidget {
 class _StatusItemTile extends StatelessWidget {
   final StatusItem item;
   final VoidCallback onTap;
+  final VoidCallback onDelete;
 
   const _StatusItemTile({
     required this.item,
     required this.onTap,
+    required this.onDelete,
   });
 
   @override
@@ -236,7 +311,7 @@ class _StatusItemTile extends StatelessWidget {
             // Time Indicator
             Positioned(
               top: 8,
-              right: 8,
+              left: 8,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
@@ -251,6 +326,37 @@ class _StatusItemTile extends StatelessWidget {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
+              ),
+            ),
+
+            // Delete Button
+            Positioned(
+              top: 4,
+              right: 4,
+              child: PopupMenuButton<String>(
+                icon: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: colorScheme.scrim.withValues(alpha: 0.6),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.more_vert,
+                    size: 16,
+                    color: colorScheme.onPrimary,
+                  ),
+                ),
+                onSelected: (value) {
+                  if (value == 'delete') {
+                    onDelete();
+                  }
+                },
+                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                  const PopupMenuItem<String>(
+                    value: 'delete',
+                    child: Text('Delete'),
+                  ),
+                ],
               ),
             ),
           ],

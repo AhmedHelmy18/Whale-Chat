@@ -138,4 +138,22 @@ class StatusService {
   Future<void> deleteStatus(String statusId) async {
     await _firestore.collection('statuses').doc(statusId).delete();
   }
+
+  Future<void> deleteStatusItem(String statusId, String itemId) async {
+    final statusDoc =
+        await _firestore.collection('statuses').doc(statusId).get();
+    if (!statusDoc.exists) return;
+
+    final status = Status.fromFirestore(statusDoc);
+    final updatedItems =
+        status.statusItems.where((item) => item.id != itemId).toList();
+
+    if (updatedItems.isEmpty) {
+      await deleteStatus(statusId);
+    } else {
+      await statusDoc.reference.update({
+        'statusItems': updatedItems.map((item) => item.toMap()).toList(),
+      });
+    }
+  }
 }

@@ -67,6 +67,10 @@ class StatusController {
     await _statusService.deleteStatus(statusId);
   }
 
+  Future<void> deleteStatusItem(String statusId, String itemId) async {
+    await _statusService.deleteStatusItem(statusId, itemId);
+  }
+
   void dispose() {
     _statusesSubscription?.cancel();
     _myStatusSubscription?.cancel();

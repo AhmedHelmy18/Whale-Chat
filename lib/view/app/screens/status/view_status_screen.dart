@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:whale_chat/controller/status/status_controller.dart';
 import 'package:whale_chat/model/status/status.dart';
 import 'package:whale_chat/util/format_time.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
@@ -23,6 +24,7 @@ class _ViewStatusScreenState extends State<ViewStatusScreen>
     with SingleTickerProviderStateMixin {
   late final PageController _pageController;
   late final AnimationController _animationController;
+  final StatusController _statusController = StatusController();
   int _currentIndex = 0;
 
   @override
@@ -40,6 +42,7 @@ class _ViewStatusScreenState extends State<ViewStatusScreen>
         _goToNextPage();
       }
     });
+    _statusController.init();
   }
 
   void _goToNextPage() {
@@ -64,18 +67,53 @@ class _ViewStatusScreenState extends State<ViewStatusScreen>
     }
   }
 
+  Future<void> _deleteCurrentStatus() async {
+    _animationController.stop();
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete status update?'),
+        content: const Text(
+            'This status update will be deleted for everyone who received it.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(
+              'Delete',
+              style: TextStyle(color: colorScheme.error),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      final item = widget.status.statusItems[_currentIndex];
+      await _statusController.deleteStatusItem(widget.status.id, item.id);
+      if (mounted) {
+        Navigator.pop(context); // Close viewer after deletion
+      }
+    } else {
+      _animationController.forward();
+    }
+  }
+
   @override
   void dispose() {
     _pageController.dispose();
     _animationController.dispose();
+    _statusController.dispose();
     super.dispose();
   }
 
   @override
-  @override
   Widget build(BuildContext context) {
     // Get background color from current status item
-    Color backgroundColor = colorScheme.scrim;
+    Color backgroundColor = Colors.black;
     if (_currentIndex < widget.status.statusItems.length) {
       final currentItem = widget.status.statusItems[_currentIndex];
       if (currentItem.type == StatusType.text &&
@@ -86,9 +124,12 @@ class _ViewStatusScreenState extends State<ViewStatusScreen>
           if (hex.length == 6) {
             hex = 'FF$hex';
           }
-          backgroundColor = Color(int.parse(hex, radix: 16));
+          final val = int.tryParse(hex, radix: 16);
+          if (val != null) {
+            backgroundColor = Color(val);
+          }
         } catch (e) {
-          backgroundColor = colorScheme.scrim;
+          backgroundColor = Colors.black;
         }
       }
     }
@@ -104,6 +145,7 @@ class _ViewStatusScreenState extends State<ViewStatusScreen>
             _goToNextPage();
           }
         },
+        onLongPress: widget.isMyStatus ? _deleteCurrentStatus : null,
         child: Stack(
           children: [
             PageView.builder(
@@ -119,17 +161,20 @@ class _ViewStatusScreenState extends State<ViewStatusScreen>
               itemBuilder: (context, index) {
                 final item = widget.status.statusItems[index];
                 if (item.type == StatusType.text) {
-                  Color bgColor = colorScheme.scrim;
+                  Color bgColor = Colors.black;
                   if (item.backgroundColor != null &&
                       item.backgroundColor!.isNotEmpty) {
                     try {
                       String hex = item.backgroundColor!.replaceAll('#', '');
                       if (hex.length == 6) {
-                        hex = 'FF\$hex';
+                        hex = 'FF$hex';
                       }
-                      bgColor = Color(int.parse(hex, radix: 16));
+                      final val = int.tryParse(hex, radix: 16);
+                      if (val != null) {
+                        bgColor = Color(val);
+                      }
                     } catch (e) {
-                      bgColor = colorScheme.scrim;
+                      bgColor = Colors.black;
                     }
                   }
 
@@ -137,13 +182,14 @@ class _ViewStatusScreenState extends State<ViewStatusScreen>
                     color: bgColor,
                     child: Center(
                       child: Padding(
-                        padding: const EdgeInsets.all(24.0),
+                        padding: const EdgeInsets.all(32.0),
                         child: Text(
                           item.content,
-                          style: TextStyle(
-                            color: colorScheme.onPrimary,
-                            fontSize: 24,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 32,
                             fontWeight: FontWeight.bold,
+                            fontFamily: 'PlayfairDisplay',
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -155,16 +201,16 @@ class _ViewStatusScreenState extends State<ViewStatusScreen>
                     children: [
                       Positioned.fill(
                         child: item.content.isEmpty
-                            ? Center(
+                            ? const Center(
                                 child: Icon(Icons.broken_image,
-                                    color: colorScheme.onPrimary, size: 50))
+                                    color: Colors.white, size: 50))
                             : Image.network(
                                 item.content,
                                 fit: BoxFit.contain,
                                 errorBuilder: (context, error, stackTrace) {
-                                  return Center(
+                                  return const Center(
                                       child: Icon(Icons.broken_image,
-                                          color: colorScheme.onPrimary,
+                                          color: Colors.white,
                                           size: 50));
                                 },
                               ),
@@ -175,13 +221,13 @@ class _ViewStatusScreenState extends State<ViewStatusScreen>
                           left: 0,
                           right: 0,
                           child: Container(
-                            color: colorScheme.scrim.withValues(alpha: 0.6),
+                            color: Colors.black54,
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 24, vertical: 12),
                             child: Text(
                               item.caption!,
-                              style: TextStyle(
-                                color: colorScheme.onPrimary,
+                              style: const TextStyle(
+                                color: Colors.white,
                                 fontSize: 16,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -194,12 +240,15 @@ class _ViewStatusScreenState extends State<ViewStatusScreen>
                 }
               },
             ),
+
+            // Top Bar
             Positioned(
               top: 40,
               left: 10,
               right: 10,
               child: Column(
                 children: [
+                  // Progress Indicators
                   Row(
                     children: List.generate(
                       widget.status.statusItems.length,
@@ -213,9 +262,9 @@ class _ViewStatusScreenState extends State<ViewStatusScreen>
                                 value: _currentIndex == index
                                     ? _animationController.value
                                     : (_currentIndex > index ? 1 : 0),
-                                backgroundColor: colorScheme.outline,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  colorScheme.onPrimary,
+                                backgroundColor: Colors.white24,
+                                valueColor: const AlwaysStoppedAnimation<Color>(
+                                  Colors.white,
                                 ),
                               );
                             },
@@ -225,8 +274,14 @@ class _ViewStatusScreenState extends State<ViewStatusScreen>
                     ),
                   ),
                   const SizedBox(height: 10),
+
+                  // User Info
                   Row(
                     children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back, color: Colors.white),
+                        onPressed: () => Navigator.pop(context),
+                      ),
                       Hero(
                         tag: 'profile_${widget.status.userId}',
                         child: CircleAvatar(
@@ -237,32 +292,48 @@ class _ViewStatusScreenState extends State<ViewStatusScreen>
                               : null,
                           child: (widget.status.userProfileImage == null ||
                                   widget.status.userProfileImage!.isEmpty)
-                              ? Icon(Icons.person, color: colorScheme.scrim)
+                              ? const Icon(Icons.person, color: Colors.grey)
                               : null,
                         ),
                       ),
                       const SizedBox(width: 10),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.status.userName,
-                            style: TextStyle(
-                                color: colorScheme.onPrimary,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold),
-                          ),
-                          if (widget.status.statusItems.isNotEmpty)
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
                             Text(
-                              formatTimeAgo(widget
-                                  .status.statusItems[_currentIndex].timestamp),
-                              style: TextStyle(
-                                  color: colorScheme.onPrimary
-                                      .withValues(alpha: 0.7),
-                                  fontSize: 12),
+                              widget.status.userName,
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold),
                             ),
-                        ],
+                            if (widget.status.statusItems.isNotEmpty)
+                              Text(
+                                formatTimeAgo(widget
+                                    .status.statusItems[_currentIndex].timestamp),
+                                style: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 12),
+                              ),
+                          ],
+                        ),
                       ),
+                      if (widget.isMyStatus)
+                        PopupMenuButton<String>(
+                          icon: const Icon(Icons.more_vert, color: Colors.white),
+                          onSelected: (value) {
+                             if (value == 'delete') {
+                               _deleteCurrentStatus();
+                             }
+                          },
+                          itemBuilder: (context) => [
+                            const PopupMenuItem(
+                              value: 'delete',
+                              child: Text('Delete'),
+                            ),
+                          ],
+                        ),
                     ],
                   ),
                 ],
