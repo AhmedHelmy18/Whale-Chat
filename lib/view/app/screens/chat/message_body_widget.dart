@@ -91,13 +91,13 @@ class _MessageBodyWidgetState extends State<MessageBodyWidget> with SingleTicker
 
   Icon _getMessageStatusIcon(String status) {
     if (status == 'sent') {
-      return Icon(Icons.check, color: Colors.grey, size: 16);
+      return Icon(Icons.check, color: colorScheme.onSurfaceVariant, size: 16);
     } else if (status == 'delivered') {
-      return Icon(Icons.done_all, color: Colors.grey, size: 16);
+      return Icon(Icons.done_all, color: colorScheme.onSurfaceVariant, size: 16);
     } else if (status == 'seen') {
-      return const Icon(Icons.done_all, color: Colors.blue, size: 16);
+      return Icon(Icons.done_all, color: colorScheme.primary, size: 16);
     }
-    return Icon(Icons.check, color: Colors.grey, size: 16);
+    return Icon(Icons.check, color: colorScheme.onSurfaceVariant, size: 16);
   }
 
   Widget _buildTimeRow(Message message) {

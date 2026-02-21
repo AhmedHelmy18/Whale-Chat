@@ -169,7 +169,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           Icon(
                             Icons.chat_bubble_outline_rounded,
                             size: 80,
-                            color: Colors.grey.shade300,
+                            color: colorScheme.outline,
                           ),
                           const SizedBox(height: 16),
                           Text(
@@ -177,7 +177,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w500,
-                              color: Colors.grey.shade600,
+                              color: colorScheme.onSurfaceVariant,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -185,7 +185,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             "Start a conversation",
                             style: TextStyle(
                               fontSize: 16,
-                              color: Colors.grey.shade400,
+                              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
                             ),
                           ),
                     ],
@@ -200,7 +200,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Divider(
                     height: 1,
                     thickness: 0.5,
-                    color: Colors.grey.shade200,
+                    color: colorScheme.outlineVariant,
                   ),
                 ),
                 itemBuilder: (context, index) {

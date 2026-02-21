@@ -40,10 +40,10 @@ class ChatInputField extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
+                  color: colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(28),
                   border: Border.all(
-                    color: Colors.grey.shade300,
+                    color: colorScheme.outline,
                     width: 1,
                   ),
                 ),
@@ -71,7 +71,7 @@ class ChatInputField extends StatelessWidget {
                       child: IconButton(
                         icon: Icon(
                           Icons.attach_file_rounded,
-                          color: Colors.grey.shade600,
+                          color: colorScheme.onSurfaceVariant,
                         ),
                         onPressed: () {
                           showImageSourcePicker(

@@ -106,13 +106,13 @@ class _ForgetPasswordState extends State<ForgetPasswordScreen> with SingleTicker
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.green.shade50,
+                color: colorScheme.tertiaryContainer,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.mark_email_read_rounded,
                 size: 48,
-                color: Colors.green.shade600,
+                color: colorScheme.onTertiaryContainer,
               ),
             ),
             const SizedBox(height: 20),
@@ -129,7 +129,7 @@ class _ForgetPasswordState extends State<ForgetPasswordScreen> with SingleTicker
               "A password reset link has been sent to:",
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey.shade700,
+                color: colorScheme.onSurfaceVariant,
               ),
               textAlign: TextAlign.center,
             ),
@@ -155,7 +155,7 @@ class _ForgetPasswordState extends State<ForgetPasswordScreen> with SingleTicker
               "Please check your inbox and follow the instructions.",
               style: TextStyle(
                 fontSize: 13,
-                color: Colors.grey.shade600,
+                color: colorScheme.onSurfaceVariant,
               ),
               textAlign: TextAlign.center,
             ),
@@ -221,7 +221,7 @@ class _ForgetPasswordState extends State<ForgetPasswordScreen> with SingleTicker
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w400,
-                        color: Colors.grey.shade700,
+                        color: colorScheme.onSurfaceVariant,
                         height: 1.5,
                       ),
                       textAlign: TextAlign.center,
@@ -233,7 +233,7 @@ class _ForgetPasswordState extends State<ForgetPasswordScreen> with SingleTicker
                         color: colorScheme.surface,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                          color: Colors.grey.shade200,
+                          color: colorScheme.outlineVariant,
                           width: 1.5,
                         ),
                         boxShadow: [
@@ -252,7 +252,7 @@ class _ForgetPasswordState extends State<ForgetPasswordScreen> with SingleTicker
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              color: Colors.grey.shade700,
+                              color: colorScheme.onSurfaceVariant,
                             ),
                           ),
                           const SizedBox(height: 12),
@@ -280,10 +280,10 @@ class _ForgetPasswordState extends State<ForgetPasswordScreen> with SingleTicker
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.blue.shade50,
+                        color: colorScheme.primaryContainer,
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(
-                          color: Colors.blue.shade200,
+                          color: colorScheme.primary.withValues(alpha: 0.3),
                           width: 1,
                         ),
                       ),
@@ -291,7 +291,7 @@ class _ForgetPasswordState extends State<ForgetPasswordScreen> with SingleTicker
                         children: [
                           Icon(
                             Icons.info_rounded,
-                            color: Colors.blue.shade700,
+                            color: colorScheme.primary,
                             size: 24,
                           ),
                           const SizedBox(width: 12),
@@ -299,7 +299,7 @@ class _ForgetPasswordState extends State<ForgetPasswordScreen> with SingleTicker
                             child: Text(
                               "Make sure to check your spam folder if you don't see the email in your inbox.",
                               style: TextStyle(
-                                color: Colors.blue.shade900,
+                                color: colorScheme.onPrimaryContainer,
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500,
                                 height: 1.4,
@@ -316,7 +316,7 @@ class _ForgetPasswordState extends State<ForgetPasswordScreen> with SingleTicker
                         Text(
                           "Remember your password?",
                           style: TextStyle(
-                            color: Colors.grey.shade600,
+                            color: colorScheme.onSurfaceVariant,
                             fontSize: 14,
                           ),
                         ),
