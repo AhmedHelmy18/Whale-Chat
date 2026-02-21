@@ -60,18 +60,16 @@ class StatusRepository {
     });
   }
 
-  Future<String?> getCurrentUserImageUrl() async {
+  Stream<String?> getCurrentUserImageUrl() {
     final userId = _auth.currentUser?.uid;
-    if (userId == null) return null;
-    try {
-      final doc = await _firestore.collection('users').doc(userId).get();
+    if (userId == null) return Stream.value(null);
+
+    return _firestore.collection('users').doc(userId).snapshots().map((doc) {
       if (doc.exists) {
         return doc.data()?['image'];
       }
-    } catch (e) {
-      // print('Error fetching user image URL: $e');
-    }
-    return null;
+      return null;
+    });
   }
 
   Future<String?> getCurrentUserId() async {

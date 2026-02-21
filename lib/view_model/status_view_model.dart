@@ -9,6 +9,7 @@ class StatusViewModel extends ChangeNotifier {
   final StatusRepository _statusRepository = StatusRepository();
   StreamSubscription? _statusesSubscription;
   StreamSubscription? _myStatusSubscription;
+  StreamSubscription? _userImageSubscription;
 
   List<Status> _statuses = [];
   Status? _myStatus;
@@ -45,9 +46,12 @@ class StatusViewModel extends ChangeNotifier {
     });
   }
 
-  void _fetchCurrentUserImage() async {
-    _currentUserImageUrl = await _statusRepository.getCurrentUserImageUrl();
-    notifyListeners();
+  void _fetchCurrentUserImage() {
+    _userImageSubscription =
+        _statusRepository.getCurrentUserImageUrl().listen((imageUrl) {
+      _currentUserImageUrl = imageUrl;
+      notifyListeners();
+    });
   }
 
   Future<void> addStatus({
@@ -82,6 +86,7 @@ class StatusViewModel extends ChangeNotifier {
   void dispose() {
     _statusesSubscription?.cancel();
     _myStatusSubscription?.cancel();
+    _userImageSubscription?.cancel();
     super.dispose();
   }
 }

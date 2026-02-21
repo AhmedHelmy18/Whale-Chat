@@ -33,67 +33,20 @@ class _StatusScreenState extends State<StatusScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      body: NestedScrollView(
-        headerSliverBuilder: (context, innerBoxIsScrolled) {
-          return [
-            SliverAppBar(
-              backgroundColor: colorScheme.surface,
-              elevation: 0,
-              pinned: true,
-              floating: true,
-              snap: true,
-              expandedHeight: 100.0,
-              flexibleSpace: FlexibleSpaceBar(
-                titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
-                title: Text(
-                  'Updates',
-                  style: TextStyle(
-                    color: colorScheme.onSurface,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              actions: [
-                IconButton(
-                  icon: Icon(Icons.search, color: colorScheme.onSurface),
-                  onPressed: () {},
-                ),
-                IconButton(
-                  icon: Icon(Icons.more_vert, color: colorScheme.onSurface),
-                  onPressed: () {},
-                ),
-              ],
-            ),
-          ];
-        },
-        body: ListenableBuilder(
-          listenable: _viewModel,
-          builder: (context, _) {
-            final myStatus = _viewModel.myStatus;
-            final userImageUrl = _viewModel.currentUserImageUrl;
-            final statusList = _viewModel.statuses;
-            final currentUserId = _viewModel.currentUserId;
+      floatingActionButton: const _FloatingStatusButtons(),
+      body: ListenableBuilder(
+        listenable: _viewModel,
+        builder: (context, _) {
+          final myStatus = _viewModel.myStatus;
+          final userImageUrl = _viewModel.currentUserImageUrl;
+          final statusList = _viewModel.statuses;
+          final currentUserId = _viewModel.currentUserId;
 
-            return CustomScrollView(
-              slivers: [
-                // Section Header
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                    child: Text(
-                      'Status',
-                      style: TextStyle(
-                        fontSize: 19,
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.onSurface,
-                      ),
-                    ),
-                  ),
-                ),
-
-                // My Status Card
-                SliverToBoxAdapter(
-                  child: _MyStatusCard(
+          return CustomScrollView(
+            slivers: [
+              // My Status Card
+              SliverToBoxAdapter(
+                child: _MyStatusCard(
                     myStatus: myStatus,
                     userImageUrl: userImageUrl,
                     onTap: () {
@@ -188,9 +141,16 @@ class _StatusScreenState extends State<StatusScreen> {
               ],
             );
           },
-        ),
-      ),
-      floatingActionButton: Column(
+      );
+  }
+}
+
+class _FloatingStatusButtons extends StatelessWidget {
+  const _FloatingStatusButtons();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           FloatingActionButton.small(
@@ -221,7 +181,6 @@ class _StatusScreenState extends State<StatusScreen> {
             child: Icon(Icons.camera_alt, color: colorScheme.onPrimary),
           ),
         ],
-      ),
     );
   }
 }
