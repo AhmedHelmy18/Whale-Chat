@@ -1,18 +1,19 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:whale_chat/controller/chat/chat_controller.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
+import 'package:whale_chat/view_model/chat_view_model.dart';
 
 class ImagePickPreview extends StatelessWidget {
-  const ImagePickPreview({super.key, required this.controller});
+  const ImagePickPreview({super.key, required this.viewModel});
 
-  final ChatController controller;
+  final ChatViewModel viewModel;
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<List<File>>(
-      valueListenable: controller.pickedImages,
-      builder: (_, files, __) {
+    return ListenableBuilder(
+      listenable: viewModel,
+      builder: (_, __) {
+        final files = viewModel.pickedImages;
         if (files.isEmpty) return const SizedBox.shrink();
 
         return Container(
@@ -22,7 +23,7 @@ class ImagePickPreview extends StatelessWidget {
             color: colorScheme.surface,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
+                color: colorScheme.onSurface.withValues(alpha: 0.08),
                 blurRadius: 12,
                 offset: const Offset(0, -2),
               ),
@@ -42,11 +43,11 @@ class ImagePickPreview extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Selected الصور: ${files.length}",
+                  "Selected Images: ${files.length}",
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
-                    color: Colors.grey.shade800,
+                    color: colorScheme.onSurface.withValues(alpha: 0.8),
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -72,17 +73,17 @@ class ImagePickPreview extends StatelessWidget {
                             top: 4,
                             right: 4,
                             child: InkWell(
-                              onTap: () => controller.removePickedImageAt(index),
+                              onTap: () => viewModel.removePickedImageAt(index),
                               child: Container(
                                 padding: const EdgeInsets.all(4),
                                 decoration: BoxDecoration(
-                                  color: Colors.black.withValues(alpha: 0.55),
+                                  color: colorScheme.onSurface.withValues(alpha: 0.55),
                                   shape: BoxShape.circle,
                                 ),
-                                child: const Icon(
+                                child: Icon(
                                   Icons.close_rounded,
                                   size: 16,
-                                  color: Colors.white,
+                                  color: colorScheme.surface,
                                 ),
                               ),
                             ),

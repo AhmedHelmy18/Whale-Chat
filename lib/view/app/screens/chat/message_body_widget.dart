@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:whale_chat/controller/chat/chat_controller.dart';
-import 'package:whale_chat/services/message_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:whale_chat/util/format_time.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
-import 'package:whale_chat/model/message.dart';
+import 'package:whale_chat/data/model/message.dart';
 import 'package:whale_chat/view/app/screens/chat/chat_date.dart';
 import 'package:whale_chat/view/app/screens/chat/chat_input_field.dart';
 import 'package:whale_chat/view/app/screens/chat/image/image_grid_widget.dart';
 import 'package:whale_chat/view/app/screens/chat/image/image_pick_preview.dart';
+import 'package:whale_chat/view_model/chat_view_model.dart';
 
 class MessageBodyWidget extends StatefulWidget {
   const MessageBodyWidget({
@@ -24,23 +24,25 @@ class MessageBodyWidget extends StatefulWidget {
 }
 
 class _MessageBodyWidgetState extends State<MessageBodyWidget> with SingleTickerProviderStateMixin {
-  late final ChatController controller;
-  late final MessageService messageService;
+  late final ChatViewModel viewModel;
   late final AnimationController _fabAnimationController;
   late final Animation<double> _fabScaleAnimation;
+  final TextEditingController messageController = TextEditingController();
+  final ScrollController scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
 
-    controller = ChatController(
-      conversationId: widget.conversationId,
-      userId: widget.userId,
-    );
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUserId == null) {
+      // Handle the case where the user is not logged in
+      // This might involve popping the screen or redirecting
+    }
 
-    messageService = MessageService(
-      userId: widget.userId,
+    viewModel = ChatViewModel(
       conversationId: widget.conversationId,
+      currentUserId: currentUserId ?? '',
     );
 
     _fabAnimationController = AnimationController(
@@ -57,19 +59,51 @@ class _MessageBodyWidgetState extends State<MessageBodyWidget> with SingleTicker
         curve: Curves.easeInOut,
       ),
     );
+
+    // Auto scroll to bottom when messages change
+    viewModel.addListener(_scrollToBottom);
+  }
+
+  void _scrollToBottom() {
+      if (scrollController.hasClients && viewModel.messages.isNotEmpty) {
+           // Small delay to ensure list is rendered
+           Future.delayed(const Duration(milliseconds: 100), () {
+             if (scrollController.hasClients) {
+               scrollController.animateTo(
+                 scrollController.position.maxScrollExtent,
+                 duration: const Duration(milliseconds: 300),
+                 curve: Curves.easeOut,
+               );
+             }
+           });
+      }
   }
 
   @override
   void dispose() {
+    viewModel.removeListener(_scrollToBottom);
+    viewModel.dispose();
     _fabAnimationController.dispose();
-    controller.dispose();
+    messageController.dispose();
+    scrollController.dispose();
     super.dispose();
+  }
+
+  Icon _getMessageStatusIcon(String status) {
+    if (status == 'sent') {
+      return Icon(Icons.check, color: colorScheme.onSurfaceVariant, size: 16);
+    } else if (status == 'delivered') {
+      return Icon(Icons.done_all, color: colorScheme.onSurfaceVariant, size: 16);
+    } else if (status == 'seen') {
+      return Icon(Icons.done_all, color: colorScheme.primary, size: 16);
+    }
+    return Icon(Icons.check, color: colorScheme.onSurfaceVariant, size: 16);
   }
 
   Widget _buildTimeRow(Message message) {
     final textStyle = TextStyle(
       fontSize: 11,
-      color: message.isMe ? Colors.white.withValues(alpha: 0.85) : colorScheme.onPrimary,
+      color: message.isMe ? colorScheme.surface.withValues(alpha: 0.85) : colorScheme.onPrimary,
     );
 
     return Row(
@@ -79,7 +113,7 @@ class _MessageBodyWidgetState extends State<MessageBodyWidget> with SingleTicker
         Text(formatTime(message.time), style: textStyle),
         if (message.isMe) ...[
           const SizedBox(width: 4),
-          messageService.getMessageStatusIcon(message.status),
+          _getMessageStatusIcon(message.status),
         ],
       ],
     );
@@ -102,7 +136,7 @@ class _MessageBodyWidgetState extends State<MessageBodyWidget> with SingleTicker
           ),
           if (message.isMe) ...[
             const SizedBox(width: 4),
-            SizedBox.shrink(),
+            const SizedBox.shrink(),
           ],
         ],
       ),
@@ -140,7 +174,7 @@ class _MessageBodyWidgetState extends State<MessageBodyWidget> with SingleTicker
             child: Text(
               message.text,
               style: TextStyle(
-                color: message.isMe ? Colors.white : Colors.black87,
+                color: message.isMe ? colorScheme.surface : colorScheme.onSurface.withValues(alpha: 0.87),
                 fontSize: 15,
                 height: 1.35,
               ),
@@ -196,13 +230,13 @@ class _MessageBodyWidgetState extends State<MessageBodyWidget> with SingleTicker
     return Column(
       children: [
         Expanded(
-          child: ValueListenableBuilder<List<Message>?>(
-            valueListenable: controller.messages,
-            builder: (_, messages, __) {
-              final safeMessages = messages ?? [];
+          child: ListenableBuilder(
+            listenable: viewModel,
+            builder: (_, __) {
+              final safeMessages = viewModel.messages;
 
               return ListView.builder(
-                controller: controller.scrollController,
+                controller: scrollController,
                 physics: const BouncingScrollPhysics(),
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 itemCount: safeMessages.length,
@@ -218,9 +252,10 @@ class _MessageBodyWidgetState extends State<MessageBodyWidget> with SingleTicker
             },
           ),
         ),
-        ImagePickPreview(controller: controller),
+        ImagePickPreview(viewModel: viewModel),
         ChatInputField(
-          controller: controller,
+          viewModel: viewModel,
+          messageController: messageController,
           fabAnimationController: _fabAnimationController,
           fabScaleAnimation: _fabScaleAnimation,
         ),

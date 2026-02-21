@@ -1,11 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:whale_chat/controller/chat/chat_controller.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
 import 'package:whale_chat/view/common/image_options/model_sheet_options.dart';
+import 'package:whale_chat/view_model/chat_view_model.dart';
 
 class ChatInputField extends StatelessWidget {
-  const ChatInputField({super.key, required this.controller, required this.fabAnimationController, required this.fabScaleAnimation});
-  final ChatController controller;
+  const ChatInputField({
+    super.key,
+    required this.viewModel,
+    required this.messageController,
+    required this.fabAnimationController,
+    required this.fabScaleAnimation,
+  });
+
+  final ChatViewModel viewModel;
+  final TextEditingController messageController;
   final AnimationController fabAnimationController;
   final Animation<double> fabScaleAnimation;
 
@@ -17,7 +25,7 @@ class ChatInputField extends StatelessWidget {
         color: colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: colorScheme.onSurface.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -32,10 +40,10 @@ class ChatInputField extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
+                  color: colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(28),
                   border: Border.all(
-                    color: Colors.grey.shade300,
+                    color: colorScheme.outline,
                     width: 1,
                   ),
                 ),
@@ -44,7 +52,7 @@ class ChatInputField extends StatelessWidget {
                   children: [
                     Expanded(
                       child: TextField(
-                        controller: controller.messageController,
+                        controller: messageController,
                         maxLines: null,
                         style: const TextStyle(fontSize: 15),
                         decoration: const InputDecoration(
@@ -63,13 +71,13 @@ class ChatInputField extends StatelessWidget {
                       child: IconButton(
                         icon: Icon(
                           Icons.attach_file_rounded,
-                          color: Colors.grey.shade600,
+                          color: colorScheme.onSurfaceVariant,
                         ),
                         onPressed: () {
                           showImageSourcePicker(
                             context: context,
                             onPick: (source) async {
-                              await controller.pickSingleImage(source);
+                              await viewModel.pickSingleImage(source);
                             },
                           );
                         },
@@ -87,7 +95,12 @@ class ChatInputField extends StatelessWidget {
               onTapDown: (_) => fabAnimationController.forward(),
               onTapUp: (_) => fabAnimationController.reverse(),
               onTapCancel: () => fabAnimationController.reverse(),
-              onTap: () async => await controller.sendMessageWithMedia(),
+              onTap: () async {
+                final text = messageController.text;
+                if (text.trim().isEmpty && viewModel.pickedImages.isEmpty) return;
+                await viewModel.sendMessage(text);
+                messageController.clear();
+              },
               child: ScaleTransition(
                 scale: fabScaleAnimation,
                 child: Container(
@@ -103,7 +116,7 @@ class ChatInputField extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: const Icon(Icons.send_rounded, color: Colors.white, size: 22),
+                  child: Icon(Icons.send_rounded, color: colorScheme.surface, size: 22),
                 ),
               ),
             ),

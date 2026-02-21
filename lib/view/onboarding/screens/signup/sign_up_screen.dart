@@ -21,7 +21,7 @@ class SignUpScreen extends StatelessWidget {
             color: colorScheme.surface,
           ),
         ),
-        backgroundColor: Colors.transparent,
+        backgroundColor: colorScheme.surface.withValues(alpha: 0),
       ),
       body: SingleChildScrollView(
         child: Stack(

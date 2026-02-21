@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:whale_chat/controller/auth/auth_controller.dart';
+import 'package:whale_chat/view_model/auth_view_model.dart';
 import 'package:whale_chat/util/auth_validator.dart';
 import 'package:whale_chat/view/onboarding/components/custom_text_form_field.dart';
 import 'package:whale_chat/view/onboarding/components/error_box.dart';
@@ -21,7 +21,7 @@ class _SignupFormState extends State<SignupForm> {
   final TextEditingController nameController = TextEditingController();
 
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-  final AuthController controller = AuthController();
+  final AuthViewModel viewModel = AuthViewModel();
 
   bool loading = false;
   String? errorText;
@@ -68,7 +68,7 @@ class _SignupFormState extends State<SignupForm> {
 
     setState(() => loading = true);
 
-    final result = await controller.signUp(
+    final result = await viewModel.signUp(
       email: emailController.text.trim(),
       password: passwordController.text.trim(),
       name: nameController.text.trim(),

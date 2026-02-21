@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:whale_chat/app.dart';
-import 'package:whale_chat/services/notification_service.dart';
-import 'package:whale_chat/services/user_service.dart';
+import 'package:whale_chat/data/service/notification_service.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
+import 'package:whale_chat/view/common/custom_snackbar.dart';
 import 'package:whale_chat/view/onboarding/components/primary_button.dart';
 
 class EmailVerifyScreen extends StatefulWidget {
@@ -59,7 +59,6 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> with SingleTicker
     if (user != null) {
       if (user.email == widget.email) {
         if (user.emailVerified) {
-          createUserDocument(uid: user.uid, name: widget.name, email: widget.email);
           if (!await _notificationService.hasPermission()) {
             await _notificationService.requestPermission();
           }
@@ -80,57 +79,15 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> with SingleTicker
           }
         } else {
           if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Row(
-                children: [
-                  Icon(Icons.info_outline, color: Colors.white),
-                  SizedBox(width: 12),
-                  Expanded(child: Text("Email not verified yet. Please check your inbox.")),
-                ],
-              ),
-              backgroundColor: Colors.orange.shade700,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              margin: const EdgeInsets.all(16),
-            ),
-          );
+          showCustomSnackBar(context, "Email not verified yet. Please check your inbox.", isError: true);
         }
       } else {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Row(
-              children: [
-                Icon(Icons.error_outline, color: Colors.white),
-                SizedBox(width: 12),
-                Expanded(child: Text("This email does not match your account.")),
-              ],
-            ),
-            backgroundColor: Colors.red.shade700,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            margin: const EdgeInsets.all(16),
-          ),
-        );
+        showCustomSnackBar(context, "This email does not match your account.", isError: true);
       }
     } else {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Row(
-            children: [
-              Icon(Icons.warning_amber_rounded, color: Colors.white),
-              SizedBox(width: 12),
-              Expanded(child: Text("No signed-in user found.")),
-            ],
-          ),
-          backgroundColor: Colors.red.shade700,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          margin: const EdgeInsets.all(16),
-        ),
-      );
+      showCustomSnackBar(context, "No signed-in user found.", isError: true);
     }
     setState(() => loading = false);
   }
@@ -195,7 +152,7 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> with SingleTicker
                         Text(
                           "We've sent a verification link to:",
                           style: TextStyle(
-                            color: Colors.grey.shade700,
+                            color: colorScheme.onSurfaceVariant,
                             fontSize: 15,
                             fontWeight: FontWeight.w500,
                             height: 1.5,
@@ -245,10 +202,10 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> with SingleTicker
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.blue.shade50,
+                      color: colorScheme.primaryContainer,
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
-                        color: Colors.blue.shade200,
+                        color: colorScheme.primary.withValues(alpha: 0.3),
                         width: 1,
                       ),
                     ),
@@ -256,7 +213,7 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> with SingleTicker
                       children: [
                         Icon(
                           Icons.info_rounded,
-                          color: Colors.blue.shade700,
+                          color: colorScheme.primary,
                           size: 24,
                         ),
                         const SizedBox(width: 12),
@@ -264,7 +221,7 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> with SingleTicker
                           child: Text(
                             "Check your inbox and click the verification link to continue",
                             style: TextStyle(
-                              color: Colors.blue.shade900,
+                              color: colorScheme.onPrimaryContainer,
                               fontSize: 13,
                               fontWeight: FontWeight.w500,
                               height: 1.4,
@@ -291,31 +248,17 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> with SingleTicker
 
                   TextButton.icon(
                     onPressed: loading ? null : () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: const Row(
-                            children: [
-                              Icon(Icons.check_circle_outline, color: Colors.white),
-                              SizedBox(width: 12),
-                              Text("Verification email sent!"),
-                            ],
-                          ),
-                          backgroundColor: Colors.green.shade700,
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          margin: const EdgeInsets.all(16),
-                        ),
-                      );
+                      showCustomSnackBar(context, "Verification email sent!");
                     },
                     icon: Icon(
                       Icons.refresh_rounded,
                       size: 20,
-                      color: loading ? Colors.grey : colorScheme.primary,
+                      color: loading ? colorScheme.outline : colorScheme.primary,
                     ),
                     label: Text(
                       "Didn't receive the email? Resend",
                       style: TextStyle(
-                        color: loading ? Colors.grey : colorScheme.primary,
+                        color: loading ? colorScheme.outline : colorScheme.primary,
                         fontWeight: FontWeight.w600,
                         fontSize: 14,
                       ),

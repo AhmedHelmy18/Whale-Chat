@@ -23,27 +23,44 @@ class EditContainer extends StatelessWidget {
           Text(
             text,
             style: TextStyle(
-              fontSize: 20,
-              color: colorScheme.secondary,
-              fontWeight: FontWeight.w500,
+              fontSize: 18,
+              color: colorScheme.onSurface.withValues(alpha: 0.6),
+              fontWeight: FontWeight.w600,
             ),
           ),
+          const SizedBox(height: 8),
           TextFormField(
             controller: controller,
+            style: TextStyle(
+              fontSize: 16,
+              color: colorScheme.onSurface,
+            ),
             decoration: InputDecoration(
               hintText: hint,
               hintStyle: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w500,
-                color: colorScheme.secondary,
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+                color: colorScheme.onSurface.withValues(alpha: 0.4),
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: colorScheme.outline,
+                  width: 1.5,
+                ),
               ),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: colorScheme.outline,
+                  width: 1.5,
+                ),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(
-                  width: 3,
+                  width: 2,
                   color: colorScheme.primary,
                 ),
               ),
