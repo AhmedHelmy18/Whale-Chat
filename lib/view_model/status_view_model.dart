@@ -3,10 +3,10 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:whale_chat/model/status/status.dart';
-import 'package:whale_chat/services/status_service.dart';
+import 'package:whale_chat/data/repository/status_repository.dart';
 
 class StatusViewModel extends ChangeNotifier {
-  final StatusService _statusService = StatusService();
+  final StatusRepository _statusRepository = StatusRepository();
   StreamSubscription? _statusesSubscription;
   StreamSubscription? _myStatusSubscription;
 
@@ -27,24 +27,26 @@ class StatusViewModel extends ChangeNotifier {
   }
 
   Future<void> _fetchCurrentUserId() async {
-    _currentUserId = await _statusService.getCurrentUserId();
+    _currentUserId = await _statusRepository.getCurrentUserId();
     notifyListeners();
   }
 
   void _listenToStatuses() {
-    _statusesSubscription = _statusService.getStatuses().listen((newStatuses) {
+    _statusesSubscription =
+        _statusRepository.getStatuses().listen((newStatuses) {
       _statuses = newStatuses;
       notifyListeners();
     });
 
-    _myStatusSubscription = _statusService.getMyStatus().listen((newMyStatus) {
+    _myStatusSubscription =
+        _statusRepository.getMyStatus().listen((newMyStatus) {
       _myStatus = newMyStatus;
       notifyListeners();
     });
   }
 
   void _fetchCurrentUserImage() async {
-    _currentUserImageUrl = await _statusService.getCurrentUserImageUrl();
+    _currentUserImageUrl = await _statusRepository.getCurrentUserImageUrl();
     notifyListeners();
   }
 
@@ -55,7 +57,7 @@ class StatusViewModel extends ChangeNotifier {
     File? imageFile,
     String? backgroundColor,
   }) async {
-    await _statusService.addStatus(
+    await _statusRepository.addStatus(
       type: type,
       content: content,
       caption: caption,
@@ -65,15 +67,15 @@ class StatusViewModel extends ChangeNotifier {
   }
 
   Future<void> markStatusAsViewed(String statusId, String statusItemId) async {
-    await _statusService.markStatusAsViewed(statusId, statusItemId);
+    await _statusRepository.markStatusAsViewed(statusId, statusItemId);
   }
 
   Future<void> deleteStatus(String statusId) async {
-    await _statusService.deleteStatus(statusId);
+    await _statusRepository.deleteStatus(statusId);
   }
 
   Future<void> deleteStatusItem(String statusId, String itemId) async {
-    await _statusService.deleteStatusItem(statusId, itemId);
+    await _statusRepository.deleteStatusItem(statusId, itemId);
   }
 
   @override
