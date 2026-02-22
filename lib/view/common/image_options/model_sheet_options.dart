@@ -3,9 +3,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
 import 'package:whale_chat/view/common/image_options/source_option.dart';
 
-Future<void> showImageSourcePicker({
-  required BuildContext context,
-  required Future<void> Function(ImageSource source) onPick}) async {
+Future<void> showImageSourcePicker(
+    {required BuildContext context,
+    required Future<void> Function(ImageSource source) onPick}) async {
   await showModalBottomSheet(
     context: context,
     backgroundColor: Colors.transparent,
@@ -17,7 +17,7 @@ Future<void> showImageSourcePicker({
           borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withAlpha(26),
+              color: colorScheme.shadow.withValues(alpha: 0.1),
               blurRadius: 20,
               offset: const Offset(0, -5),
             ),
@@ -33,7 +33,7 @@ Future<void> showImageSourcePicker({
                 height: 5,
                 margin: const EdgeInsets.only(bottom: 24),
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: colorScheme.outlineVariant,
                   borderRadius: BorderRadius.circular(3),
                 ),
               ),

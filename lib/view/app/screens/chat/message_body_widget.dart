@@ -23,7 +23,8 @@ class MessageBodyWidget extends StatefulWidget {
   State<MessageBodyWidget> createState() => _MessageBodyWidgetState();
 }
 
-class _MessageBodyWidgetState extends State<MessageBodyWidget> with SingleTickerProviderStateMixin {
+class _MessageBodyWidgetState extends State<MessageBodyWidget>
+    with SingleTickerProviderStateMixin {
   late final ChatViewModel viewModel;
   late final AnimationController _fabAnimationController;
   late final Animation<double> _fabScaleAnimation;
@@ -65,18 +66,18 @@ class _MessageBodyWidgetState extends State<MessageBodyWidget> with SingleTicker
   }
 
   void _scrollToBottom() {
-      if (scrollController.hasClients && viewModel.messages.isNotEmpty) {
-           // Small delay to ensure list is rendered
-           Future.delayed(const Duration(milliseconds: 100), () {
-             if (scrollController.hasClients) {
-               scrollController.animateTo(
-                 scrollController.position.maxScrollExtent,
-                 duration: const Duration(milliseconds: 300),
-                 curve: Curves.easeOut,
-               );
-             }
-           });
-      }
+    if (scrollController.hasClients && viewModel.messages.isNotEmpty) {
+      // Small delay to ensure list is rendered
+      Future.delayed(const Duration(milliseconds: 100), () {
+        if (scrollController.hasClients) {
+          scrollController.animateTo(
+            scrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        }
+      });
+    }
   }
 
   @override
@@ -93,7 +94,8 @@ class _MessageBodyWidgetState extends State<MessageBodyWidget> with SingleTicker
     if (status == 'sent') {
       return Icon(Icons.check, color: colorScheme.onSurfaceVariant, size: 16);
     } else if (status == 'delivered') {
-      return Icon(Icons.done_all, color: colorScheme.onSurfaceVariant, size: 16);
+      return Icon(Icons.done_all,
+          color: colorScheme.onSurfaceVariant, size: 16);
     } else if (status == 'seen') {
       return Icon(Icons.done_all, color: colorScheme.primary, size: 16);
     }
@@ -103,7 +105,9 @@ class _MessageBodyWidgetState extends State<MessageBodyWidget> with SingleTicker
   Widget _buildTimeRow(Message message) {
     final textStyle = TextStyle(
       fontSize: 11,
-      color: message.isMe ? colorScheme.surface.withValues(alpha: 0.85) : colorScheme.onPrimary,
+      color: message.isMe
+          ? colorScheme.surface.withValues(alpha: 0.85)
+          : colorScheme.onPrimary,
     );
 
     return Row(
@@ -143,7 +147,8 @@ class _MessageBodyWidgetState extends State<MessageBodyWidget> with SingleTicker
     );
   }
 
-  Widget _buildMessageItem(Message message, bool showDateHeader, String formattedDate, double width) {
+  Widget _buildMessageItem(Message message, bool showDateHeader,
+      String formattedDate, double width) {
     final hasImages = message.imageUrls.isNotEmpty;
     final hasText = message.text.isNotEmpty;
 
@@ -163,9 +168,13 @@ class _MessageBodyWidgetState extends State<MessageBodyWidget> with SingleTicker
             child: ImageGridWidget(
               imageUrls: message.imageUrls,
               hasText: hasText,
-              containerColor: message.isMe ? colorScheme.primary : colorScheme.secondary,
-              borderColor: message.isMe ? colorScheme.primary : colorScheme.secondary,
-              overlay: isImageOnly ? _imageOverlayIfNeeded(message, isImageOnly) : null,
+              containerColor:
+                  message.isMe ? colorScheme.primary : colorScheme.secondary,
+              borderColor:
+                  message.isMe ? colorScheme.primary : colorScheme.secondary,
+              overlay: isImageOnly
+                  ? _imageOverlayIfNeeded(message, isImageOnly)
+                  : null,
             ),
           ),
         if (hasText)
@@ -174,7 +183,9 @@ class _MessageBodyWidgetState extends State<MessageBodyWidget> with SingleTicker
             child: Text(
               message.text,
               style: TextStyle(
-                color: message.isMe ? colorScheme.surface : colorScheme.onSurface.withValues(alpha: 0.87),
+                color: message.isMe
+                    ? colorScheme.surface
+                    : colorScheme.onSurface.withValues(alpha: 0.87),
                 fontSize: 15,
                 height: 1.35,
               ),
@@ -196,7 +207,8 @@ class _MessageBodyWidgetState extends State<MessageBodyWidget> with SingleTicker
     if (hasImages && hasText) {
       bubbleChild = Stack(
         children: [
-          Padding(padding: const EdgeInsets.only(bottom: 12), child: bubbleInner),
+          Padding(
+              padding: const EdgeInsets.only(bottom: 12), child: bubbleInner),
           Positioned(right: 10, bottom: 8, child: _buildTimeRow(message)),
         ],
       );
@@ -208,14 +220,26 @@ class _MessageBodyWidgetState extends State<MessageBodyWidget> with SingleTicker
       children: [
         if (showDateHeader) ChatDate(date: formattedDate),
         Align(
-          alignment: message.isMe ? Alignment.centerRight : Alignment.centerLeft,
+          alignment:
+              message.isMe ? Alignment.centerRight : Alignment.centerLeft,
           child: Container(
-            margin: EdgeInsets.only(top: 4, bottom: 4, left: message.isMe ? 60 : 8, right: message.isMe ? 8 : 60),
+            margin: EdgeInsets.only(
+                top: 4,
+                bottom: 4,
+                left: message.isMe ? 60 : 8,
+                right: message.isMe ? 8 : 60),
             constraints: BoxConstraints(maxWidth: maxBubbleWidth),
             decoration: BoxDecoration(
-              color: (message.isMe ? colorScheme.primary : colorScheme.secondary),
+              color:
+                  (message.isMe ? colorScheme.primary : colorScheme.secondary),
               borderRadius: BorderRadius.circular(10),
-              border: hasBorder ? Border.all(color: message.isMe ? colorScheme.primary : colorScheme.secondary, width: 3) : null,
+              border: hasBorder
+                  ? Border.all(
+                      color: message.isMe
+                          ? colorScheme.primary
+                          : colorScheme.secondary,
+                      width: 3)
+                  : null,
             ),
             child: bubbleChild,
           ),
@@ -243,21 +267,33 @@ class _MessageBodyWidgetState extends State<MessageBodyWidget> with SingleTicker
                 itemBuilder: (context, index) {
                   final message = safeMessages[index];
                   final formattedRawDate = formatDate(message.time);
-                  final showDateHeader = index == 0 || formatDate(safeMessages[index - 1].time) != formattedRawDate;
+                  final showDateHeader = index == 0 ||
+                      formatDate(safeMessages[index - 1].time) !=
+                          formattedRawDate;
                   final formattedDate = formatChatDateHeader(message.time);
 
-                  return _buildMessageItem(message, showDateHeader, formattedDate, width);
+                  return _buildMessageItem(
+                      message, showDateHeader, formattedDate, width);
                 },
               );
             },
           ),
         ),
-        ImagePickPreview(viewModel: viewModel),
-        ChatInputField(
-          viewModel: viewModel,
-          messageController: messageController,
-          fabAnimationController: _fabAnimationController,
-          fabScaleAnimation: _fabScaleAnimation,
+        ListenableBuilder(
+          listenable: viewModel,
+          builder: (context, _) {
+            return Column(
+              children: [
+                ImagePickPreview(viewModel: viewModel),
+                ChatInputField(
+                  viewModel: viewModel,
+                  messageController: messageController,
+                  fabAnimationController: _fabAnimationController,
+                  fabScaleAnimation: _fabScaleAnimation,
+                ),
+              ],
+            );
+          },
         ),
       ],
     );

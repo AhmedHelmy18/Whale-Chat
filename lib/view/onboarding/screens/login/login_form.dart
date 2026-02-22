@@ -58,7 +58,6 @@ class _LoginFormState extends State<LoginForm> {
               (route) => false,
         );
       } else {
-        // Handle the case where the user denies permission
         if (!mounted) return;
         showCustomSnackBar(context, "Notification permission is required to use the app.", isError: true);
       }

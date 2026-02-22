@@ -4,7 +4,6 @@ import 'package:whale_chat/view/app/screens/search/search_screen.dart';
 import 'package:whale_chat/view/app/screens/home/chat_body_widget.dart';
 import 'package:whale_chat/view_model/auth_view_model.dart';
 import 'package:whale_chat/view_model/home_view_model.dart';
-import 'package:whale_chat/theme/color_scheme.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -86,7 +85,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           onPressed: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (_) => const SearchScreen()),
+                              MaterialPageRoute(
+                                  builder: (_) => const SearchScreen()),
                             );
                           },
                         ),
@@ -166,28 +166,29 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                          Icon(
-                            Icons.chat_bubble_outline_rounded,
-                            size: 80,
-                            color: colorScheme.outline,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            "No recent chats",
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w500,
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            "Start a conversation",
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
-                            ),
-                          ),
+                      Icon(
+                        Icons.chat_bubble_outline_rounded,
+                        size: 80,
+                        color: colorScheme.outline,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        "No recent chats",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w500,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        "Start a conversation",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: colorScheme.onSurfaceVariant
+                              .withValues(alpha: 0.6),
+                        ),
+                      ),
                     ],
                   ),
                 );

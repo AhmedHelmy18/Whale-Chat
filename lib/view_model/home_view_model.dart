@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:whale_chat/data/model/chat_model.dart';
 import 'package:whale_chat/data/repository/chat_repository.dart';
 import 'package:whale_chat/data/repository/user_repository.dart';
 
@@ -22,15 +21,16 @@ class HomeViewModel extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    _chatSubscription = _chatRepository.getChats(userId).listen((chatModels) async {
+    _chatSubscription =
+        _chatRepository.getChats(userId).listen((chatModels) async {
       if (_isDisposed) return;
       final List<Map<String, dynamic>> loadedChats = [];
 
       // Note: This still does N+1 queries. To optimize, we'd need a different data structure
       // or batch fetch. For now, we keep the logic but structured in ViewModel.
       for (var chat in chatModels) {
-        final otherUserId = chat.participants.firstWhere(
-            (id) => id != userId, orElse: () => '');
+        final otherUserId = chat.participants
+            .firstWhere((id) => id != userId, orElse: () => '');
 
         if (otherUserId.isNotEmpty) {
           final user = await _userRepository.getUser(otherUserId);
@@ -49,7 +49,7 @@ class HomeViewModel extends ChangeNotifier {
       }
 
       // Sort by timestamp
-       loadedChats.sort((a, b) {
+      loadedChats.sort((a, b) {
         final aTimestamp = a['timestamp'];
         final bTimestamp = b['timestamp'];
         if (aTimestamp == null) return 1;

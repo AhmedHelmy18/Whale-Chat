@@ -38,7 +38,8 @@ class ChatInputField extends StatelessWidget {
           children: [
             Expanded(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
                 decoration: BoxDecoration(
                   color: colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(28),
@@ -54,6 +55,7 @@ class ChatInputField extends StatelessWidget {
                       child: TextField(
                         controller: messageController,
                         maxLines: null,
+                        enabled: !viewModel.isSending,
                         style: const TextStyle(fontSize: 15),
                         decoration: const InputDecoration(
                           hintText: 'Type a message...',
@@ -71,17 +73,20 @@ class ChatInputField extends StatelessWidget {
                       child: IconButton(
                         icon: Icon(
                           Icons.attach_file_rounded,
-                          color: colorScheme.onSurfaceVariant,
+                          color: viewModel.isSending
+                              ? colorScheme.outline
+                              : colorScheme.onSurfaceVariant,
                         ),
-                        onPressed: () {
-                          showImageSourcePicker(
-                            context: context,
-                            onPick: (source) async {
-                              await viewModel.pickSingleImage(source);
-                            },
-                          );
-                        },
-
+                        onPressed: viewModel.isSending
+                            ? null
+                            : () {
+                                showImageSourcePicker(
+                                  context: context,
+                                  onPick: (source) async {
+                                    await viewModel.pickSingleImage(source);
+                                  },
+                                );
+                              },
                         padding: const EdgeInsets.all(8),
                         constraints: const BoxConstraints(),
                       ),
@@ -92,31 +97,52 @@ class ChatInputField extends StatelessWidget {
             ),
             const SizedBox(width: 10),
             GestureDetector(
-              onTapDown: (_) => fabAnimationController.forward(),
-              onTapUp: (_) => fabAnimationController.reverse(),
+              onTapDown: (_) =>
+                  viewModel.isSending ? null : fabAnimationController.forward(),
+              onTapUp: (_) =>
+                  viewModel.isSending ? null : fabAnimationController.reverse(),
               onTapCancel: () => fabAnimationController.reverse(),
-              onTap: () async {
-                final text = messageController.text;
-                if (text.trim().isEmpty && viewModel.pickedImages.isEmpty) return;
-                await viewModel.sendMessage(text);
-                messageController.clear();
-              },
+              onTap: viewModel.isSending
+                  ? null
+                  : () async {
+                      final text = messageController.text;
+                      if (text.trim().isEmpty &&
+                          viewModel.pickedImages.isEmpty) {
+                        return;
+                      }
+                      await viewModel.sendMessage(text);
+                      messageController.clear();
+                    },
               child: ScaleTransition(
                 scale: fabScaleAnimation,
                 child: Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: colorScheme.primary,
+                    color: viewModel.isSending
+                        ? colorScheme.outline
+                        : colorScheme.primary,
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: colorScheme.primary.withValues(alpha: 0.4),
+                        color: viewModel.isSending
+                            ? Colors.transparent
+                            : colorScheme.primary.withValues(alpha: 0.4),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
                     ],
                   ),
-                  child: Icon(Icons.send_rounded, color: colorScheme.surface, size: 22),
+                  child: viewModel.isSending
+                      ? SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: colorScheme.surface,
+                          ),
+                        )
+                      : Icon(Icons.send_rounded,
+                          color: colorScheme.surface, size: 22),
                 ),
               ),
             ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:whale_chat/theme/color_scheme.dart';
 
 class ChatDate extends StatelessWidget {
   const ChatDate({super.key, required this.date});
@@ -11,11 +12,11 @@ class ChatDate extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
         decoration: BoxDecoration(
-          color: Colors.grey.shade200,
+          color: colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
+              color: colorScheme.shadow.withValues(alpha: 0.05),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -26,7 +27,7 @@ class ChatDate extends StatelessWidget {
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w600,
-            color: Colors.grey.shade700,
+            color: colorScheme.onSurfaceVariant,
             letterSpacing: 0.3,
           ),
         ),
