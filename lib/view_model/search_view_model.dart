@@ -16,8 +16,12 @@ class SearchViewModel extends ChangeNotifier {
   bool _isCreatingChat = false;
   bool get isCreatingChat => _isCreatingChat;
 
+  String? _error;
+  String? get error => _error;
+
   Future<void> searchUsers(String query, String currentUserId) async {
     _isLoading = true;
+    _error = null;
     notifyListeners();
 
     final results = await _userRepository.searchUsers(query);
@@ -29,10 +33,16 @@ class SearchViewModel extends ChangeNotifier {
 
   Future<String?> createChat(String participantId) async {
     _isCreatingChat = true;
+    _error = null;
     notifyListeners();
     try {
-      return await _chatRepository.createChat(participantId);
-    } catch (_) {
+      final id = await _chatRepository.createChat(participantId);
+      if (id == null) {
+        _error = 'Failed to start chat. Please try again.';
+      }
+      return id;
+    } catch (e) {
+      _error = e.toString();
       return null;
     } finally {
       _isCreatingChat = false;

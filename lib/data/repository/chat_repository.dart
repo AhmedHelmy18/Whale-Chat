@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -9,8 +11,7 @@ import 'package:whale_chat/data/model/message.dart';
 class ChatRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
-  final FirebaseFunctions _functions =
-      FirebaseFunctions.instanceFor(region: 'us-central1');
+  final FirebaseFunctions _functions = FirebaseFunctions.instance;
 
   Stream<List<ChatModel>> getChats(String userId) {
     return _firestore
@@ -19,7 +20,10 @@ class ChatRepository {
         .orderBy('lastMessageTime', descending: true)
         .snapshots()
         .map((snapshot) {
-      final chats = snapshot.docs.map((doc) => ChatModel.fromDoc(doc)).toList();
+      final chats = snapshot.docs
+          .map((doc) => ChatModel.fromDoc(doc))
+          .where((chat) => chat.lastMessage.isNotEmpty)
+          .toList();
 
       final seen = <String>{};
       final unique = <ChatModel>[];
@@ -79,12 +83,16 @@ class ChatRepository {
       type = 'text';
     }
 
-    await _functions.httpsCallable('sendMessage').call({
-      'chatId': conversationId,
-      'content': cleanText,
-      'type': type,
-      'imageUrls': imageUrls,
-    });
+    try {
+      await _functions.httpsCallable('sendMessage').call({
+        'chatId': conversationId,
+        'content': cleanText,
+        'type': type,
+        'imageUrls': imageUrls,
+      });
+    } catch (e) {
+      debugPrint('Error sending message: $e');
+    }
   }
 
   Future<void> updateMessageStatus({
@@ -104,6 +112,7 @@ class ChatRepository {
       });
       return result.data['chatId'];
     } catch (e) {
+      debugPrint('Error creating chat: $e');
       return null;
     }
   }

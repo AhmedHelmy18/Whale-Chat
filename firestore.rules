@@ -9,7 +9,7 @@ service cloud.firestore {
       allow read: if request.auth != null;
       // Allow update only for FCM token if it's the user's own document
       allow update: if request.auth != null && request.auth.uid == userId &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['fcm token']);
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['pushToken']);
       // Deny create and delete (handled by Cloud Functions)
       allow create, delete: if false;
     }

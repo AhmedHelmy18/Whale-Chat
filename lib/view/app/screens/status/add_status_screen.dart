@@ -42,7 +42,8 @@ class _AddStatusScreenState extends State<AddStatusScreen> {
   void initState() {
     super.initState();
     if (!widget.isTextMode) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _showImagePicker());
+      WidgetsBinding.instance
+          .addPostFrameCallback((Duration _) => _showImagePicker());
     }
   }
 
@@ -56,7 +57,7 @@ class _AddStatusScreenState extends State<AddStatusScreen> {
   Future<void> _showImagePicker() async {
     await showImageSourcePicker(
       context: context,
-      onPick: (source) async {
+      onPick: (ImageSource source) async {
         try {
           final XFile? image = await ImagePicker().pickImage(
             source: source,
@@ -100,7 +101,7 @@ class _AddStatusScreenState extends State<AddStatusScreen> {
           type: StatusType.text,
           content: _textController.text.trim(),
           backgroundColor:
-              '#${_selectedColor.value.toRadixString(16).substring(2)}',
+              '#${_selectedColor.toARGB32().toRadixString(16).padLeft(8, '0').substring(2)}',
         );
       }
       if (mounted) {
@@ -131,7 +132,8 @@ class _AddStatusScreenState extends State<AddStatusScreen> {
               StatusColorPalette(
                 colors: _backgroundColors,
                 selected: _selectedColor,
-                onSelect: (color) => setState(() => _selectedColor = color),
+                onSelect: (Color color) =>
+                    setState(() => _selectedColor = color),
               ),
             StatusActionBar(
               isImageMode: isImageMode,

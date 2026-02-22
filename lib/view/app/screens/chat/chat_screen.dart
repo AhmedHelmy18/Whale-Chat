@@ -64,7 +64,7 @@ class ChatScreen extends StatelessWidget {
           child: Row(
             children: [
               Hero(
-                tag: 'profile_$userId',
+                tag: 'chat_profile_$userId',
                 child: FutureBuilder<String?>(
                   future: getProfileImage(),
                   builder: (context, snapshot) {

@@ -20,16 +20,23 @@ class StatusRepository {
         .collection('chats')
         .where('participants', arrayContains: currentUserId)
         .snapshots()
-        .asyncExpand((chatSnapshot) {
+        .map((chatSnapshot) {
       final chattedUserIds = <String>{};
       for (final doc in chatSnapshot.docs) {
-        final participants =
-            List<String>.from(doc.data()['participants'] ?? []);
+        final data = doc.data();
+        final lastMessage = data['lastMessage'] as String? ?? '';
+        if (lastMessage.isEmpty) continue;
+
+        final participants = List<String>.from(data['participants'] ?? []);
         for (final uid in participants) {
           if (uid != currentUserId) chattedUserIds.add(uid);
         }
       }
-
+      return chattedUserIds;
+    }).distinct((prev, curr) {
+      if (prev.length != curr.length) return false;
+      return prev.every(curr.contains);
+    }).asyncExpand((chattedUserIds) {
       if (chattedUserIds.isEmpty) return Stream.value(<Status>[]);
 
       return _firestore

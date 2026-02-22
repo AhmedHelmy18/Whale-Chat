@@ -43,7 +43,7 @@ class StatusListItem extends StatelessWidget {
 
   Widget _buildAvatar(bool hasUnseen) {
     return Hero(
-      tag: 'profile_${status.userId}',
+      tag: 'status_profile_${status.userId}',
       child: Container(
         padding: const EdgeInsets.all(3),
         decoration: BoxDecoration(

@@ -66,7 +66,8 @@ class ChatBodyWidget extends StatelessWidget {
               Stack(
                 children: [
                   Hero(
-                    tag: 'profile_$userId',
+                    tag:
+                        'chat_profile_$userId', // This tag remains as it is specific to ChatBodyWidget
                     child: Container(
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,

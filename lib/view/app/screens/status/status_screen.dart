@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:whale_chat/model/status/status.dart';
 import 'package:whale_chat/view_model/status_view_model.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
 import 'package:whale_chat/view/app/screens/status/add_status_screen.dart';
@@ -117,7 +118,8 @@ class _StatusScreenState extends State<StatusScreen> {
     );
   }
 
-  void _onMyStatusTap(context, myStatus, userImageUrl) {
+  void _onMyStatusTap(
+      BuildContext context, Status? myStatus, String? userImageUrl) {
     if (myStatus != null) {
       Navigator.push(
         context,

@@ -19,6 +19,9 @@ class ChatViewModel extends ChangeNotifier {
   List<File> _pickedImages = [];
   List<File> get pickedImages => _pickedImages;
 
+  bool _isSending = false;
+  bool get isSending => _isSending;
+
   StreamSubscription? _messageSubscription;
 
   ChatViewModel({required this.conversationId, required this.currentUserId}) {
@@ -26,7 +29,9 @@ class ChatViewModel extends ChangeNotifier {
   }
 
   void _listenToMessages() {
-    _messageSubscription = _chatRepository.getMessages(conversationId, currentUserId).listen((msgs) {
+    _messageSubscription = _chatRepository
+        .getMessages(conversationId, currentUserId)
+        .listen((msgs) {
       _messages = msgs;
       notifyListeners();
 
@@ -47,16 +52,24 @@ class ChatViewModel extends ChangeNotifier {
   }
 
   Future<void> sendMessage(String text) async {
+    if (_isSending) return;
+
+    _isSending = true;
     final imagesToSend = List<File>.from(_pickedImages);
     _pickedImages = []; // Clear immediately
     notifyListeners();
 
-    await _chatRepository.sendMessage(
-      conversationId: conversationId,
-      senderId: currentUserId,
-      text: text,
-      images: imagesToSend,
-    );
+    try {
+      await _chatRepository.sendMessage(
+        conversationId: conversationId,
+        senderId: currentUserId,
+        text: text,
+        images: imagesToSend,
+      );
+    } finally {
+      _isSending = false;
+      notifyListeners();
+    }
   }
 
   Future<void> pickMultiImages() async {
@@ -68,7 +81,8 @@ class ChatViewModel extends ChangeNotifier {
   }
 
   Future<void> pickSingleImage(ImageSource source) async {
-    final XFile? file = await _picker.pickImage(source: source, imageQuality: 80);
+    final XFile? file =
+        await _picker.pickImage(source: source, imageQuality: 80);
     if (file == null) return;
 
     _pickedImages.add(File(file.path));

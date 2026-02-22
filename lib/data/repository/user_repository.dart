@@ -8,13 +8,14 @@ import 'package:whale_chat/data/model/user_model.dart';
 class UserRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
-  final FirebaseFunctions _functions = FirebaseFunctions.instanceFor(region: 'us-central1');
+  final FirebaseFunctions _functions =
+      FirebaseFunctions.instanceFor(region: 'us-central1');
 
   Future<UserModel?> getUser(String uid) async {
     try {
       final doc = await _firestore.collection('users').doc(uid).get();
       if (doc.exists && doc.data() != null) {
-        return UserModel.fromJson(doc.data()!);
+        return UserModel.fromDoc(doc);
       }
       return null;
     } catch (e) {
@@ -25,7 +26,7 @@ class UserRepository {
   Stream<UserModel?> getUserStream(String uid) {
     return _firestore.collection('users').doc(uid).snapshots().map((doc) {
       if (doc.exists && doc.data() != null) {
-        return UserModel.fromJson(doc.data()!);
+        return UserModel.fromDoc(doc);
       }
       return null;
     });
@@ -41,9 +42,7 @@ class UserRepository {
           .where('name', isLessThan: '${query}z')
           .get();
 
-      return snapshot.docs
-          .map((doc) => UserModel.fromJson(doc.data()))
-          .toList();
+      return snapshot.docs.map((doc) => UserModel.fromDoc(doc)).toList();
     } catch (e) {
       return [];
     }

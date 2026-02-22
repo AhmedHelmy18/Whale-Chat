@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class UserModel {
   final String id;
   final String name;
@@ -16,6 +18,19 @@ class UserModel {
     required this.isOnline,
     required this.pushToken,
   });
+
+  factory UserModel.fromDoc(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return UserModel(
+      id: doc.id,
+      name: data['name'] ?? '',
+      email: data['email'] ?? '',
+      about: data['about'] ?? '',
+      image: data['image'] ?? '',
+      isOnline: data['isOnline'] ?? false,
+      pushToken: data['pushToken'] ?? '',
+    );
+  }
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
