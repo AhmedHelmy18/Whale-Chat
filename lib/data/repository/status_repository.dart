@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:whale_chat/model/status/status.dart';
@@ -10,7 +9,6 @@ class StatusRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFunctions _functions = FirebaseFunctions.instance;
 
   Stream<List<Status>> getStatuses() {
     final currentUserId = _auth.currentUser?.uid;
@@ -19,26 +17,43 @@ class StatusRepository {
     final cutoffTime = DateTime.now().subtract(const Duration(hours: 24));
 
     return _firestore
-        .collection('statuses')
-        .where('createdAt', isGreaterThan: Timestamp.fromDate(cutoffTime))
-        .orderBy('createdAt', descending: true)
+        .collection('chats')
+        .where('participants', arrayContains: currentUserId)
         .snapshots()
-        .map((snapshot) {
-      final allOtherStatuses = snapshot.docs
-          .map((doc) => Status.fromFirestore(doc))
-          .where((status) => status.userId != currentUserId)
-          .toList();
-
-      // Use a map to ensure each user ID appears only once, preventing duplicate heroes.
-      // We take the first occurrence because the list is ordered by creation time descending.
-      final uniqueUserStatuses = <String, Status>{};
-      for (final status in allOtherStatuses) {
-        if (!uniqueUserStatuses.containsKey(status.userId)) {
-          uniqueUserStatuses[status.userId] = status;
+        .asyncExpand((chatSnapshot) {
+      final chattedUserIds = <String>{};
+      for (final doc in chatSnapshot.docs) {
+        final participants =
+            List<String>.from(doc.data()['participants'] ?? []);
+        for (final uid in participants) {
+          if (uid != currentUserId) chattedUserIds.add(uid);
         }
       }
-      
-      return uniqueUserStatuses.values.toList();
+
+      if (chattedUserIds.isEmpty) return Stream.value(<Status>[]);
+
+      return _firestore
+          .collection('statuses')
+          .where('createdAt', isGreaterThan: Timestamp.fromDate(cutoffTime))
+          .orderBy('createdAt', descending: true)
+          .snapshots()
+          .map((snapshot) {
+        final filtered = snapshot.docs
+            .map((doc) => Status.fromFirestore(doc))
+            .where((status) =>
+                status.userId != currentUserId &&
+                chattedUserIds.contains(status.userId))
+            .toList();
+
+        final uniqueUserStatuses = <String, Status>{};
+        for (final status in filtered) {
+          if (!uniqueUserStatuses.containsKey(status.userId)) {
+            uniqueUserStatuses[status.userId] = status;
+          }
+        }
+
+        return uniqueUserStatuses.values.toList();
+      });
     });
   }
 
@@ -122,14 +137,16 @@ class StatusRepository {
 
       await statusDoc.reference.update({
         'statusItems': updatedItems.map((item) => item.toMap()).toList(),
-        'createdAt': FieldValue.serverTimestamp(), // Update timestamp to bring to top
+        'createdAt':
+            FieldValue.serverTimestamp(), // Update timestamp to bring to top
       });
     } else {
       // Fetch user profile for name and image
       String userName = 'User';
       String? userProfileImage;
       try {
-        final userDoc = await _firestore.collection('users').doc(currentUser.uid).get();
+        final userDoc =
+            await _firestore.collection('users').doc(currentUser.uid).get();
         if (userDoc.exists) {
           final data = userDoc.data();
           userName = data?['name'] ?? 'User';

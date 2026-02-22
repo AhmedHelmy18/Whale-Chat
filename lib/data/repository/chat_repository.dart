@@ -9,15 +9,28 @@ import 'package:whale_chat/data/model/message.dart';
 class ChatRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
-  final FirebaseFunctions _functions = FirebaseFunctions.instanceFor(region: 'us-central1');
+  final FirebaseFunctions _functions =
+      FirebaseFunctions.instanceFor(region: 'us-central1');
 
   Stream<List<ChatModel>> getChats(String userId) {
     return _firestore
         .collection("chats")
         .where('participants', arrayContains: userId)
+        .orderBy('lastMessageTime', descending: true)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) => ChatModel.fromDoc(doc)).toList();
+      final chats = snapshot.docs.map((doc) => ChatModel.fromDoc(doc)).toList();
+
+      final seen = <String>{};
+      final unique = <ChatModel>[];
+      for (final chat in chats) {
+        final otherId = chat.participants.firstWhere(
+          (id) => id != userId,
+          orElse: () => chat.id,
+        );
+        if (seen.add(otherId)) unique.add(chat);
+      }
+      return unique;
     });
   }
 
@@ -48,7 +61,8 @@ class ChatRepository {
 
     if (images.isNotEmpty) {
       for (final file in images) {
-        final fileName = "${DateTime.now().millisecondsSinceEpoch}_$senderId.jpg";
+        final fileName =
+            "${DateTime.now().millisecondsSinceEpoch}_$senderId.jpg";
         final ref = _storage.ref("chats/$conversationId/images/$fileName");
         await ref.putFile(file);
         final url = await ref.getDownloadURL();

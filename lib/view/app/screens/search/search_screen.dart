@@ -114,16 +114,16 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
                   suffixIcon: searchController.text.isNotEmpty
                       ? IconButton(
-                    icon: Icon(
-                      Icons.clear_rounded,
-                      color: colorScheme.onSurface.withValues(alpha: 0.6),
-                    ),
-                    onPressed: () {
-                      searchController.clear();
-                      performSearch('');
-                      setState(() {});
-                    },
-                  )
+                          icon: Icon(
+                            Icons.clear_rounded,
+                            color: colorScheme.onSurface.withValues(alpha: 0.6),
+                          ),
+                          onPressed: () {
+                            searchController.clear();
+                            performSearch('');
+                            setState(() {});
+                          },
+                        )
                       : null,
                   hintText: 'Search for users...',
                   hintStyle: TextStyle(
@@ -142,10 +142,30 @@ class _SearchScreenState extends State<SearchScreen> {
             child: ListenableBuilder(
               listenable: viewModel,
               builder: (context, _) {
+                if (viewModel.isCreatingChat) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircularProgressIndicator(color: colorScheme.primary),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Starting chat...',
+                          style: TextStyle(
+                            color: colorScheme.onSurface.withValues(alpha: 0.6),
+                            fontSize: 15,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
                 if (viewModel.isLoading) {
                   return LinearProgressIndicator(
                     backgroundColor: colorScheme.primary.withValues(alpha: 0.2),
-                    valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(colorScheme.primary),
                   );
                 }
 
@@ -214,7 +234,8 @@ class _SearchScreenState extends State<SearchScreen> {
                 }
 
                 return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   itemCount: viewModel.searchResults.length,
                   itemBuilder: (context, index) {
                     final user = viewModel.searchResults[index];
@@ -232,29 +253,43 @@ class _SearchScreenState extends State<SearchScreen> {
                         ),
                         boxShadow: [
                           BoxShadow(
-                        color: colorScheme.onSurface.withValues(alpha: 0.05),
+                            color:
+                                colorScheme.onSurface.withValues(alpha: 0.05),
                             blurRadius: 10,
                             offset: const Offset(0, 2),
                           ),
                         ],
                       ),
                       child: InkWell(
-                        onTap: () async {
-                          final conversationId = await viewModel.createChat(user.id);
-
-                          if (context.mounted && conversationId != null) {
-                            Navigator.pushReplacement(context,
-                              MaterialPageRoute(
-                                builder: (_) => ChatScreen(
-                                  userId: user.id,
-                                  userName: user.name,
-                                  conversationId: conversationId,
-                                  bio: user.about,
-                                ),
-                              ),
-                            );
-                          }
-                        },
+                        onTap: viewModel.isCreatingChat
+                            ? null
+                            : () async {
+                                final conversationId =
+                                    await viewModel.createChat(user.id);
+                                if (!context.mounted) return;
+                                if (conversationId != null) {
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => ChatScreen(
+                                        userId: user.id,
+                                        userName: user.name,
+                                        conversationId: conversationId,
+                                        bio: user.about,
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: const Text(
+                                          'Failed to start chat. Please try again.'),
+                                      backgroundColor: colorScheme.error,
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                }
+                              },
                         borderRadius: BorderRadius.circular(16),
                         child: Padding(
                           padding: const EdgeInsets.all(12),
@@ -264,24 +299,25 @@ class _SearchScreenState extends State<SearchScreen> {
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: colorScheme.primary.withValues(alpha: 0.3),
+                                    color: colorScheme.primary
+                                        .withValues(alpha: 0.3),
                                     width: 2,
                                   ),
                                 ),
                                 child: ClipOval(
                                   child: user.image.isNotEmpty
                                       ? Image.network(
-                                    user.image,
-                                    width: 56,
-                                    height: 56,
-                                    fit: BoxFit.cover,
-                                  )
+                                          user.image,
+                                          width: 56,
+                                          height: 56,
+                                          fit: BoxFit.cover,
+                                        )
                                       : Image.asset(
-                                    'assets/images/download.jpeg',
-                                    width: 56,
-                                    height: 56,
-                                    fit: BoxFit.cover,
-                                  ),
+                                          'assets/images/download.jpeg',
+                                          width: 56,
+                                          height: 56,
+                                          fit: BoxFit.cover,
+                                        ),
                                 ),
                               ),
                               const SizedBox(width: 12),
@@ -305,7 +341,8 @@ class _SearchScreenState extends State<SearchScreen> {
                                           overflow: TextOverflow.ellipsis,
                                           style: TextStyle(
                                             fontSize: 14,
-                                            color: colorScheme.onSurface.withValues(alpha: 0.6),
+                                            color: colorScheme.onSurface
+                                                .withValues(alpha: 0.6),
                                           ),
                                         ),
                                       ),
@@ -315,7 +352,8 @@ class _SearchScreenState extends State<SearchScreen> {
                               Container(
                                 padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
-                                  color: colorScheme.primary.withValues(alpha: 0.1),
+                                  color: colorScheme.primary
+                                      .withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Icon(

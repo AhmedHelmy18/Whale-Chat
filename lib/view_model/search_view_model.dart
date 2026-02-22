@@ -13,6 +13,9 @@ class SearchViewModel extends ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
+  bool _isCreatingChat = false;
+  bool get isCreatingChat => _isCreatingChat;
+
   Future<void> searchUsers(String query, String currentUserId) async {
     _isLoading = true;
     notifyListeners();
@@ -25,7 +28,16 @@ class SearchViewModel extends ChangeNotifier {
   }
 
   Future<String?> createChat(String participantId) async {
-    return await _chatRepository.createChat(participantId);
+    _isCreatingChat = true;
+    notifyListeners();
+    try {
+      return await _chatRepository.createChat(participantId);
+    } catch (_) {
+      return null;
+    } finally {
+      _isCreatingChat = false;
+      notifyListeners();
+    }
   }
 
   void clearSearch() {
