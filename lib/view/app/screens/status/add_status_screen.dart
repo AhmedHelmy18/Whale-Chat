@@ -4,6 +4,7 @@ import 'package:whale_chat/view_model/status_view_model.dart';
 import 'package:whale_chat/model/status/status.dart';
 import 'dart:io';
 import 'package:whale_chat/theme/color_scheme.dart';
+import 'package:whale_chat/view/common/custom_snackbar.dart';
 
 class AddStatusScreen extends StatefulWidget {
   final bool isTextMode;
@@ -67,21 +68,15 @@ class _AddStatusScreenState extends State<AddStatusScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error picking image: $e'),
-            backgroundColor: colorScheme.error,
-          ),
-        );
+        showCustomSnackBar(context, 'Error picking image: $e', isError: true);
       }
     }
   }
 
   Future<void> _postStatus() async {
     if (_selectedImage == null && _textController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please add text or select an image')),
-      );
+      showCustomSnackBar(context, 'Please add text or select an image',
+          isError: true);
       return;
     }
 
@@ -108,18 +103,11 @@ class _AddStatusScreenState extends State<AddStatusScreen> {
 
       if (mounted) {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Status posted successfully!')),
-        );
+        showCustomSnackBar(context, 'Status posted successfully!');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error posting status: $e'),
-            backgroundColor: colorScheme.error,
-          ),
-        );
+        showCustomSnackBar(context, 'Error posting status: $e', isError: true);
       }
     } finally {
       if (mounted) {

@@ -52,6 +52,7 @@ class StatusRepository {
         .collection('statuses')
         .where('userId', isEqualTo: currentUserId)
         .where('createdAt', isGreaterThan: Timestamp.fromDate(cutoffTime))
+        .orderBy('createdAt', descending: true)
         .limit(1)
         .snapshots()
         .map((snapshot) {
