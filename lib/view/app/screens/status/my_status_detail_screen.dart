@@ -5,6 +5,7 @@ import 'package:whale_chat/theme/color_scheme.dart';
 import 'package:whale_chat/util/format_time.dart';
 import 'package:whale_chat/view/app/screens/status/add_status_screen.dart';
 import 'package:whale_chat/view/app/screens/status/view_status_screen.dart';
+import 'package:whale_chat/view/app/screens/status/widgets/status_item_tile.dart';
 
 class MyStatusDetailScreen extends StatefulWidget {
   final Status status;
@@ -39,344 +40,279 @@ class _MyStatusDetailScreenState extends State<MyStatusDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      appBar: AppBar(
-        backgroundColor: colorScheme.surface,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: colorScheme.onSurface),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          'My status',
-          style: TextStyle(
-            color: colorScheme.onSurface,
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
+      appBar: _buildAppBar(),
+      floatingActionButton: _buildFab(context),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header Section
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                Hero(
-                  tag: 'profile_my_status',
-                  child: CircleAvatar(
-                    radius: 26,
-                    backgroundColor: colorScheme.outline,
-                    backgroundImage: (widget.status.userProfileImage != null &&
-                            widget.status.userProfileImage!.isNotEmpty)
-                        ? NetworkImage(widget.status.userProfileImage!)
-                        : null,
-                    child: (widget.status.userProfileImage == null ||
-                            widget.status.userProfileImage!.isEmpty)
-                        ? Icon(Icons.person, color: colorScheme.surface)
-                        : null,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  widget.status.latestItem != null
-                      ? formatTimeAgo(widget.status.latestItem!.timestamp)
-                      : formatTimeAgo(widget.status.createdAt),
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: colorScheme.onSurface,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Encryption Info
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.lock,
-                  size: 16,
-                  color: colorScheme.onSurfaceVariant,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: RichText(
-                    text: TextSpan(
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: colorScheme.onSurfaceVariant,
-                        height: 1.3,
-                      ),
-                      children: [
-                        const TextSpan(text: 'Your status updates are '),
-                        TextSpan(
-                          text: 'end-to-end encrypted',
-                          style: TextStyle(color: colorScheme.primary),
-                        ),
-                        const TextSpan(
-                            text: '. They will disappear after 24 hours.'),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // Status Items Grid
-          Expanded(
-            child: ListenableBuilder(
-              listenable: _viewModel,
-              builder: (context, _) {
-                final displayStatus = _viewModel.myStatus ?? widget.status;
-
-                if (displayStatus.statusItems.isEmpty) {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    if (mounted) Navigator.pop(context);
-                  });
-                  return const SizedBox.shrink();
-                }
-
-                return GridView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 8,
-                    mainAxisSpacing: 8,
-                    childAspectRatio: 0.75,
-                  ),
-                  itemCount: displayStatus.statusItems.length,
-                  itemBuilder: (context, index) {
-                    final item = displayStatus.statusItems[index];
-                    return _StatusItemTile(
-                      item: item,
-                      onDelete: () async {
-                        final confirm = await showDialog<bool>(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: const Text('Delete status update?'),
-                            content: const Text(
-                                'This status update will be deleted for everyone who received it.'),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context, false),
-                                child: const Text('Cancel'),
-                              ),
-                              TextButton(
-                                onPressed: () => Navigator.pop(context, true),
-                                child: Text(
-                                  'Delete',
-                                  style: TextStyle(color: colorScheme.error),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-
-                        if (confirm == true) {
-                          await _viewModel.deleteStatusItem(
-                              displayStatus.id, item.id);
-                        }
-                      },
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => ViewStatusScreen(
-                              status: displayStatus,
-                              isMyStatus: true,
-                              initialIndex: index,
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-      floatingActionButton: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          FloatingActionButton.small(
-            heroTag: 'text_status_fab',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const AddStatusScreen(isTextMode: true),
-                ),
-              );
-            },
-            backgroundColor: colorScheme.surfaceContainerHighest,
-            child: Icon(Icons.edit, color: colorScheme.onSurface),
-          ),
-          const SizedBox(height: 16),
-          FloatingActionButton(
-            heroTag: 'camera_status_fab',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const AddStatusScreen(),
-                ),
-              );
-            },
-            backgroundColor: colorScheme.primary,
-            child: Icon(Icons.camera_alt, color: colorScheme.onPrimary),
-          ),
+          _buildHeader(),
+          _buildEncryptionBanner(),
+          _buildSectionLabel(),
+          Expanded(child: _buildGrid()),
         ],
       ),
     );
   }
-}
 
-class _StatusItemTile extends StatelessWidget {
-  final StatusItem item;
-  final VoidCallback onTap;
-  final VoidCallback onDelete;
-
-  const _StatusItemTile({
-    required this.item,
-    required this.onTap,
-    required this.onDelete,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
+  PreferredSizeWidget _buildAppBar() {
+    return PreferredSize(
+      preferredSize: const Size.fromHeight(kToolbarHeight),
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: _getBackgroundColor(),
-        ),
-        child: Stack(
-          children: [
-            // Background Image or Color
-            if (item.type == StatusType.image)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.network(
-                  item.content,
-                  width: double.infinity,
-                  height: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: colorScheme.surfaceContainerHighest,
-                      child: Center(
-                        child: Icon(
-                          Icons.broken_image,
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              )
-            else
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Text(
-                    item.content,
-                    style: TextStyle(
-                      color: colorScheme.onPrimary,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    maxLines: 4,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-
-            // Time Indicator
-            Positioned(
-              top: 8,
-              left: 8,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: colorScheme.scrim.withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  formatTimeAgo(item.timestamp),
-                  style: TextStyle(
-                    color: colorScheme.onPrimary,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ),
-
-            // Delete Button
-            Positioned(
-              top: 4,
-              right: 4,
-              child: PopupMenuButton<String>(
-                icon: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: colorScheme.scrim.withValues(alpha: 0.6),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.more_vert,
-                    size: 16,
-                    color: colorScheme.onPrimary,
-                  ),
-                ),
-                onSelected: (value) {
-                  if (value == 'delete') {
-                    onDelete();
-                  }
-                },
-                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                  const PopupMenuItem<String>(
-                    value: 'delete',
-                    child: Text('Delete'),
-                  ),
-                ],
-              ),
+          gradient: LinearGradient(
+            colors: [
+              colorScheme.primary,
+              colorScheme.primary.withValues(alpha: 0.8),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: colorScheme.primary.withValues(alpha: 0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
+        child: SafeArea(
+          child: Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+                onPressed: () => Navigator.pop(context),
+              ),
+              const SizedBox(width: 4),
+              const Text(
+                'My status',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.3,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  Color _getBackgroundColor() {
-    if (item.type == StatusType.text && item.backgroundColor != null) {
-      try {
-        String hex = item.backgroundColor!.replaceAll('#', '');
-        if (hex.length == 6) {
-          hex = 'FF$hex';
+  Widget _buildHeader() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+      child: Row(
+        children: [
+          Hero(
+            tag: 'profile_my_status',
+            child: Container(
+              padding: const EdgeInsets.all(3),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [
+                    colorScheme.primary,
+                    colorScheme.primary.withValues(alpha: 0.6),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: CircleAvatar(
+                radius: 28,
+                backgroundColor: colorScheme.surfaceContainerHighest,
+                backgroundImage: (widget.status.userProfileImage != null &&
+                        widget.status.userProfileImage!.isNotEmpty)
+                    ? NetworkImage(widget.status.userProfileImage!)
+                    : null,
+                child: (widget.status.userProfileImage == null ||
+                        widget.status.userProfileImage!.isEmpty)
+                    ? Icon(Icons.person_rounded,
+                        color: colorScheme.onSurfaceVariant, size: 28)
+                    : null,
+              ),
+            ),
+          ),
+          const SizedBox(width: 14),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                widget.status.userName,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                widget.status.latestItem != null
+                    ? formatTimeAgo(widget.status.latestItem!.timestamp)
+                    : formatTimeAgo(widget.status.createdAt),
+                style: TextStyle(
+                    fontSize: 13, color: colorScheme.onSurfaceVariant),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEncryptionBanner() {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: colorScheme.primaryContainer,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+            color: colorScheme.primary.withValues(alpha: 0.15), width: 1),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.lock_rounded,
+              size: 16, color: colorScheme.onPrimaryContainer),
+          const SizedBox(width: 10),
+          Expanded(
+            child: RichText(
+              text: TextSpan(
+                style: TextStyle(
+                  fontSize: 12.5,
+                  color: colorScheme.onPrimaryContainer,
+                  height: 1.4,
+                ),
+                children: const [
+                  TextSpan(text: 'Your status updates are '),
+                  TextSpan(
+                    text: 'end-to-end encrypted',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  TextSpan(text: '. They disappear after 24 hours.'),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionLabel() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+      child: Text(
+        'YOUR UPDATES',
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          color: colorScheme.onSurfaceVariant,
+          letterSpacing: 1.2,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGrid() {
+    return ListenableBuilder(
+      listenable: _viewModel,
+      builder: (context, _) {
+        final displayStatus = _viewModel.myStatus ?? widget.status;
+
+        if (displayStatus.statusItems.isEmpty) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) Navigator.pop(context);
+          });
+          return const SizedBox.shrink();
         }
-        return Color(int.parse(hex, radix: 16));
-      } catch (e) {
-        return colorScheme.primary;
-      }
+
+        return GridView.builder(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            childAspectRatio: 0.75,
+          ),
+          itemCount: displayStatus.statusItems.length,
+          itemBuilder: (context, index) {
+            final item = displayStatus.statusItems[index];
+            return StatusItemTile(
+              item: item,
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ViewStatusScreen(
+                    status: displayStatus,
+                    isMyStatus: true,
+                    initialIndex: index,
+                  ),
+                ),
+              ),
+              onDelete: () => _confirmDelete(context, displayStatus, item),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildFab(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        FloatingActionButton.small(
+          heroTag: 'text_status_fab',
+          elevation: 4,
+          backgroundColor: colorScheme.surfaceContainerHighest,
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const AddStatusScreen(isTextMode: true),
+            ),
+          ),
+          child: Icon(Icons.edit_rounded, color: colorScheme.onSurfaceVariant),
+        ),
+        const SizedBox(height: 12),
+        FloatingActionButton(
+          heroTag: 'camera_status_fab',
+          elevation: 6,
+          backgroundColor: colorScheme.primary,
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AddStatusScreen()),
+          ),
+          child: Icon(Icons.camera_alt_rounded, color: colorScheme.surface),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _confirmDelete(
+      BuildContext context, Status displayStatus, StatusItem item) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Delete status update?'),
+        content: const Text(
+            'This status update will be deleted for everyone who received it.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text('Delete', style: TextStyle(color: colorScheme.error)),
+          ),
+        ],
+      ),
+    );
+    if (confirm == true) {
+      await _viewModel.deleteStatusItem(displayStatus.id, item.id);
     }
-    return colorScheme.surfaceContainerHighest;
   }
 }

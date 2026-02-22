@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:whale_chat/theme/color_scheme.dart';
 import 'package:whale_chat/view_model/chat_view_model.dart';
@@ -77,7 +76,8 @@ class ImagePickPreview extends StatelessWidget {
                               child: Container(
                                 padding: const EdgeInsets.all(4),
                                 decoration: BoxDecoration(
-                                  color: colorScheme.onSurface.withValues(alpha: 0.55),
+                                  color: colorScheme.onSurface
+                                      .withValues(alpha: 0.55),
                                   shape: BoxShape.circle,
                                 ),
                                 child: Icon(
