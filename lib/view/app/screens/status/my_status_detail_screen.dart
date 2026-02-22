@@ -135,26 +135,30 @@ class _MyStatusDetailScreenState extends State<MyStatusDetailScreen> {
             ),
           ),
           const SizedBox(width: 14),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                widget.status.userName,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: colorScheme.onSurface,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.status.userName,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurface,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                widget.status.latestItem != null
-                    ? formatTimeAgo(widget.status.latestItem!.timestamp)
-                    : formatTimeAgo(widget.status.createdAt),
-                style: TextStyle(
-                    fontSize: 13, color: colorScheme.onSurfaceVariant),
-              ),
-            ],
+                const SizedBox(height: 2),
+                Text(
+                  widget.status.latestItem != null
+                      ? formatTimeAgo(widget.status.latestItem!.timestamp)
+                      : formatTimeAgo(widget.status.createdAt),
+                  style: TextStyle(
+                      fontSize: 13, color: colorScheme.onSurfaceVariant),
+                ),
+              ],
+            ),
           ),
         ],
       ),

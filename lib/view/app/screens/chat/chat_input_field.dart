@@ -106,8 +106,10 @@ class ChatInputField extends StatelessWidget {
                   ? null
                   : () async {
                       final text = messageController.text;
-                      if (text.trim().isEmpty && viewModel.pickedImages.isEmpty)
+                      if (text.trim().isEmpty &&
+                          viewModel.pickedImages.isEmpty) {
                         return;
+                      }
                       await viewModel.sendMessage(text);
                       messageController.clear();
                     },
