@@ -96,13 +96,57 @@ class StatusRepository {
       finalContent = await ref.getDownloadURL();
     }
 
-    final HttpsCallable callable = _functions.httpsCallable('addStatus');
-    await callable.call({
-      'type': type.name,
-      'content': finalContent,
-      'caption': caption,
-      'backgroundColor': backgroundColor,
-    });
+    final cutoffTime = DateTime.now().subtract(const Duration(hours: 24));
+    final statusQuery = await _firestore
+        .collection('statuses')
+        .where('userId', isEqualTo: currentUser.uid)
+        .where('createdAt', isGreaterThan: Timestamp.fromDate(cutoffTime))
+        .orderBy('createdAt', descending: true)
+        .limit(1)
+        .get();
+
+    final newItem = StatusItem(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      content: finalContent,
+      type: type,
+      caption: caption,
+      timestamp: DateTime.now(),
+      viewedBy: [],
+      backgroundColor: backgroundColor,
+    );
+
+    if (statusQuery.docs.isNotEmpty) {
+      final statusDoc = statusQuery.docs.first;
+      final status = Status.fromFirestore(statusDoc);
+      final updatedItems = [...status.statusItems, newItem];
+
+      await statusDoc.reference.update({
+        'statusItems': updatedItems.map((item) => item.toMap()).toList(),
+        'createdAt': FieldValue.serverTimestamp(), // Update timestamp to bring to top
+      });
+    } else {
+      // Fetch user profile for name and image
+      String userName = 'User';
+      String? userProfileImage;
+      try {
+        final userDoc = await _firestore.collection('users').doc(currentUser.uid).get();
+        if (userDoc.exists) {
+          final data = userDoc.data();
+          userName = data?['name'] ?? 'User';
+          userProfileImage = data?['image'];
+        }
+      } catch (e) {
+        // Fallback to defaults
+      }
+
+      await _firestore.collection('statuses').add({
+        'userId': currentUser.uid,
+        'userName': userName,
+        'userProfileImage': userProfileImage,
+        'statusItems': [newItem.toMap()],
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    }
   }
 
   Future<void> markStatusAsViewed(String statusId, String statusItemId) async {
