@@ -21,21 +21,23 @@ class HomeViewModel extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    _chatSubscription =
-        _chatRepository.getChats(userId).listen((chatModels) async {
+    _chatSubscription = _chatRepository.getChats(userId).listen((
+      chatModels,
+    ) async {
       if (_isDisposed) return;
       final List<Map<String, dynamic>> loadedChats = [];
 
-      // Note: This still does N+1 queries. To optimize, we'd need a different data structure
-      // or batch fetch. For now, we keep the logic but structured in ViewModel.
-      for (var chat in chatModels) {
-        final otherUserId = chat.participants
-            .firstWhere((id) => id != userId, orElse: () => '');
+      // Optimized: Fetch users concurrently instead of sequentially
+      final userFutures = chatModels.map((chat) async {
+        final otherUserId = chat.participants.firstWhere(
+          (id) => id != userId,
+          orElse: () => '',
+        );
 
         if (otherUserId.isNotEmpty) {
           final user = await _userRepository.getUser(otherUserId);
           if (user != null) {
-            loadedChats.add({
+            return {
               "id": chat.id,
               "userId": otherUserId,
               "name": user.name,
@@ -43,8 +45,16 @@ class HomeViewModel extends ChangeNotifier {
               "lastMessage": chat.lastMessage,
               "timestamp": chat.lastMessageTime,
               "photoUrl": user.image, // Use image from User document
-            });
+            };
           }
+        }
+        return null;
+      });
+
+      final results = await Future.wait(userFutures);
+      for (var result in results) {
+        if (result != null) {
+          loadedChats.add(result);
         }
       }
 
