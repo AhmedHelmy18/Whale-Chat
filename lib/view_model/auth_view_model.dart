@@ -3,7 +3,10 @@ import 'package:flutter/foundation.dart';
 import 'package:whale_chat/data/repository/auth_repository.dart';
 
 class AuthViewModel extends ChangeNotifier {
-  final AuthRepository _authRepository = AuthRepository();
+  final AuthRepository _authRepository;
+
+  AuthViewModel({AuthRepository? authRepository})
+      : _authRepository = authRepository ?? AuthRepository();
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
