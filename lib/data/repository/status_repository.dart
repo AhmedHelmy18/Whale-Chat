@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:whale_chat/model/status/status.dart';
@@ -177,29 +178,19 @@ class StatusRepository {
     final currentUserId = _auth.currentUser?.uid;
     if (currentUserId == null) return;
 
-    final statusDoc =
-        await _firestore.collection('statuses').doc(statusId).get();
-    if (!statusDoc.exists) return;
-
-    final status = Status.fromFirestore(statusDoc);
-    final updatedItems = status.statusItems.map((item) {
-      if (item.id == statusItemId && !item.viewedBy.contains(currentUserId)) {
-        return StatusItem(
-          id: item.id,
-          content: item.content,
-          type: item.type,
-          caption: item.caption,
-          timestamp: item.timestamp,
-          viewedBy: [...item.viewedBy, currentUserId],
-          backgroundColor: item.backgroundColor,
-        );
+    try {
+      final result = await FirebaseFunctions.instance
+          .httpsCallable('viewStatus')
+          .call({
+        'statusId': statusId,
+        'statusItemId': statusItemId,
+      });
+      if (result.data['success'] != true) {
+        throw Exception('Failed to mark status as viewed');
       }
-      return item;
-    }).toList();
-
-    await statusDoc.reference.update({
-      'statusItems': updatedItems.map((item) => item.toMap()).toList(),
-    });
+    } catch (e) {
+      // Log or handle error
+    }
   }
 
   Future<void> deleteStatus(String statusId) async {
