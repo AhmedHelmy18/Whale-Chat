@@ -6,9 +6,17 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:whale_chat/model/status/status.dart';
 
 class StatusRepository {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseStorage _storage = FirebaseStorage.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore;
+  final FirebaseStorage _storage;
+  final FirebaseAuth _auth;
+
+  StatusRepository({
+    FirebaseFirestore? firestore,
+    FirebaseStorage? storage,
+    FirebaseAuth? auth,
+  })  : _firestore = firestore ?? FirebaseFirestore.instance,
+        _storage = storage ?? FirebaseStorage.instance,
+        _auth = auth ?? FirebaseAuth.instance;
 
   Stream<List<Status>> getStatuses() {
     final currentUserId = _auth.currentUser?.uid;
@@ -83,13 +91,13 @@ class StatusRepository {
     });
   }
 
-  Stream<String?> getCurrentUserImageUrl() {
+  Stream<Map<String, dynamic>?> getCurrentUserProfile() {
     final userId = _auth.currentUser?.uid;
     if (userId == null) return Stream.value(null);
 
     return _firestore.collection('users').doc(userId).snapshots().map((doc) {
       if (doc.exists) {
-        return doc.data()?['image'];
+        return doc.data();
       }
       return null;
     });
@@ -105,6 +113,8 @@ class StatusRepository {
     String? caption,
     File? imageFile,
     String? backgroundColor,
+    String? userName,
+    String? userProfileImage,
   }) async {
     final currentUser = _auth.currentUser;
     if (currentUser == null) throw Exception('User not authenticated');
@@ -148,25 +158,29 @@ class StatusRepository {
             FieldValue.serverTimestamp(), // Update timestamp to bring to top
       });
     } else {
-      // Fetch user profile for name and image
-      String userName = 'User';
-      String? userProfileImage;
-      try {
-        final userDoc =
-            await _firestore.collection('users').doc(currentUser.uid).get();
-        if (userDoc.exists) {
-          final data = userDoc.data();
-          userName = data?['name'] ?? 'User';
-          userProfileImage = data?['image'];
+      // Use provided profile data if available (e.g., from ViewModel's stream subscription)
+      // If not, fetch it from Firestore as a fallback.
+      String finalUserName = userName ?? 'User';
+      String? finalUserProfileImage = userProfileImage;
+
+      if (userName == null) {
+        try {
+          final userDoc =
+              await _firestore.collection('users').doc(currentUser.uid).get();
+          if (userDoc.exists) {
+            final data = userDoc.data();
+            finalUserName = data?['name'] ?? 'User';
+            finalUserProfileImage = data?['image'];
+          }
+        } catch (e) {
+          // Fallback to defaults
         }
-      } catch (e) {
-        // Fallback to defaults
       }
 
       await _firestore.collection('statuses').add({
         'userId': currentUser.uid,
-        'userName': userName,
-        'userProfileImage': userProfileImage,
+        'userName': finalUserName,
+        'userProfileImage': finalUserProfileImage,
         'statusItems': [newItem.toMap()],
         'createdAt': FieldValue.serverTimestamp(),
       });
