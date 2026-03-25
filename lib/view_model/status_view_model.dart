@@ -9,21 +9,23 @@ class StatusViewModel extends ChangeNotifier {
   final StatusRepository _statusRepository = StatusRepository();
   StreamSubscription? _statusesSubscription;
   StreamSubscription? _myStatusSubscription;
-  StreamSubscription? _userImageSubscription;
+  StreamSubscription? _userProfileSubscription;
 
   List<Status> _statuses = [];
   Status? _myStatus;
+  String? _currentUserName;
   String? _currentUserImageUrl;
   String? _currentUserId;
 
   List<Status> get statuses => _statuses;
   Status? get myStatus => _myStatus;
+  String? get currentUserName => _currentUserName;
   String? get currentUserImageUrl => _currentUserImageUrl;
   String? get currentUserId => _currentUserId;
 
   void init() {
     _listenToStatuses();
-    _fetchCurrentUserImage();
+    _fetchCurrentUserProfile();
     _fetchCurrentUserId();
   }
 
@@ -46,11 +48,14 @@ class StatusViewModel extends ChangeNotifier {
     });
   }
 
-  void _fetchCurrentUserImage() {
-    _userImageSubscription =
-        _statusRepository.getCurrentUserImageUrl().listen((imageUrl) {
-      _currentUserImageUrl = imageUrl;
-      notifyListeners();
+  void _fetchCurrentUserProfile() {
+    _userProfileSubscription =
+        _statusRepository.getCurrentUserProfile().listen((userProfile) {
+      if (userProfile != null) {
+        _currentUserName = userProfile['name'];
+        _currentUserImageUrl = userProfile['image'];
+        notifyListeners();
+      }
     });
   }
 
@@ -67,6 +72,8 @@ class StatusViewModel extends ChangeNotifier {
       caption: caption,
       imageFile: imageFile,
       backgroundColor: backgroundColor,
+      userName: _currentUserName,
+      userProfileImage: _currentUserImageUrl,
     );
   }
 
@@ -86,7 +93,7 @@ class StatusViewModel extends ChangeNotifier {
   void dispose() {
     _statusesSubscription?.cancel();
     _myStatusSubscription?.cancel();
-    _userImageSubscription?.cancel();
+    _userProfileSubscription?.cancel();
     super.dispose();
   }
 }

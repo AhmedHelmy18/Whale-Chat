@@ -27,6 +27,9 @@ dev_dependencies:
     sdk: flutter
 
   flutter_lints: ^6.0.0
+  fake_cloud_firestore: ^4.1.0+1
+  firebase_auth_mocks: ^0.15.1
+  firebase_storage_mocks: ^0.8.0+1
 
 flutter:
 
