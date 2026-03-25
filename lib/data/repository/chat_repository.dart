@@ -64,14 +64,17 @@ class ChatRepository {
     final List<String> imageUrls = [];
 
     if (images.isNotEmpty) {
-      for (final file in images) {
+      final uploadTasks = images.asMap().entries.map((entry) async {
+        final index = entry.key;
+        final file = entry.value;
         final fileName =
-            "${DateTime.now().millisecondsSinceEpoch}_$senderId.jpg";
+            "${DateTime.now().millisecondsSinceEpoch}_${index}_$senderId.jpg";
         final ref = _storage.ref("chats/$conversationId/images/$fileName");
         await ref.putFile(file);
-        final url = await ref.getDownloadURL();
-        imageUrls.add(url);
-      }
+        return await ref.getDownloadURL();
+      });
+
+      imageUrls.addAll(await Future.wait(uploadTasks));
     }
 
     String type;
