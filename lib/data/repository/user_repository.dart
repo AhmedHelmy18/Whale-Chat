@@ -6,10 +6,17 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:whale_chat/data/model/user_model.dart';
 
 class UserRepository {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseStorage _storage = FirebaseStorage.instance;
-  final FirebaseFunctions _functions =
-      FirebaseFunctions.instanceFor(region: 'us-central1');
+  final FirebaseFirestore _firestore;
+  final FirebaseStorage _storage;
+  final FirebaseFunctions _functions;
+
+  UserRepository({
+    FirebaseFirestore? firestore,
+    FirebaseStorage? storage,
+    FirebaseFunctions? functions,
+  })  : _firestore = firestore ?? FirebaseFirestore.instance,
+        _storage = storage ?? FirebaseStorage.instance,
+        _functions = functions ?? FirebaseFunctions.instanceFor(region: 'us-central1');
 
   Future<UserModel?> getUser(String uid) async {
     try {
