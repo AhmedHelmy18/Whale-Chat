@@ -5,7 +5,10 @@ import 'package:whale_chat/data/model/user_model.dart';
 import 'package:whale_chat/data/repository/user_repository.dart';
 
 class ProfileViewModel extends ChangeNotifier {
-  final UserRepository _userRepository = UserRepository();
+  final UserRepository _userRepository;
+
+  ProfileViewModel({UserRepository? userRepository})
+      : _userRepository = userRepository ?? UserRepository();
 
   UserModel? _user;
   UserModel? get user => _user;
