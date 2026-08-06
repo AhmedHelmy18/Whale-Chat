@@ -13,6 +13,20 @@ exports.sendNotification = onCall(async (request) => {
     );
   }
 
+  if (typeof message !== "string" || message.trim().length === 0) {
+    throw new HttpsError(
+      "invalid-argument",
+      "Message must be a non-empty string."
+    );
+  }
+
+  if (message.length > 1024) {
+    throw new HttpsError(
+      "invalid-argument",
+      "Message is too long. Maximum length is 1024 characters."
+    );
+  }
+
   const userDoc = await admin.firestore().collection("users").doc(userId).get();
 
   if (!userDoc.exists) {
