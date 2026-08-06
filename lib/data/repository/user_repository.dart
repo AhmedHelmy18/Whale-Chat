@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -19,6 +21,7 @@ class UserRepository {
       }
       return null;
     } catch (e) {
+      debugPrint('Error getting user: $e');
       return null;
     }
   }
@@ -44,6 +47,7 @@ class UserRepository {
 
       return snapshot.docs.map((doc) => UserModel.fromDoc(doc)).toList();
     } catch (e) {
+      debugPrint('Error searching users: $e');
       return [];
     }
   }
@@ -65,6 +69,7 @@ class UserRepository {
       await _functions.httpsCallable('updateProfile').call(data);
       return true;
     } catch (e) {
+      debugPrint('Error updating profile: $e');
       return false;
     }
   }
@@ -75,6 +80,7 @@ class UserRepository {
       await ref.putFile(file, SettableMetadata(contentType: 'image/jpeg'));
       return await ref.getDownloadURL();
     } catch (e) {
+      debugPrint('Error uploading profile image: $e');
       return null;
     }
   }
