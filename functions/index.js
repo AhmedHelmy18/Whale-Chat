@@ -6,6 +6,7 @@ const { updateProfile } = require("./src/updateProfile");
 const { updateMessageStatus } = require("./src/updateMessageStatus");
 const { addStatus } = require("./src/addStatus");
 const { deleteOldStatuses } = require("./src/deleteOldStatuses");
+const { viewStatus } = require("./src/viewStatus");
 
 module.exports = {
   sendNotification,
@@ -16,4 +17,5 @@ module.exports = {
   updateMessageStatus,
   addStatus,
   deleteOldStatuses,
+  viewStatus,
 };
